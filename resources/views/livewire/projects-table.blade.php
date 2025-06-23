@@ -31,6 +31,7 @@
     </div>
 
   
+    
     <div class="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
         @forelse($projects as $project)
             <div class="bg-white shadow-lg rounded-lg p-6 flex flex-col border border-blue-100 hover:shadow-xl transition-shadow">

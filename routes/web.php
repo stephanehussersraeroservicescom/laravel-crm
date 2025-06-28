@@ -31,3 +31,10 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 });
+
+Route::get('/subcontractors', \App\Livewire\SubcontractorsTable::class)->name('subcontractors.index');
+Route::get('/subcontractors/{subcontractor}/contacts', \App\Livewire\ContactsTable::class)->name('contacts.index');
+
+Route::get('/airlines', \App\Livewire\AirlinesTable::class)
+    ->middleware(['auth'])
+    ->name('airlines.index');

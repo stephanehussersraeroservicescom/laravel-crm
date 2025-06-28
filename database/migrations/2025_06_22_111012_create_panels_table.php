@@ -18,6 +18,7 @@ return new class extends Migration
             $table->float('probability')->nullable();
             $table->string('opportunity_status')->nullable();
             $table->foreignId('certification_status_id')->nullable()->constrained('statuses');
+            $table->foreignId('subcontractor_id')->nullable()->constrained()->nullOnDelete();
             $table->text('potential')->nullable();
             $table->string('phy_path')->nullable(); // For uploaded PHY file path
             $table->text('comments')->nullable();

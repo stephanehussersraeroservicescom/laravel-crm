@@ -20,4 +20,8 @@ class Panel extends Model
     {
         return $this->belongsTo(Status::class, 'certification_status_id');
     }
+    public function subcontractor()
+    {
+        return $this->belongsTo(Subcontractor::class);
+    }
 }

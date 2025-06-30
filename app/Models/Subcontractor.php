@@ -7,17 +7,49 @@ use Illuminate\Database\Eloquent\Model;
 
 class Subcontractor extends Model
 {
-    public function parent()
-    {
-        return $this->belongsTo(Subcontractor::class, 'parent_id');
-    }
+    protected $fillable = ['name', 'comment'];
+
     public function children()
     {
-        return $this->hasMany(Subcontractor::class, 'parent_id');
+        return $this->belongsToMany(
+            Subcontractor::class,
+            'subcontractor_subcontractor',
+            'main_id',
+            'sub_id'
+        );
     }
+
+    public function parents()
+    {
+        return $this->belongsToMany(
+            Subcontractor::class,
+            'subcontractor_subcontractor',
+            'sub_id',
+            'main_id'
+        );
+    }
+
     public function contacts()
     {
         return $this->hasMany(Contact::class);
+    }
+
+    // Project-specific relationships
+    public function projectTeams()
+    {
+        return $this->hasMany(ProjectSubcontractor::class, 'main_subcontractor_id');
+    }
+
+    public function supportingProjects()
+    {
+        return $this->hasMany(ProjectSubcontractor::class, 'supporting_subcontractor_id');
+    }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_subcontractor', 'main_subcontractor_id', 'project_id')
+                   ->withPivot('supporting_subcontractor_id', 'role', 'notes')
+                   ->withTimestamps();
     }
 
 }

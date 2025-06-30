@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Airline;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 #[Title('Airlines')]
 
 class AirlinesTable extends Component
@@ -14,11 +16,29 @@ class AirlinesTable extends Component
     public $editing = false;
     public $editId = null;
 
+    public $availableRegions = [
+        'North America',
+        'South America', 
+        'Europe',
+        'Asia',
+        'Africa',
+        'Oceania',
+        'Middle East'
+    ];
+
+    public function mount()
+    {
+        // Pre-select current user if they have sales role
+        if (Auth::check() && Auth::user()->role === 'sales') {
+            $this->account_executive = Auth::user()->name;
+        }
+    }
+
     public function save()
     {
         $this->validate([
             'name' => 'required|string|max:255',
-            'region' => 'required|string|max:255',
+            'region' => 'required|in:' . implode(',', $this->availableRegions),
             'account_executive' => 'nullable|string|max:255',
         ]);
 
@@ -70,12 +90,19 @@ class AirlinesTable extends Component
         $this->account_executive = '';
         $this->editing = false;
         $this->editId = null;
+        
+        // Re-select current user if they have sales role
+        if (Auth::check() && Auth::user()->role === 'sales') {
+            $this->account_executive = Auth::user()->name;
+        }
     }
 
     public function render()
     {
         return view('livewire.airlines-table', [
-            'airlines' => Airline::orderBy('name')->get()
+            'airlines' => Airline::orderBy('name')->get(),
+            'availableRegions' => $this->availableRegions,
+            'salesUsers' => User::where('role', 'sales')->orderBy('name')->get()
         ])->layout('layouts.app');
     }
 }

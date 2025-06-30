@@ -11,15 +11,13 @@ class SubcontractorSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create 100 subcontractors, some with a parent
-        for ($i = 1; $i <= 100; $i++) {
-            $parentId = ($i > 10 && rand(0, 1)) ? rand(1, 10) : null; // some nested
+        // Step 1: Create 50 subcontractors
+        for ($i = 1; $i <= 50; $i++) {
             $sub = Subcontractor::create([
                 'name' => 'Subcontractor ' . $i,
-                'parent_id' => $parentId,
             ]);
 
-            // Add 1–3 contacts per subcontractor
+            // Step 2: Add 1–3 contacts per subcontractor
             for ($j = 1; $j <= rand(1, 3); $j++) {
                 Contact::create([
                     'subcontractor_id' => $sub->id,
@@ -30,5 +28,17 @@ class SubcontractorSeeder extends Seeder
                 ]);
             }
         }
+
+        // Step 3: Many-to-many links
+        $subs = Subcontractor::all();
+        foreach ($subs as $sub) {
+            // Each sub is linked to 1–3 random “main”s (but not itself)
+            $parentIds = $subs->where('id', '!=', $sub->id)
+                              ->random(rand(1, 3))
+                              ->pluck('id')
+                              ->toArray();
+            $sub->parents()->syncWithoutDetaching($parentIds);
+        }
     }
 }
+

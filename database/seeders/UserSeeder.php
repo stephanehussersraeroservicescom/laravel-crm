@@ -13,8 +13,19 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'stef@jmail.con'],
             [
-                'name' => 'Ste Admin',
+                'name' => 'stef',
                 'password' => Hash::make('ste67676767'),
+                'role' => 'sales',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'dom@jmail.con'],
+            [
+                'name' => 'dominic',
+                'password' => Hash::make('abc123456'),
+                'role' => 'sales',
                 'email_verified_at' => now(),
             ]
         );

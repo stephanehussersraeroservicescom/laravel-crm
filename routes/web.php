@@ -17,9 +17,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// routes/web.php
-// Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
-// Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+
 Route::view('/projects', 'projects.index')->name('projects.index');
 
 Route::middleware([
@@ -32,9 +30,42 @@ Route::middleware([
     })->name('dashboard');
 });
 
-Route::get('/subcontractors', \App\Livewire\SubcontractorsTable::class)->name('subcontractors.index');
-Route::get('/subcontractors/{subcontractor}/contacts', \App\Livewire\ContactsTable::class)->name('contacts.index');
+
+
+// Create routes for listing entities
+
+Route::get('/subcontractors', \App\Livewire\SubcontractorsTable::class)
+    ->middleware(['auth'])
+    ->name('subcontractors.index');
+
+Route::get('/subcontractors/{subcontractor}/contacts', \App\Livewire\ContactsTable::class)
+    ->middleware(['auth'])
+    ->name('contacts.index');
 
 Route::get('/airlines', \App\Livewire\AirlinesTable::class)
     ->middleware(['auth'])
     ->name('airlines.index');
+
+Route::get('/project-teams', \App\Livewire\ProjectSubcontractorTeams::class)
+    ->middleware(['auth'])
+    ->name('project-teams.index');
+
+Route::get('/project-teams/{project}', \App\Livewire\ProjectSubcontractorTeams::class)
+    ->middleware(['auth'])
+    ->name('project.teams');
+
+
+// Create routes for creating new entities
+
+Route::get('/subcontractors/create', \App\Livewire\SubcontractorCreate::class)
+    ->middleware(['auth'])
+    ->name('subcontractors.create');
+
+Route::get('/subcontractors/{subcontractor}/contacts/create', \App\Livewire\ContactCreate::class)
+    ->middleware(['auth'])
+    ->name('contacts.create');
+
+Route::get('/subcontractors/create', \App\Livewire\SubcontractorCreate::class)
+    ->middleware(['auth'])
+    ->name('subcontractors.create');
+

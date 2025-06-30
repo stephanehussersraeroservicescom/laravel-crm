@@ -12,11 +12,21 @@
             </div>
             <div>
                 <label class="block font-semibold mb-1">Region</label>
-                <input type="text" wire:model.live="region" class="rounded border-gray-300" required>
+                <select wire:model.live="region" class="rounded border-gray-300" required>
+                    <option value="">Select Region...</option>
+                    @foreach($availableRegions as $regionOption)
+                        <option value="{{ $regionOption }}">{{ $regionOption }}</option>
+                    @endforeach
+                </select>
             </div>
             <div>
                 <label class="block font-semibold mb-1">Account Executive</label>
-                <input type="text" wire:model.live="account_executive" class="rounded border-gray-300">
+                <select wire:model.live="account_executive" class="rounded border-gray-300">
+                    <option value="">Select Account Executive...</option>
+                    @foreach($salesUsers as $user)
+                        <option value="{{ $user->name }}">{{ $user->name }}</option>
+                    @endforeach
+                </select>
             </div>
             <div>
                 <button type="submit" class="bg-blue-600 text-white rounded px-4 py-2">

@@ -16,6 +16,7 @@ use App\Models\Panel;
 
 class DatabaseSeeder extends Seeder
 {
+
     public function run()
     {
         // Aircraft Types
@@ -123,5 +124,12 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+
+        $this->call([
+        StatusSeeder::class,
+        SubcontractorSeeder::class,
+        UserSeeder::class,
+        // Add others here if needed
+    ]);
     }
 }

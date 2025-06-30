@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('airlines', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('region')->nullable(); // Or make this a foreign key to a 'regions' table if you use one
+            $table->string('name')->unique();                
+            $table->enum('region', [
+                        'North America', 'South America', 'Europe', 'Asia', 'Middle East', 'Africa', 'Oceania'
+                        ]); 
             $table->string('account_executive')->nullable(); // You could also use 'user_id' for a relation to a users table
             $table->timestamps();
         });

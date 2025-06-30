@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-4">
+    <div class="py-4 max-w-7xl mx-auto">
         <livewire:projects-table />
     </div>
 </x-app-layout>

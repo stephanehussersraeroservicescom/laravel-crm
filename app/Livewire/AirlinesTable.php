@@ -15,6 +15,7 @@ class AirlinesTable extends Component
     public $account_executive = '';
     public $editing = false;
     public $editId = null;
+    public $showDeleted = false; // Add option to show deleted records
 
     public $availableRegions = [
         'North America',
@@ -83,6 +84,26 @@ class AirlinesTable extends Component
         $this->resetFields();
     }
 
+    public function toggleShowDeleted()
+    {
+        $this->showDeleted = !$this->showDeleted;
+        $this->resetFields();
+    }
+
+    public function restore($id)
+    {
+        $airline = Airline::withTrashed()->findOrFail($id);
+        $airline->restore();
+        $this->resetFields();
+    }
+
+    public function forceDelete($id)
+    {
+        $airline = Airline::withTrashed()->findOrFail($id);
+        $airline->forceDelete();
+        $this->resetFields();
+    }
+
     private function resetFields()
     {
         $this->name = '';
@@ -99,8 +120,10 @@ class AirlinesTable extends Component
 
     public function render()
     {
+        $airlinesQuery = $this->showDeleted ? Airline::withTrashed() : Airline::query();
+        
         return view('livewire.airlines-table', [
-            'airlines' => Airline::orderBy('name')->get(),
+            'airlines' => $airlinesQuery->orderBy('name')->get(),
             'availableRegions' => $this->availableRegions,
             'salesUsers' => User::where('role', 'sales')->orderBy('name')->get()
         ])->layout('layouts.app');

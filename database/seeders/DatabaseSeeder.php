@@ -30,9 +30,9 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Emirates', 'region' => 'Middle East', 'account_executive' => 'Alice'],
             ['name' => 'Air France', 'region' => 'Europe', 'account_executive' => 'Bob'],
             ['name' => 'Lufthansa', 'region' => 'Europe', 'account_executive' => 'Carol'],
-            ['name' => 'Delta', 'region' => 'Americas', 'account_executive' => 'Dave'],
+            ['name' => 'Delta', 'region' => 'North America', 'account_executive' => 'Dave'],
             ['name' => 'Singapore Airlines', 'region' => 'Asia', 'account_executive' => 'Eve'],
-            ['name' => 'United', 'region' => 'Americas', 'account_executive' => 'Frank'],
+            ['name' => 'United', 'region' => 'North America', 'account_executive' => 'Frank'],
         ];
         foreach ($airlines as $row) {
             Airline::create($row);

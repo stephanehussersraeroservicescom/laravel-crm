@@ -61,11 +61,3 @@ Route::get('/subcontractors/create', \App\Livewire\SubcontractorCreate::class)
     ->middleware(['auth'])
     ->name('subcontractors.create');
 
-Route::get('/subcontractors/{subcontractor}/contacts/create', \App\Livewire\ContactCreate::class)
-    ->middleware(['auth'])
-    ->name('contacts.create');
-
-Route::get('/subcontractors/create', \App\Livewire\SubcontractorCreate::class)
-    ->middleware(['auth'])
-    ->name('subcontractors.create');
-

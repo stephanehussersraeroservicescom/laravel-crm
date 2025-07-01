@@ -18,10 +18,10 @@ class ProjectSubcontractorTeams extends Component
     public $supportingSubcontractors = [];
     public $role = '';
     public $notes = '';
-    public $opportunityType = '';
-    public $opportunityId = '';
+    public $selectedOpportunity = ''; // Combined opportunity identifier like "vertical_surfaces:123"
     public $editing = false;
     public $editId = null;
+    public $showDeleted = false; // Add option to show deleted records
 
     public $availableRoles = [
         'Commercial',
@@ -30,12 +30,6 @@ class ProjectSubcontractorTeams extends Component
         'Certification',
         'Manufacturing',
         'Subcontractor'
-    ];
-
-    public $opportunityTypes = [
-        'vertical_surfaces' => 'Vertical Surfaces',
-        'panels' => 'Panels',
-        'covers' => 'Covers'
     ];
 
     public function mount($project = null)
@@ -51,37 +45,42 @@ class ProjectSubcontractorTeams extends Component
         $this->validate([
             'selectedProject' => 'required|exists:projects,id',
             'mainSubcontractor' => 'required|exists:subcontractors,id',
-            'supportingSubcontractors' => 'array|min:1',
+            'supportingSubcontractors' => 'nullable|array',
             'supportingSubcontractors.*' => 'exists:subcontractors,id',
             'role' => 'required|in:Commercial,Project Management,Design,Certification,Manufacturing,Subcontractor',
             'notes' => 'nullable|string',
-            'opportunityType' => 'nullable|in:vertical_surfaces,panels,covers',
-            'opportunityId' => 'nullable|integer',
+            'selectedOpportunity' => 'nullable|string',
         ], [
             'selectedProject.required' => 'Please select a project.',
             'selectedProject.exists' => 'Please select a valid project.',
             'mainSubcontractor.required' => 'Please select a main subcontractor.',
             'mainSubcontractor.exists' => 'Please select a valid main subcontractor.',
-            'supportingSubcontractors.min' => 'Please select at least one supporting subcontractor.',
+            'supportingSubcontractors.array' => 'Supporting subcontractors must be a valid selection.',
             'supportingSubcontractors.*.exists' => 'Please select valid supporting subcontractors.',
             'role.required' => 'Please select a role for this team.',
             'role.in' => 'Please select a valid role.',
-            'opportunityType.in' => 'Please select a valid opportunity type.',
         ]);
 
-        // Ensure main subcontractor is not in supporting list
+        // Ensure main subcontractor is not in supporting list and handle empty array
         $this->supportingSubcontractors = array_filter(
-            $this->supportingSubcontractors, 
-            fn($id) => $id != $this->mainSubcontractor
+            $this->supportingSubcontractors ?: [], 
+            fn($id) => $id != $this->mainSubcontractor && $id !== ''
         );
+
+        // Parse the selected opportunity
+        $opportunityType = null;
+        $opportunityId = null;
+        if ($this->selectedOpportunity) {
+            [$opportunityType, $opportunityId] = explode(':', $this->selectedOpportunity);
+        }
 
         $teamData = [
             'project_id' => $this->selectedProject,
             'main_subcontractor_id' => $this->mainSubcontractor,
             'role' => $this->role,
             'notes' => $this->notes,
-            'opportunity_type' => $this->opportunityType ?: null,
-            'opportunity_id' => $this->opportunityId ?: null,
+            'opportunity_type' => $opportunityType,
+            'opportunity_id' => $opportunityId,
         ];
 
         if ($this->editing && $this->editId) {
@@ -108,8 +107,14 @@ class ProjectSubcontractorTeams extends Component
         $this->supportingSubcontractors = $team->supportingSubcontractors->pluck('id')->toArray();
         $this->role = $team->role;
         $this->notes = $team->notes;
-        $this->opportunityType = $team->opportunity_type;
-        $this->opportunityId = $team->opportunity_id;
+        
+        // Combine opportunity type and id for the dropdown
+        if ($team->opportunity_type && $team->opportunity_id) {
+            $this->selectedOpportunity = $team->opportunity_type . ':' . $team->opportunity_id;
+        } else {
+            $this->selectedOpportunity = '';
+        }
+        
         $this->editId = $id;
         $this->editing = true;
     }
@@ -127,6 +132,27 @@ class ProjectSubcontractorTeams extends Component
         $this->resetFields();
     }
 
+    public function toggleShowDeleted()
+    {
+        $this->showDeleted = !$this->showDeleted;
+        $this->resetFields();
+    }
+
+    public function restore($id)
+    {
+        $team = ProjectSubcontractorTeam::withTrashed()->findOrFail($id);
+        $team->restore();
+        $this->resetFields();
+    }
+
+    public function forceDelete($id)
+    {
+        $team = ProjectSubcontractorTeam::withTrashed()->findOrFail($id);
+        $team->supportingSubcontractors()->detach();
+        $team->forceDelete();
+        $this->resetFields();
+    }
+
     public function getOpportunitiesForProject()
     {
         if (!$this->selectedProject) {
@@ -140,27 +166,27 @@ class ProjectSubcontractorTeams extends Component
             // Get vertical surfaces
             $verticals = VerticalSurface::where('project_id', $project->id)->get();
             foreach ($verticals as $vertical) {
-                $opportunities['vertical_surfaces'][] = [
-                    'id' => $vertical->id,
-                    'name' => ucfirst($vertical->cabin_class) . ' Cabin - Vertical Surfaces'
+                $opportunities[] = [
+                    'value' => 'vertical_surfaces:' . $vertical->id,
+                    'label' => ucfirst($vertical->cabin_class) . ' Cabin - Vertical Surfaces'
                 ];
             }
             
             // Get panels
             $panels = Panel::where('project_id', $project->id)->get();
             foreach ($panels as $panel) {
-                $opportunities['panels'][] = [
-                    'id' => $panel->id,
-                    'name' => ucfirst($panel->cabin_class) . ' Cabin - Panels'
+                $opportunities[] = [
+                    'value' => 'panels:' . $panel->id,
+                    'label' => ucfirst($panel->cabin_class) . ' Cabin - Panels'
                 ];
             }
             
             // Get covers
             $covers = Cover::where('project_id', $project->id)->get();
             foreach ($covers as $cover) {
-                $opportunities['covers'][] = [
-                    'id' => $cover->id,
-                    'name' => ucfirst($cover->cabin_class) . ' Cabin - Covers'
+                $opportunities[] = [
+                    'value' => 'covers:' . $cover->id,
+                    'label' => ucfirst($cover->cabin_class) . ' Cabin - Covers'
                 ];
             }
         }
@@ -178,17 +204,20 @@ class ProjectSubcontractorTeams extends Component
         $this->supportingSubcontractors = [];
         $this->role = '';
         $this->notes = '';
-        $this->opportunityType = '';
-        $this->opportunityId = '';
+        $this->selectedOpportunity = '';
         $this->editing = false;
         $this->editId = null;
     }
 
     public function render()
     {
-        $teamsQuery = ProjectSubcontractorTeam::with(['project.airline', 'mainSubcontractor', 'supportingSubcontractors']);
+        $teamsQuery = $this->showDeleted 
+            ? ProjectSubcontractorTeam::withTrashed()
+            : ProjectSubcontractorTeam::query();
+            
+        $teamsQuery = $teamsQuery->with(['project.airline', 'mainSubcontractor', 'supportingSubcontractors']);
         
-        // Filter by selected project if one is chosen
+        // Filter by selected project if one is chosen, otherwise show all teams
         if ($this->selectedProject) {
             $teamsQuery->where('project_id', $this->selectedProject);
         }
@@ -198,7 +227,6 @@ class ProjectSubcontractorTeams extends Component
             'projects' => Project::with('airline')->orderBy('name')->get(),
             'subcontractors' => Subcontractor::orderBy('name')->get(),
             'availableRoles' => $this->availableRoles,
-            'opportunityTypes' => $this->opportunityTypes,
             'projectOpportunities' => $this->getOpportunitiesForProject()
         ])->layout('layouts.app');
     }

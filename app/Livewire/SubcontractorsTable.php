@@ -12,6 +12,7 @@ class SubcontractorsTable extends Component
     public $selectedParents = [];
     public $editing = false;
     public $editId = null;
+    public $showDeleted = false; // Add option to show deleted records
 
     public function save()
     {
@@ -65,6 +66,26 @@ class SubcontractorsTable extends Component
         $this->resetFields();
     }
 
+    public function toggleShowDeleted()
+    {
+        $this->showDeleted = !$this->showDeleted;
+        $this->resetFields();
+    }
+
+    public function restore($id)
+    {
+        $subcontractor = Subcontractor::withTrashed()->findOrFail($id);
+        $subcontractor->restore();
+        $this->resetFields();
+    }
+
+    public function forceDelete($id)
+    {
+        $subcontractor = Subcontractor::withTrashed()->findOrFail($id);
+        $subcontractor->forceDelete();
+        $this->resetFields();
+    }
+
     private function resetFields()
     {
         $this->name = '';
@@ -76,8 +97,10 @@ class SubcontractorsTable extends Component
 
     public function render()
     {
+        $subcontractorsQuery = $this->showDeleted ? Subcontractor::withTrashed() : Subcontractor::query();
+        
         return view('livewire.subcontractors-table', [
-            'subcontractors' => Subcontractor::with('parents', 'contacts')->orderBy('name')->get(),
+            'subcontractors' => $subcontractorsQuery->with('parents', 'contacts')->orderBy('name')->get(),
             'availableParents' => Subcontractor::where('id', '!=', $this->editId ?? 0)->orderBy('name')->get()
         ])->layout('layouts.app');
     }

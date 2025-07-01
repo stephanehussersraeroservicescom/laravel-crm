@@ -61,6 +61,9 @@ class ProjectsTable extends Component
         'Middle East'
     ];
 
+    public $isCreatingAirline = false;
+    public $showDeleted = false; // Add option to show deleted records
+
     public function mount()
     {
         // Pre-select current user if they have sales role
@@ -198,6 +201,23 @@ class ProjectsTable extends Component
         Project::findOrFail($id)->delete();
     }
 
+    public function toggleShowDeleted()
+    {
+        $this->showDeleted = !$this->showDeleted;
+    }
+
+    public function restore($id)
+    {
+        $project = Project::withTrashed()->findOrFail($id);
+        $project->restore();
+    }
+
+    public function forceDelete($id)
+    {
+        $project = Project::withTrashed()->findOrFail($id);
+        $project->forceDelete();
+    }
+
     private function resetModalFields()
     {
         $this->name = '';
@@ -297,7 +317,9 @@ class ProjectsTable extends Component
 
     public function render()
     {
-        $query = Project::with(['airline', 'aircraftType', 'designStatus', 'commercialStatus'])
+        $query = $this->showDeleted ? Project::withTrashed() : Project::query();
+        
+        $query = $query->with(['airline', 'aircraftType', 'designStatus', 'commercialStatus'])
             ->when($this->region, fn($q) => $q->whereHas('airline', fn($q2) => $q2->where('region', $this->region)))
             ->when($this->accountExecutive, fn($q) => $q->whereHas('airline', fn($q2) => $q2->where('account_executive', $this->accountExecutive)))
             ->when($this->search, function ($q) {

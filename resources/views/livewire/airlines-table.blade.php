@@ -5,55 +5,106 @@
         </h2>
     </x-slot>
     <div class="py-4 max-w-4xl mx-auto">
-        <form wire:submit.prevent="save" class="mb-6 flex gap-4 items-end">
-            <div>
-                <label class="block font-semibold mb-1">Airline Name</label>
-                <input type="text" wire:model.live="name" class="rounded border-gray-300" required>
+        <!-- Management Panel -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-medium text-gray-900">{{ $editing ? 'Edit Airline' : 'Add New Airline' }}</h3>
+                <div class="flex items-center space-x-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" wire:model.live="showDeleted" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <span class="ml-2 text-sm text-gray-600">Show deleted airlines</span>
+                    </label>
+                </div>
             </div>
-            <div>
-                <label class="block font-semibold mb-1">Region</label>
-                <select wire:model.live="region" class="rounded border-gray-300" required>
-                    <option value="">Select Region...</option>
-                    @foreach($availableRegions as $regionOption)
-                        <option value="{{ $regionOption }}">{{ $regionOption }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block font-semibold mb-1">Account Executive</label>
-                <select wire:model.live="account_executive" class="rounded border-gray-300">
-                    <option value="">Select Account Executive...</option>
-                    @foreach($salesUsers as $user)
-                        <option value="{{ $user->name }}">{{ $user->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <button type="submit" class="bg-blue-600 text-white rounded px-4 py-2">
-                    {{ $editing ? 'Update' : 'Add Airline' }}
-                </button>
-                @if($editing)
-                    <button type="button" wire:click="cancelEdit" class="ml-2 text-gray-500 underline">Cancel</button>
-                @endif
-            </div>
-        </form>
+            <form wire:submit.prevent="save">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="flex flex-col">
+                        <label class="block font-semibold mb-2 h-6">Airline Name</label>
+                        <input type="text" wire:model.live="name" class="rounded border-gray-300 p-3" required>
+                        <div class="min-h-[1.5rem] mt-2"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="block font-semibold mb-2 h-6">Region</label>
+                        <select wire:model.live="region" class="rounded border-gray-300 p-3" required>
+                            <option value="">Select Region...</option>
+                            @foreach($availableRegions as $regionOption)
+                                <option value="{{ $regionOption }}">{{ $regionOption }}</option>
+                            @endforeach
+                        </select>
+                        <div class="min-h-[1.5rem] mt-2"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="block font-semibold mb-2 h-6">Account Executive</label>
+                        <select wire:model.live="account_executive" class="rounded border-gray-300 p-3">
+                            <option value="">Select Account Executive...</option>
+                            @foreach($salesUsers as $user)
+                                <option value="{{ $user->name }}">{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="min-h-[1.5rem] mt-2"></div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-start gap-3">
+                    <button type="submit" class="bg-blue-600 text-white rounded px-6 py-3 hover:bg-blue-700 font-medium">
+                        {{ $editing ? 'Update' : 'Add Airline' }}
+                    </button>
+                    @if($editing)
+                        <button type="button" wire:click="cancelEdit" class="px-6 py-3 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 font-medium">Cancel</button>
+                    @endif
+                </div>
+            </form>
+        </div>
+        <!-- End Management Panel -->
+        
         <table class="min-w-full border rounded shadow bg-white">
             <thead class="bg-gray-100">
                 <tr>
                     <th class="px-3 py-2 border">Name</th>
                     <th class="px-3 py-2 border">Region</th>
                     <th class="px-3 py-2 border">Account Executive</th>
-                    <th class="px-3 py-2 border"></th>
+                    @if($showDeleted)
+                        <th class="px-3 py-2 border">Status</th>
+                    @endif
+                    <th class="px-3 py-2 border">Actions</th>
                 </tr>
             </thead>
             <tbody>
             @foreach($airlines as $airline)
-                <tr>
-                    <td class="px-3 py-2 border">{{ $airline->name }}</td>
+                <tr class="{{ $airline->trashed() ? 'bg-red-50' : '' }}">
+                    <td class="px-3 py-2 border">
+                        {{ $airline->name }}
+                        @if($airline->trashed())
+                            <span class="ml-2 inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded">Deleted</span>
+                        @endif
+                    </td>
                     <td class="px-3 py-2 border">{{ $airline->region }}</td>
                     <td class="px-3 py-2 border">{{ $airline->account_executive }}</td>
+                    @if($showDeleted)
+                        <td class="px-3 py-2 border">
+                            @if($airline->trashed())
+                                <span class="text-red-600 text-sm">Deleted {{ $airline->deleted_at->diffForHumans() }}</span>
+                            @else
+                                <span class="text-green-600 text-sm">Active</span>
+                            @endif
+                        </td>
+                    @endif
                     <td class="px-3 py-2 border">
-                        <button wire:click="edit({{ $airline->id }})" class="text-blue-600 underline mr-2">Edit</button>
+                        @if($airline->trashed())
+                            <button wire:click="restore({{ $airline->id }})" class="text-green-600 underline mr-2">Restore</button>
+                            <button wire:click="forceDelete({{ $airline->id }})" 
+                                    class="text-red-600 underline"
+                                    onclick="return confirm('This will permanently delete this airline. Are you sure?')">
+                                Delete Forever
+                            </button>
+                        @else
+                            <button wire:click="edit({{ $airline->id }})" class="text-blue-600 underline mr-2">Edit</button>
+                            <button wire:click="delete({{ $airline->id }})" 
+                                    class="text-red-600 underline"
+                                    onclick="return confirm('Are you sure you want to delete this airline?')">
+                                Delete
+                            </button>
+                        @endif
                         <button wire:click="delete({{ $airline->id }})" class="text-red-600 underline">Delete</button>
                     </td>
                 </tr>

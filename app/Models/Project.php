@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Project extends Model
 {
+    use HasFactory, SoftDeletes;
+    
     protected $fillable = ['name', 'airline_id', 'aircraft_type_id', 'number_of_aircraft', 'design_status_id', 'commercial_status_id', 'comment'];
 
     public function verticalSurfaces() { return $this->hasMany(VerticalSurface::class); }

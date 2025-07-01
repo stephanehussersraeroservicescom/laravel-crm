@@ -3,34 +3,47 @@
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">Subcontractors</h2>
     </x-slot>
     <div class="py-4 max-w-6xl mx-auto">
-        <form wire:submit.prevent="save" class="mb-6 flex gap-4 items-end">
-            <div>
-                <label class="block font-semibold mb-1">Subcontractor Name</label>
-                <input type="text" wire:model.live="name" class="rounded border-gray-300" required>
-            </div>
-            <div>
-                <label class="block font-semibold mb-1">Comment</label>
-                <textarea wire:model.live="comment" class="rounded border-gray-300" rows="1"></textarea>
-            </div>
-            <div>
-                <label class="block font-semibold mb-1">Parent Companies</label>
-                <select wire:model.live="selectedParents" multiple class="rounded border-gray-300 h-20">
-                    <option value="">Select parent companies...</option>
-                    @foreach($availableParents as $parent)
-                        <option value="{{ $parent->id }}">{{ $parent->name }}</option>
-                    @endforeach
-                </select>
-                <div class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</div>
-            </div>
-            <div>
-                <button type="submit" class="bg-blue-600 text-white rounded px-4 py-2">
-                    {{ $editing ? 'Update' : 'Add Subcontractor' }}
-                </button>
-                @if($editing)
-                    <button type="button" wire:click="cancelEdit" class="ml-2 text-gray-500 underline">Cancel</button>
-                @endif
-            </div>
-        </form>
+        <!-- Management Panel -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ $editing ? 'Edit Subcontractor' : 'Add New Subcontractor' }}</h3>
+            <form wire:submit.prevent="save">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="flex flex-col">
+                        <label class="block font-semibold mb-2 h-6">Subcontractor Name</label>
+                        <input type="text" wire:model.live="name" class="rounded border-gray-300 p-3" required>
+                        <div class="min-h-[1.5rem] mt-2"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="block font-semibold mb-2 h-6">Comment</label>
+                        <textarea wire:model.live="comment" class="rounded border-gray-300 resize-none p-3" rows="1"></textarea>
+                        <div class="min-h-[1.5rem] mt-2"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="block font-semibold mb-2 h-6">Parent Companies</label>
+                        <select wire:model.live="selectedParents" multiple class="rounded border-gray-300 h-20 p-2">
+                            <option value="">Select parent companies...</option>
+                            @foreach($availableParents as $parent)
+                                <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="min-h-[1.5rem] mt-2">
+                            <div class="text-xs text-gray-500">Hold Ctrl/Cmd to select multiple</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-start gap-3">
+                    <button type="submit" class="bg-blue-600 text-white rounded px-6 py-3 hover:bg-blue-700 font-medium">
+                        {{ $editing ? 'Update' : 'Add Subcontractor' }}
+                    </button>
+                    @if($editing)
+                        <button type="button" wire:click="cancelEdit" class="px-6 py-3 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 font-medium">Cancel</button>
+                    @endif
+                </div>
+            </form>
+        </div>
+        <!-- End Management Panel -->
+        
         <table class="min-w-full border rounded shadow bg-white">
             <thead class="bg-gray-100">
                 <tr>

@@ -1,5 +1,8 @@
 <div>
-    <div class="flex flex-col md:flex-row md:items-end md:gap-6 gap-4 mb-6">
+    <!-- Management Panel -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Filter & Search Projects</h3>
+        <div class="flex flex-col md:flex-row md:items-end md:gap-6 gap-4">
         <div>
             <label class="block font-semibold text-gray-700 mb-1">Region</label>
             <select wire:model.live="region" class="rounded border-gray-300">
@@ -27,7 +30,9 @@
                 Add Project
             </button>
         </div>
+        </div>
     </div>
+    <!-- End Management Panel -->
 
     <div class="bg-white rounded shadow overflow-x-auto">
         <table class="min-w-full border-collapse">

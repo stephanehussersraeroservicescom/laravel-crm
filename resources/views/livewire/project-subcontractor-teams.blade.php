@@ -29,17 +29,17 @@
         @endif
         
         <!-- Management Panel -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-6">{{ $editing ? 'Edit Project Team' : 'Add New Project Team' }}</h3>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ $editing ? 'Edit Project Team' : 'Add New Project Team' }}</h3>
             <form wire:submit.prevent="save">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
                 <div class="flex flex-col">
-                    <label class="block font-semibold mb-2 h-6">
+                    <label class="block font-semibold mb-1 h-6">
                         Project
                         <span class="text-red-500">*</span>
                     </label>
                     <select wire:model.live="selectedProject" 
-                            class="rounded border-gray-300 p-3 @error('selectedProject') border-red-500 ring-red-500 @enderror {{ $highlightedProject ? 'ring-2 ring-blue-500 bg-blue-50' : '' }}" 
+                            class="rounded border-gray-300 @error('selectedProject') border-red-500 ring-red-500 @enderror {{ $highlightedProject ? 'ring-2 ring-blue-500 bg-blue-50' : '' }}" 
                             required>
                         <option value="">Select Project...</option>
                         @foreach($projects as $project)
@@ -49,7 +49,7 @@
                             </option>
                         @endforeach
                     </select>
-                    <div class="min-h-[1.5rem] mt-2">
+                    <div class="min-h-[1.5rem] mt-1">
                         @if($highlightedProject)
                             <div class="text-xs text-blue-600">👆 This project was just created</div>
                         @endif
@@ -65,19 +65,19 @@
                 </div>
                 
                 <div class="flex flex-col">
-                    <label class="block font-semibold mb-2 h-6">
+                    <label class="block font-semibold mb-1 h-6">
                         Main Subcontractor
                         <span class="text-red-500">*</span>
                     </label>
                     <select wire:model.live="mainSubcontractor" 
-                            class="rounded border-gray-300 p-3 @error('mainSubcontractor') border-red-500 ring-red-500 @enderror" 
+                            class="rounded border-gray-300 @error('mainSubcontractor') border-red-500 ring-red-500 @enderror" 
                             required>
                         <option value="">Select Main...</option>
                         @foreach($subcontractors as $sub)
                             <option value="{{ $sub->id }}">{{ $sub->name }}</option>
                         @endforeach
                     </select>
-                    <div class="min-h-[1.5rem] mt-2">
+                    <div class="min-h-[1.5rem] mt-1">
                         @error('mainSubcontractor') 
                             <div class="text-red-600 text-sm flex items-center">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -90,19 +90,19 @@
                 </div>
                 
                 <div class="flex flex-col">
-                    <label class="block font-semibold mb-2 h-6">
+                    <label class="block font-semibold mb-1 h-6">
                         Role
                         <span class="text-red-500">*</span>
                     </label>
                     <select wire:model.live="role" 
-                            class="rounded border-gray-300 p-3 @error('role') border-red-500 ring-red-500 @enderror" 
+                            class="rounded border-gray-300 @error('role') border-red-500 ring-red-500 @enderror" 
                             required>
                         <option value="">Select Role...</option>
                         @foreach($availableRoles as $roleOption)
                             <option value="{{ $roleOption }}">{{ $roleOption }}</option>
                         @endforeach
                     </select>
-                    <div class="min-h-[1.5rem] mt-2">
+                    <div class="min-h-[1.5rem] mt-1">
                         @error('role') 
                             <div class="text-red-600 text-sm flex items-center">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -115,15 +115,15 @@
                 </div>
                 
                 <div class="flex flex-col">
-                    <label class="block font-semibold mb-2 h-6">Opportunity</label>
+                    <label class="block font-semibold mb-1 h-6">Opportunity</label>
                     <select wire:model.live="selectedOpportunity" 
-                            class="rounded border-gray-300 p-3 @error('selectedOpportunity') border-red-500 ring-red-500 @enderror">
+                            class="rounded border-gray-300 @error('selectedOpportunity') border-red-500 ring-red-500 @enderror">
                         <option value="">None (General Team)</option>
                         @foreach($projectOpportunities as $opportunity)
                             <option value="{{ $opportunity['value'] }}">{{ $opportunity['label'] }}</option>
                         @endforeach
                     </select>
-                    <div class="min-h-[1.5rem] mt-2">
+                    <div class="min-h-[1.5rem] mt-1">
                         @error('selectedOpportunity') 
                             <div class="text-red-600 text-sm flex items-center">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -136,19 +136,19 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <div class="flex flex-col">
-                    <label class="block font-semibold mb-2 h-6">
+                    <label class="block font-semibold mb-1 h-6">
                         Supporting Subcontractors
                         <span class="text-gray-500 text-sm font-normal">(Optional)</span>
                     </label>
                     <select wire:model.live="supportingSubcontractors" multiple 
-                            class="rounded border-gray-300 p-3 h-20 @error('supportingSubcontractors') border-red-500 ring-red-500 @enderror">
+                            class="rounded border-gray-300 h-20 @error('supportingSubcontractors') border-red-500 ring-red-500 @enderror">
                         @foreach($subcontractors as $sub)
                             <option value="{{ $sub->id }}">{{ $sub->name }}</option>
                         @endforeach
                     </select>
-                    <div class="min-h-[1.5rem] mt-2">
+                    <div class="min-h-[1.5rem] mt-1">
                         <div class="text-xs text-gray-500">Hold Ctrl/Cmd to select multiple. Leave empty for no supporting subcontractors.</div>
                         @error('supportingSubcontractors') 
                             <div class="text-red-600 text-sm flex items-center">
@@ -162,18 +162,18 @@
                 </div>
                 
                 <div class="flex flex-col">
-                    <label class="block font-semibold mb-2 h-6">Notes</label>
-                    <textarea wire:model.live="notes" class="rounded border-gray-300 p-3 resize-none" rows="2" placeholder="Additional notes..."></textarea>
-                    <div class="min-h-[1.5rem] mt-2"></div>
+                    <label class="block font-semibold mb-1 h-6">Notes</label>
+                    <textarea wire:model.live="notes" class="rounded border-gray-300 resize-none" rows="2" placeholder="Additional notes..."></textarea>
+                    <div class="min-h-[1.5rem] mt-1"></div>
                 </div>
             </div>
             
             <div class="flex justify-start">
-                <button type="submit" class="bg-blue-600 text-white rounded px-6 py-3 hover:bg-blue-700 font-medium">
+                <button type="submit" class="bg-blue-600 text-white rounded px-6 py-2 hover:bg-blue-700">
                     {{ $editing ? 'Update Team' : 'Add Team' }}
                 </button>
                 @if($editing)
-                    <button type="button" wire:click="cancelEdit" class="ml-3 px-4 py-3 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 font-medium">
+                    <button type="button" wire:click="cancelEdit" class="ml-3 px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50">
                         Cancel
                     </button>
                 @endif

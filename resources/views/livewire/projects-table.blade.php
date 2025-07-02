@@ -1,31 +1,45 @@
 <div>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Projects
+        </h2>
+    </x-slot>
+    <div class="py-4 max-w-7xl mx-auto">
     <!-- Management Panel -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Filter & Search Projects</h3>
-        <div class="flex flex-col md:flex-row md:items-end md:gap-6 gap-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Filter & Search Projects</h3>
+            <div class="flex items-center space-x-4">
+                <label class="flex items-center">
+                    <input type="checkbox" wire:model.live="showDeleted" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <span class="ml-2 text-sm text-gray-600">Show deleted projects</span>
+                </label>
+            </div>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-end gap-4 mb-4">
         <div>
-            <label class="block font-semibold text-gray-700 mb-1">Region</label>
+            <label class="block font-semibold mb-1">Region</label>
             <select wire:model.live="region" class="rounded border-gray-300">
-                <option value="">All</option>
+                <option value="">All Regions</option>
                 @foreach($regions as $region)
                     <option value="{{ $region }}">{{ $region }}</option>
                 @endforeach
             </select>
         </div>
         <div>
-            <label class="block font-semibold text-gray-700 mb-1">Account Executive</label>
+            <label class="block font-semibold mb-1">Account Executive</label>
             <select wire:model.live="accountExecutive" class="rounded border-gray-300">
-                <option value="">All</option>
+                <option value="">All Executives</option>
                 @foreach($executives as $exec)
                     <option value="{{ $exec }}">{{ $exec }}</option>
                 @endforeach
             </select>
         </div>
         <div>
-            <label class="block font-semibold text-gray-700 mb-1">Search</label>
+            <label class="block font-semibold mb-1">Search</label>
             <input type="text" wire:model.live="search" placeholder="Project name..." class="rounded border-gray-300">
         </div>
-        <div class="flex-1 text-right">
+        <div>
             <button wire:click="openModal" class="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700">
                 Add Project
             </button>
@@ -51,8 +65,13 @@
             </thead>
             <tbody>
                 @forelse($projects as $project)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-3 py-2 border font-semibold">{{ $project->name }}</td>
+                    <tr class="hover:bg-gray-50 {{ $project->trashed() ? 'bg-red-50' : '' }}">
+                        <td class="px-3 py-2 border font-semibold">
+                            {{ $project->name }}
+                            @if($project->trashed())
+                                <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded ml-2">Deleted</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2 border">{{ $project->airline->name ?? '—' }}</td>
                         <td class="px-3 py-2 border">{{ $project->airline->region ?? '—' }}</td>
                         <td class="px-3 py-2 border">{{ $project->airline->account_executive ?? '—' }}</td>
@@ -77,8 +96,17 @@
                             @endif
                         </td>
                         <td class="px-3 py-2 border">
-                            <button wire:click="edit({{ $project->id }})" class="text-blue-600 underline mr-2">Edit</button>
-                            <button wire:click="delete({{ $project->id }})" class="text-red-600 underline">Delete</button>
+                            @if($project->trashed())
+                                <button wire:click="restore({{ $project->id }})" class="text-green-600 underline mr-2">Restore</button>
+                                <button wire:click="forceDelete({{ $project->id }})" class="text-red-600 underline" 
+                                        onclick="return confirm('Are you sure you want to permanently delete this project? This action cannot be undone.')">
+                                    Delete Permanently
+                                </button>
+                            @else
+                                <button wire:click="edit({{ $project->id }})" class="text-blue-600 underline mr-2">Edit</button>
+                                <button wire:click="delete({{ $project->id }})" class="text-red-600 underline" 
+                                        onclick="return confirm('Are you sure you want to delete this project?')">Delete</button>
+                            @endif
                         </td>
                     </tr>
                 @empty
@@ -328,4 +356,5 @@
             </div>
         </div>
     @endif
+    </div>
 </div>

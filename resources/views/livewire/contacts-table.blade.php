@@ -50,43 +50,43 @@
         <!-- Management Panel -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
             <!-- Filter Section -->
-            <div class="border-b border-gray-200 p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Filter Contacts</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="border-b border-gray-200 p-4">
+                <h3 class="text-lg font-medium text-gray-900 mb-3">Filter Contacts</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="flex flex-col">
-                        <label class="block font-semibold mb-2 h-6">Search</label>
+                        <label class="block font-semibold mb-1 h-6">Search</label>
                         <input type="text" wire:model.live="search" 
-                               class="rounded border-gray-300 p-3" 
+                               class="rounded border-gray-300" 
                                placeholder="Search by name, email, or phone...">
-                        <div class="min-h-[1.5rem] mt-2"></div>
+                        <div class="min-h-[1.5rem] mt-1"></div>
                     </div>
                     <div class="flex flex-col">
-                        <label class="block font-semibold mb-2 h-6">Role</label>
-                        <select wire:model.live="roleFilter" class="rounded border-gray-300 p-3">
+                        <label class="block font-semibold mb-1 h-6">Role</label>
+                        <select wire:model.live="roleFilter" class="rounded border-gray-300">
                             <option value="">All Roles</option>
                             @foreach($availableRoles as $role)
                                 <option value="{{ $role }}">{{ $role }}</option>
                             @endforeach
                         </select>
-                        <div class="min-h-[1.5rem] mt-2"></div>
+                        <div class="min-h-[1.5rem] mt-1"></div>
                     </div>
                 </div>
             </div>
             
             <!-- Add/Edit Form Section -->
-            <div class="p-6">
+            <div class="p-4">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">{{ $editing ? 'Edit Contact' : 'Add New Contact' }}</h3>
                 <form wire:submit.prevent="save">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                         <div class="flex flex-col">
-                            <label class="block font-semibold mb-2 h-6">
+                            <label class="block font-semibold mb-1 h-6">
                                 Name
                                 <span class="text-red-500">*</span>
                             </label>
                             <input type="text" wire:model.live="name" 
-                                   class="rounded border-gray-300 p-3 @error('name') border-red-500 ring-red-500 @enderror" 
+                                   class="rounded border-gray-300 @error('name') border-red-500 ring-red-500 @enderror" 
                                    required>
-                            <div class="min-h-[1.5rem] mt-2">
+                            <div class="min-h-[1.5rem] mt-1">
                                 @error('name') 
                                     <div class="text-red-600 text-sm flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -99,10 +99,10 @@
                         </div>
                         
                         <div class="flex flex-col">
-                            <label class="block font-semibold mb-2 h-6">Email</label>
+                            <label class="block font-semibold mb-1 h-6">Email</label>
                             <input type="email" wire:model.live="email" 
-                                   class="rounded border-gray-300 p-3 @error('email') border-red-500 ring-red-500 @enderror">
-                            <div class="min-h-[1.5rem] mt-2">
+                                   class="rounded border-gray-300 @error('email') border-red-500 ring-red-500 @enderror">
+                            <div class="min-h-[1.5rem] mt-1">
                                 @error('email') 
                                     <div class="text-red-600 text-sm flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -115,11 +115,11 @@
                         </div>
                         
                         <div class="flex flex-col">
-                            <label class="block font-semibold mb-2 h-6">Role</label>
+                            <label class="block font-semibold mb-1 h-6">Role</label>
                             <input type="text" wire:model.live="role" 
-                                   class="rounded border-gray-300 p-3 @error('role') border-red-500 ring-red-500 @enderror" 
+                                   class="rounded border-gray-300 @error('role') border-red-500 ring-red-500 @enderror" 
                                    placeholder="e.g., Manager, Engineer...">
-                            <div class="min-h-[1.5rem] mt-2">
+                            <div class="min-h-[1.5rem] mt-1">
                                 @error('role') 
                                     <div class="text-red-600 text-sm flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -132,10 +132,10 @@
                         </div>
                         
                         <div class="flex flex-col">
-                            <label class="block font-semibold mb-2 h-6">Phone</label>
+                            <label class="block font-semibold mb-1 h-6">Phone</label>
                             <input type="text" wire:model.live="phone" 
-                                   class="rounded border-gray-300 p-3 @error('phone') border-red-500 ring-red-500 @enderror">
-                            <div class="min-h-[1.5rem] mt-2">
+                                   class="rounded border-gray-300 @error('phone') border-red-500 ring-red-500 @enderror">
+                            <div class="min-h-[1.5rem] mt-1">
                                 @error('phone') 
                                     <div class="text-red-600 text-sm flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -149,11 +149,11 @@
                     </div>
                     
                     <div class="flex justify-start">
-                        <button type="submit" class="bg-blue-600 text-white rounded px-6 py-3 hover:bg-blue-700 font-medium">
+                        <button type="submit" class="bg-blue-600 text-white rounded px-6 py-2 hover:bg-blue-700">
                             {{ $editing ? 'Update Contact' : 'Add Contact' }}
                         </button>
                         @if($editing)
-                            <button type="button" wire:click="cancelEdit" class="ml-3 px-4 py-3 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 font-medium">
+                            <button type="button" wire:click="cancelEdit" class="ml-3 px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50">
                                 Cancel
                             </button>
                         @endif

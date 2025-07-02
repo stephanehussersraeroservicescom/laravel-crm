@@ -6,8 +6,8 @@
     </x-slot>
     <div class="py-4 max-w-4xl mx-auto">
         <!-- Management Panel -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="flex justify-between items-center mb-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-900">{{ $editing ? 'Edit Airline' : 'Add New Airline' }}</h3>
                 <div class="flex items-center space-x-4">
                     <label class="flex items-center">
@@ -16,43 +16,37 @@
                     </label>
                 </div>
             </div>
-            <form wire:submit.prevent="save">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                    <div class="flex flex-col">
-                        <label class="block font-semibold mb-2 h-6">Airline Name</label>
-                        <input type="text" wire:model.live="name" class="rounded border-gray-300 p-3" required>
-                        <div class="min-h-[1.5rem] mt-2"></div>
-                    </div>
-                    <div class="flex flex-col">
-                        <label class="block font-semibold mb-2 h-6">Region</label>
-                        <select wire:model.live="region" class="rounded border-gray-300 p-3" required>
-                            <option value="">Select Region...</option>
-                            @foreach($availableRegions as $regionOption)
-                                <option value="{{ $regionOption }}">{{ $regionOption }}</option>
-                            @endforeach
-                        </select>
-                        <div class="min-h-[1.5rem] mt-2"></div>
-                    </div>
-                    <div class="flex flex-col">
-                        <label class="block font-semibold mb-2 h-6">Account Executive</label>
-                        <select wire:model.live="account_executive" class="rounded border-gray-300 p-3">
-                            <option value="">Select Account Executive...</option>
-                            @foreach($salesUsers as $user)
-                                <option value="{{ $user->name }}">{{ $user->name }}</option>
-                            @endforeach
-                        </select>
-                        <div class="min-h-[1.5rem] mt-2"></div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-start gap-3">
-                    <button type="submit" class="bg-blue-600 text-white rounded px-6 py-3 hover:bg-blue-700 font-medium">
-                        {{ $editing ? 'Update' : 'Add Airline' }}
-                    </button>
-                    @if($editing)
-                        <button type="button" wire:click="cancelEdit" class="px-6 py-3 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 font-medium">Cancel</button>
-                    @endif
-                </div>
+            <form wire:submit.prevent="save" class="flex gap-4 items-end">
+            <div>
+                <label class="block font-semibold mb-1">Airline Name</label>
+                <input type="text" wire:model.live="name" class="rounded border-gray-300" required>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">Region</label>
+                <select wire:model.live="region" class="rounded border-gray-300" required>
+                    <option value="">Select Region...</option>
+                    @foreach($availableRegions as $regionOption)
+                        <option value="{{ $regionOption }}">{{ $regionOption }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">Account Executive</label>
+                <select wire:model.live="account_executive" class="rounded border-gray-300">
+                    <option value="">Select Account Executive...</option>
+                    @foreach($salesUsers as $user)
+                        <option value="{{ $user->name }}">{{ $user->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="bg-blue-600 text-white rounded px-4 py-2">
+                    {{ $editing ? 'Update' : 'Add Airline' }}
+                </button>
+                @if($editing)
+                    <button type="button" wire:click="cancelEdit" class="ml-2 text-gray-500 underline">Cancel</button>
+                @endif
+            </div>
             </form>
         </div>
         <!-- End Management Panel -->

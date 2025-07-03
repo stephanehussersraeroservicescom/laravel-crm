@@ -4,120 +4,166 @@
             Projects
         </h2>
     </x-slot>
-    <div class="py-4 max-w-7xl mx-auto">
+    <div class="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
     <!-- Management Panel -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div class="flex justify-between items-center mb-4">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-4 sm:space-y-0">
             <h3 class="text-lg font-medium text-gray-900">Filter & Search Projects</h3>
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center">
                 <label class="flex items-center">
                     <input type="checkbox" wire:model.live="showDeleted" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                     <span class="ml-2 text-sm text-gray-600">Show deleted projects</span>
                 </label>
             </div>
         </div>
-        <div class="flex flex-col sm:flex-row sm:items-end gap-4 mb-4">
-        <div>
-            <label class="block font-semibold mb-1">Region</label>
-            <select wire:model.live="region" class="rounded border-gray-300">
-                <option value="">All Regions</option>
-                @foreach($regions as $region)
-                    <option value="{{ $region }}">{{ $region }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="block font-semibold mb-1">Account Executive</label>
-            <select wire:model.live="accountExecutive" class="rounded border-gray-300">
-                <option value="">All Executives</option>
-                @foreach($executives as $exec)
-                    <option value="{{ $exec }}">{{ $exec }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="block font-semibold mb-1">Search</label>
-            <input type="text" wire:model.live="search" placeholder="Project name..." class="rounded border-gray-300">
-        </div>
-        <div>
-            <button wire:click="openModal" class="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700">
-                Add Project
-            </button>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <div class="space-y-1">
+                <label class="block text-sm font-medium text-gray-700">Region</label>
+                <select wire:model.live="region" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">All Regions</option>
+                    @foreach($regions as $region)
+                        <option value="{{ $region }}">{{ $region }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="space-y-1">
+                <label class="block text-sm font-medium text-gray-700">Account Executive</label>
+                <select wire:model.live="accountExecutive" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">All Executives</option>
+                    @foreach($executives as $exec)
+                        <option value="{{ $exec }}">{{ $exec }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="space-y-1">
+                <label class="block text-sm font-medium text-gray-700">Search</label>
+                <input type="text" wire:model.live="search" placeholder="Project name..." class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <button wire:click="openModal" class="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md px-4 py-2 transition-colors duration-200">
+                    Add Project
+                </button>
+            </div>
         </div>
     </div>
     <!-- End Management Panel -->
 
-    <div class="bg-white rounded shadow overflow-x-auto">
-        <table class="min-w-full border-collapse">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-3 py-2 border text-left">Project Name</th>
-                    <th class="px-3 py-2 border text-left">Airline</th>
-                    <th class="px-3 py-2 border text-left">Region</th>
-                    <th class="px-3 py-2 border text-left">Account Executive</th>
-                    <th class="px-3 py-2 border text-left">Aircraft Type</th>
-                    <th class="px-3 py-2 border text-left"># Aircraft</th>
-                    <th class="px-3 py-2 border text-left">Design Status</th>
-                    <th class="px-3 py-2 border text-left">Commercial Status</th>
-                    <th class="px-3 py-2 border text-left">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($projects as $project)
-                    <tr class="hover:bg-gray-50 {{ $project->trashed() ? 'bg-red-50' : '' }}">
-                        <td class="px-3 py-2 border font-semibold">
-                            {{ $project->name }}
-                            @if($project->trashed())
-                                <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded ml-2">Deleted</span>
-                            @endif
-                        </td>
-                        <td class="px-3 py-2 border">{{ $project->airline->name ?? '—' }}</td>
-                        <td class="px-3 py-2 border">{{ $project->airline->region ?? '—' }}</td>
-                        <td class="px-3 py-2 border">{{ $project->airline->account_executive ?? '—' }}</td>
-                        <td class="px-3 py-2 border">{{ $project->aircraftType->name ?? '—' }}</td>
-                        <td class="px-3 py-2 border">{{ $project->number_of_aircraft ?? '—' }}</td>
-                        <td class="px-3 py-2 border">
-                            @if($project->designStatus)
-                                <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                                    {{ $project->designStatus->status }}
-                                </span>
-                            @else
-                                —
-                            @endif
-                        </td>
-                        <td class="px-3 py-2 border">
-                            @if($project->commercialStatus)
-                                <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                                    {{ $project->commercialStatus->status }}
-                                </span>
-                            @else
-                                —
-                            @endif
-                        </td>
-                        <td class="px-3 py-2 border">
-                            @if($project->trashed())
-                                <button wire:click="restore({{ $project->id }})" class="text-green-600 underline mr-2">Restore</button>
-                                <button wire:click="forceDelete({{ $project->id }})" class="text-red-600 underline" 
-                                        onclick="return confirm('Are you sure you want to permanently delete this project? This action cannot be undone.')">
-                                    Delete Permanently
-                                </button>
-                            @else
-                                <button wire:click="edit({{ $project->id }})" class="text-blue-600 underline mr-2">Edit</button>
-                                <button wire:click="delete({{ $project->id }})" class="text-red-600 underline" 
-                                        onclick="return confirm('Are you sure you want to delete this project?')">Delete</button>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
+    <!-- Projects Table -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
                     <tr>
-                        <td colspan="9" class="px-3 py-8 text-center text-gray-500">
-                            No projects found. Add your first project above.
-                        </td>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Name</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Airline</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Region</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Account Executive</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Aircraft Type</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell"># Aircraft</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Design Status</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Commercial Status</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edit</th>
+                        <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delete</th>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($projects as $project)
+                        <tr class="{{ $project->trashed() ? 'bg-red-50' : 'hover:bg-gray-50' }} transition-colors duration-150">
+                            <td class="px-3 sm:px-6 py-4">
+                                <div class="flex flex-col">
+                                    <div class="text-sm font-medium text-gray-900">{{ $project->name }}</div>
+                                    @if($project->trashed())
+                                        <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 w-fit">
+                                            Deleted {{ $project->deleted_at->diffForHumans() }}
+                                        </span>
+                                    @endif
+                                    <!-- Mobile-only info -->
+                                    <div class="mt-1 md:hidden">
+                                        <div class="text-xs text-gray-500">{{ optional($project->airline)->region ?? '—' }}</div>
+                                        @if($project->airline && $project->airline->account_executive)
+                                            <div class="text-xs text-gray-500">AE: {{ $project->airline->account_executive }}</div>
+                                        @endif
+                                        @if($project->aircraftType)
+                                            <div class="text-xs text-gray-500">Aircraft: {{ $project->aircraftType->name }}</div>
+                                        @endif
+                                        @if($project->number_of_aircraft)
+                                            <div class="text-xs text-gray-500"># Aircraft: {{ $project->number_of_aircraft }}</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ optional($project->airline)->name ?? '—' }}</div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                <div class="text-sm text-gray-900">{{ optional($project->airline)->region ?? '—' }}</div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap hidden lg:table-cell">
+                                <div class="text-sm text-gray-900">{{ optional($project->airline)->account_executive ?? '—' }}</div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap hidden lg:table-cell">
+                                <div class="text-sm text-gray-900">{{ $project->aircraftType->name ?? '—' }}</div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap hidden xl:table-cell">
+                                <div class="text-sm text-gray-900">{{ $project->number_of_aircraft ?? '—' }}</div>
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap hidden xl:table-cell">
+                                @if($project->designStatus)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ $project->designStatus->status }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400 text-sm">—</span>
+                                @endif
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap hidden xl:table-cell">
+                                @if($project->commercialStatus)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {{ $project->commercialStatus->status }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400 text-sm">—</span>
+                                @endif
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 text-sm font-medium">
+                                @if($project->trashed())
+                                    <button wire:click="restore({{ $project->id }})" 
+                                            class="text-green-600 hover:text-green-900 font-medium transition-colors duration-200">
+                                        Restore
+                                    </button>
+                                @else
+                                    <button wire:click="edit({{ $project->id }})" 
+                                            class="text-blue-600 hover:text-blue-900 font-medium transition-colors duration-200">
+                                        Edit
+                                    </button>
+                                @endif
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 text-sm font-medium">
+                                @if($project->trashed())
+                                    <button wire:click="forceDelete({{ $project->id }})" 
+                                            class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200" 
+                                            onclick="return confirm('Are you sure you want to permanently delete this project? This action cannot be undone.')">
+                                        Delete Permanently
+                                    </button>
+                                @else
+                                    <button wire:click="delete({{ $project->id }})" 
+                                            class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200" 
+                                            onclick="return confirm('Are you sure you want to delete this project?')">
+                                        Delete
+                                    </button>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="10" class="px-6 py-8 text-center text-gray-500">
+                                No projects found. Add your first project above.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Modal -->

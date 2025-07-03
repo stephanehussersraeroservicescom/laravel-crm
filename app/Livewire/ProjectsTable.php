@@ -354,6 +354,6 @@ class ProjectsTable extends Component
             'salesUsers' => User::where('role', 'sales')->orderBy('name')->get(),
             'availableRegions' => $this->availableRegions,
             'opportunities' => $this->opportunities,
-        ]);
+        ])->layout('layouts.app');
     }
 }

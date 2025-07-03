@@ -222,7 +222,7 @@ class ProjectSubcontractorTeams extends Component
             $teamsQuery->where('project_id', $this->selectedProject);
         }
         
-        return view('livewire.project-subcontractor-teams', [
+        return view('livewire.project-subcontractor-teams-test', [
             'teams' => $teamsQuery->orderBy('created_at', 'desc')->get(),
             'projects' => Project::with('airline')->orderBy('name')->get(),
             'subcontractors' => Subcontractor::orderBy('name')->get(),

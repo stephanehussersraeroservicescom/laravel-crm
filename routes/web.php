@@ -17,9 +17,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-
-Route::view('/projects', 'projects.index')->name('projects.index');
-
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -45,6 +42,10 @@ Route::get('/subcontractors/{subcontractor}/contacts', \App\Livewire\ContactsTab
 Route::get('/airlines', \App\Livewire\AirlinesTable::class)
     ->middleware(['auth'])
     ->name('airlines.index');
+
+Route::get('/projects', \App\Livewire\ProjectsTable::class)
+    ->middleware(['auth'])
+    ->name('projects.index');
 
 Route::get('/project-teams', \App\Livewire\ProjectSubcontractorTeams::class)
     ->middleware(['auth'])

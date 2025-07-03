@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
     
-    <div class="py-4 max-w-6xl mx-auto">
+    <div class="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         @if ($errors->any())
             <div class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
                 <div class="flex">
@@ -48,112 +48,85 @@
         @endif
         
         <!-- Management Panel -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
             <!-- Filter Section -->
-            <div class="border-b border-gray-200 p-4">
-                <h3 class="text-lg font-medium text-gray-900 mb-3">Filter Contacts</h3>
+            <div class="border-b border-gray-200 pb-6 mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Filter Contacts</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex flex-col">
-                        <label class="block font-semibold mb-1 h-6">Search</label>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Search</label>
                         <input type="text" wire:model.live="search" 
-                               class="rounded border-gray-300" 
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                                placeholder="Search by name, email, or phone...">
-                        <div class="min-h-[1.5rem] mt-1"></div>
                     </div>
-                    <div class="flex flex-col">
-                        <label class="block font-semibold mb-1 h-6">Role</label>
-                        <select wire:model.live="roleFilter" class="rounded border-gray-300">
+                    <div class="space-y-1 flex items-end">
+                        <label class="flex items-center">
+                            <input type="checkbox" wire:model.live="showDeleted" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-600">Show deleted contacts</span>
+                        </label>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Role</label>
+                        <select wire:model.live="roleFilter" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">All Roles</option>
                             @foreach($availableRoles as $role)
                                 <option value="{{ $role }}">{{ $role }}</option>
                             @endforeach
                         </select>
-                        <div class="min-h-[1.5rem] mt-1"></div>
                     </div>
                 </div>
             </div>
             
             <!-- Add/Edit Form Section -->
-            <div class="p-4">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ $editing ? 'Edit Contact' : 'Add New Contact' }}</h3>
-                <form wire:submit.prevent="save">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                        <div class="flex flex-col">
-                            <label class="block font-semibold mb-1 h-6">
-                                Name
-                                <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" wire:model.live="name" 
-                                   class="rounded border-gray-300 @error('name') border-red-500 ring-red-500 @enderror" 
-                                   required>
-                            <div class="min-h-[1.5rem] mt-1">
-                                @error('name') 
-                                    <div class="text-red-600 text-sm flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                        
-                        <div class="flex flex-col">
-                            <label class="block font-semibold mb-1 h-6">Email</label>
-                            <input type="email" wire:model.live="email" 
-                                   class="rounded border-gray-300 @error('email') border-red-500 ring-red-500 @enderror">
-                            <div class="min-h-[1.5rem] mt-1">
-                                @error('email') 
-                                    <div class="text-red-600 text-sm flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                        
-                        <div class="flex flex-col">
-                            <label class="block font-semibold mb-1 h-6">Role</label>
-                            <input type="text" wire:model.live="role" 
-                                   class="rounded border-gray-300 @error('role') border-red-500 ring-red-500 @enderror" 
-                                   placeholder="e.g., Manager, Engineer...">
-                            <div class="min-h-[1.5rem] mt-1">
-                                @error('role') 
-                                    <div class="text-red-600 text-sm flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                        
-                        <div class="flex flex-col">
-                            <label class="block font-semibold mb-1 h-6">Phone</label>
-                            <input type="text" wire:model.live="phone" 
-                                   class="rounded border-gray-300 @error('phone') border-red-500 ring-red-500 @enderror">
-                            <div class="min-h-[1.5rem] mt-1">
-                                @error('phone') 
-                                    <div class="text-red-600 text-sm flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-6">{{ $editing ? 'Edit Contact' : 'Add New Contact' }}</h3>
+                <form wire:submit.prevent="save" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" wire:model.live="name" 
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('name') border-red-500 ring-red-500 @enderror" 
+                               required>
+                        @error('name') 
+                            <div class="text-red-600 text-sm">{{ $message }}</div>
+                        @enderror
                     </div>
                     
-                    <div class="flex justify-start">
-                        <button type="submit" class="bg-blue-600 text-white rounded px-6 py-2 hover:bg-blue-700">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" wire:model.live="email" 
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('email') border-red-500 ring-red-500 @enderror">
+                        @error('email') 
+                            <div class="text-red-600 text-sm">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Role</label>
+                        <input type="text" wire:model.live="role" 
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('role') border-red-500 ring-red-500 @enderror" 
+                               placeholder="e.g., Manager, Engineer...">
+                        @error('role') 
+                            <div class="text-red-600 text-sm">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Phone</label>
+                        <input type="text" wire:model.live="phone" 
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('phone') border-red-500 ring-red-500 @enderror">
+                        @error('phone') 
+                            <div class="text-red-600 text-sm">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md px-4 py-2 transition-colors duration-200">
                             {{ $editing ? 'Update Contact' : 'Add Contact' }}
                         </button>
                         @if($editing)
-                            <button type="button" wire:click="cancelEdit" class="ml-3 px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50">
+                            <button type="button" wire:click="cancelEdit" class="text-gray-500 hover:text-gray-700 font-medium underline transition-colors duration-200">
                                 Cancel
                             </button>
                         @endif
@@ -163,69 +136,97 @@
         </div>
         <!-- End Management Panel -->
         
-        <div class="bg-white rounded shadow overflow-x-auto">
-            <table class="min-w-full border-collapse">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="px-3 py-2 border text-left">Name</th>
-                        <th class="px-3 py-2 border text-left">Email</th>
-                        <th class="px-3 py-2 border text-left">Role</th>
-                        <th class="px-3 py-2 border text-left">Phone</th>
-                        <th class="px-3 py-2 border text-left">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($contacts as $contact)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-3 py-2 border">
-                                <span class="font-semibold">{{ $contact->name }}</span>
-                            </td>
-                            <td class="px-3 py-2 border">
-                                @if($contact->email)
-                                    <a href="mailto:{{ $contact->email }}" class="text-blue-600 hover:underline">
-                                        {{ $contact->email }}
-                                    </a>
-                                @else
-                                    <span class="text-gray-400">—</span>
-                                @endif
-                            </td>
-                            <td class="px-3 py-2 border">
-                                @if($contact->role)
-                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                                        {{ $contact->role }}
-                                    </span>
-                                @else
-                                    <span class="text-gray-400">—</span>
-                                @endif
-                            </td>
-                            <td class="px-3 py-2 border">
-                                @if($contact->phone)
-                                    <a href="tel:{{ $contact->phone }}" class="text-blue-600 hover:underline">
-                                        {{ $contact->phone }}
-                                    </a>
-                                @else
-                                    <span class="text-gray-400">—</span>
-                                @endif
-                            </td>
-                            <td class="px-3 py-2 border">
-                                <button wire:click="edit({{ $contact->id }})" class="text-blue-600 underline mr-2">Edit</button>
-                                <button wire:click="delete({{ $contact->id }})" class="text-red-600 underline" 
-                                        onclick="return confirm('Are you sure you want to delete this contact?')">Delete</button>
-                            </td>
-                        </tr>
-                    @empty
+        <!-- Contacts Table -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <td colspan="5" class="px-3 py-8 text-center text-gray-500">
-                                @if($search || $roleFilter)
-                                    No contacts found matching your search criteria.
-                                @else
-                                    No contacts added yet. Add your first contact above.
-                                @endif
-                            </td>
+                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Role</th>
+                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Phone</th>
+                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edit</th>
+                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delete</th>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($contacts as $contact)
+                            <tr class="{{ $contact->trashed() ? 'bg-red-50' : 'hover:bg-gray-50' }} transition-colors duration-150">
+                                <td class="px-3 sm:px-6 py-4">
+                                    <div class="flex flex-col">
+                                        <div class="text-sm font-medium text-gray-900">{{ $contact->name }}</div>
+                                        @if($contact->trashed())
+                                            <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 w-fit">
+                                                Deleted {{ $contact->deleted_at->diffForHumans() }}
+                                            </span>
+                                        @endif
+                                        <!-- Mobile-only info -->
+                                        <div class="mt-1 md:hidden">
+                                            @if($contact->role)
+                                                <div class="text-xs text-gray-500">{{ $contact->role }}</div>
+                                            @endif
+                                            @if($contact->phone)
+                                                <div class="text-xs text-gray-500">{{ $contact->phone }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
+                                    @if($contact->email)
+                                        <a href="mailto:{{ $contact->email }}" class="text-blue-600 hover:underline text-sm">
+                                            {{ $contact->email }}
+                                        </a>
+                                    @else
+                                        <span class="text-gray-400 text-sm">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    @if($contact->role)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $contact->role }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400 text-sm">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-3 sm:px-6 py-4 whitespace-nowrap hidden lg:table-cell">
+                                    @if($contact->phone)
+                                        <a href="tel:{{ $contact->phone }}" class="text-blue-600 hover:underline text-sm">
+                                            {{ $contact->phone }}
+                                        </a>
+                                    @else
+                                        <span class="text-gray-400 text-sm">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-3 sm:px-6 py-4 text-sm font-medium">
+                                    <button wire:click="edit({{ $contact->id }})" 
+                                            class="text-blue-600 hover:text-blue-900 font-medium transition-colors duration-200">
+                                        Edit
+                                    </button>
+                                </td>
+                                <td class="px-3 sm:px-6 py-4 text-sm font-medium">
+                                    <button wire:click="delete({{ $contact->id }})" 
+                                            class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200" 
+                                            onclick="return confirm('Are you sure you want to delete this contact?')">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                    @if($search || $roleFilter)
+                                        No contacts found matching your search criteria.
+                                    @else
+                                        No contacts added yet. Add your first contact above.
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

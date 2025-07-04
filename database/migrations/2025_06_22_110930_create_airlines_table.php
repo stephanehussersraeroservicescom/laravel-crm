@@ -18,6 +18,7 @@ return new class extends Migration
                         'North America', 'South America', 'Europe', 'Asia', 'Middle East', 'Africa', 'Oceania'
                         ]); 
             $table->string('account_executive')->nullable(); // You could also use 'user_id' for a relation to a users table
+            $table->softDeletes();
             $table->timestamps();
         });
     }

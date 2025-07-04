@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop the existing table and recreate with better structure
-        Schema::dropIfExists('project_subcontractor');
-        
         // Create project_subcontractor_teams table for main subcontractors
         Schema::create('project_subcontractor_teams', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->foreignId('main_subcontractor_id')->constrained('subcontractors')->cascadeOnDelete();
             $table->enum('role', ['Commercial', 'Project Management', 'Design', 'Certification', 'Manufacturing', 'Subcontractor']);
+            $table->string('opportunity_type')->nullable(); // vertical_surfaces, panels, covers
+            $table->unsignedBigInteger('opportunity_id')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
+            $table->softDeletes();
             
             $table->unique(['project_id', 'main_subcontractor_id', 'role'], 'project_main_sub_role_unique');
         });
@@ -44,16 +44,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('project_team_supporters');
         Schema::dropIfExists('project_subcontractor_teams');
-        
-        // Recreate the old structure if needed
-        Schema::create('project_subcontractor', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('main_subcontractor_id')->constrained('subcontractors')->cascadeOnDelete();
-            $table->foreignId('supporting_subcontractor_id')->constrained('subcontractors')->cascadeOnDelete();
-            $table->string('role')->nullable();
-            $table->text('notes')->nullable();
-            $table->timestamps();
-        });
     }
 };

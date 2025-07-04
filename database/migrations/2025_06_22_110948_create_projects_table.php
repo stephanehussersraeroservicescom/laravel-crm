@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignId('commercial_status_id')->nullable()->constrained('statuses');
             $table->text('comment')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

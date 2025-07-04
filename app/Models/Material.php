@@ -9,4 +9,10 @@ class Material extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'part_number',
+        'color', 
+        'comment',
+        'file'
+    ];
 }

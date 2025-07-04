@@ -11,17 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('project_subcontractor', function (Blueprint $table) {
+        // Create project_subcontractor_teams table for main subcontractors
+        Schema::create('project_subcontractor_teams', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->foreignId('main_subcontractor_id')->constrained('subcontractors')->cascadeOnDelete();
-            $table->foreignId('supporting_subcontractor_id')->constrained('subcontractors')->cascadeOnDelete();
-            $table->string('role')->nullable(); // e.g., 'primary', 'support', 'supplier'
+            $table->enum('role', ['Commercial', 'Project Management', 'Design', 'Certification', 'Manufacturing', 'Subcontractor']);
+            $table->string('opportunity_type')->nullable(); // vertical_surfaces, panels, covers
+            $table->unsignedBigInteger('opportunity_id')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
+            $table->softDeletes();
             
-            // Ensure unique combinations
-            $table->unique(['project_id', 'main_subcontractor_id', 'supporting_subcontractor_id'], 'project_subcontractor_unique');
+            $table->unique(['project_id', 'main_subcontractor_id', 'role'], 'project_main_sub_role_unique');
+        });
+        
+        // Create pivot table for supporting subcontractors
+        Schema::create('project_team_supporters', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('team_id')->constrained('project_subcontractor_teams')->cascadeOnDelete();
+            $table->foreignId('supporting_subcontractor_id')->constrained('subcontractors')->cascadeOnDelete();
+            $table->timestamps();
+            
+            $table->unique(['team_id', 'supporting_subcontractor_id'], 'team_supporter_unique');
         });
     }
 
@@ -30,6 +42,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('project_subcontractor');
+        Schema::dropIfExists('project_team_supporters');
+        Schema::dropIfExists('project_subcontractor_teams');
     }
 };

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('role')->nullable();
             $table->string('phone')->nullable();
             $table->text('comment')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

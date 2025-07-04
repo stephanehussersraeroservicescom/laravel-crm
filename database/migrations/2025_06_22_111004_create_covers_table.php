@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('phy_path')->nullable(); // For uploaded PHY file path
             $table->text('comments')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

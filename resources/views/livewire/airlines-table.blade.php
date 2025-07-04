@@ -47,10 +47,6 @@
         </form>
     </x-management-panel>
     
-    <x-table-controls search-placeholder="Search airlines..." :show-search="false">
-        <!-- Additional controls can go in the slot -->
-    </x-table-controls>
-    
     <x-table-box>
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">

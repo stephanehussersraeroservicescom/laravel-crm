@@ -41,10 +41,6 @@
         </form>
     </x-management-panel>
     
-    <x-table-controls search-placeholder="Search subcontractors..." :show-search="false">
-        <!-- Additional filter options can go here -->
-    </x-table-controls>
-    
     <x-table-box>
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">

@@ -39,19 +39,21 @@
             </div>
         </div>
     @endif
-    <x-management-panel title="Filter Contacts">
-        <x-table-controls>
+    <x-management-panel title="Search & Filter Contacts">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <x-form-field label="Search" name="search" placeholder="Search by name, email, or phone..." />
+            <x-form-field label="Filter by Role" name="roleFilter" type="select" :options="$availableRoles" placeholder="All Roles" />
             <div class="space-y-1 flex items-end">
                 <label class="flex items-center">
                     <input type="checkbox" wire:model.live="showDeleted" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <span class="ml-2 text-sm text-gray-600">Show deleted contacts</span>
                 </label>
             </div>
-            <x-form-field label="Role" name="roleFilter" type="select" :options="$availableRoles" placeholder="All Roles" />
-        </x-table-controls>
-        
-        <x-form-grid title="{{ $editing ? 'Edit Contact' : 'Add New Contact' }}" formAction="save">
+        </div>
+    </x-management-panel>
+
+    <x-management-panel title="{{ $editing ? 'Edit Contact' : 'Add New Contact' }}">
+        <x-form-grid formAction="save">
             <x-form-field label="Name" name="name" required />
             <x-form-field label="Email" name="email" type="email" />
             <x-form-field label="Role" name="role" placeholder="e.g., Manager, Engineer..." />

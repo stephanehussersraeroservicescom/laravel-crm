@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,           // Always create stef and dominic users
             ComprehensiveSeeder::class,  // Create other sample data
+            ContactSeeder::class,        // Create contacts for subcontractors
             ProjectTeamSeeder::class,    // Create project teams
         ]);
     }

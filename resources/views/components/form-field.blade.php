@@ -17,8 +17,14 @@
             @if($placeholder)
                 <option value="">{{ $placeholder }}</option>
             @endif
-            @foreach($options as $value => $label)
-                <option value="{{ $value }}">{{ $label }}</option>
+            @foreach($options as $key => $value)
+                @if(is_numeric($key))
+                    {{-- Simple array, use value as both key and label --}}
+                    <option value="{{ $value }}">{{ $value }}</option>
+                @else
+                    {{-- Associative array, use key => value --}}
+                    <option value="{{ $key }}">{{ $value }}</option>
+                @endif
             @endforeach
         </select>
     @elseif($type === 'textarea')

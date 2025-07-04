@@ -29,36 +29,31 @@ Route::middleware([
 
 
 
-// Create routes for listing entities
+// Routes for listing entities
+Route::middleware(['auth'])->group(function () {
+    Route::get('/subcontractors', \App\Livewire\SubcontractorsTable::class)
+        ->name('subcontractors.index');
 
-Route::get('/subcontractors', \App\Livewire\SubcontractorsTable::class)
-    ->middleware(['auth'])
-    ->name('subcontractors.index');
+    Route::get('/subcontractors/{subcontractor}/contacts', \App\Livewire\ContactsTable::class)
+        ->name('contacts.index');
 
-Route::get('/subcontractors/{subcontractor}/contacts', \App\Livewire\ContactsTable::class)
-    ->middleware(['auth'])
-    ->name('contacts.index');
+    Route::get('/airlines', \App\Livewire\AirlinesTable::class)
+        ->name('airlines.index');
 
-Route::get('/airlines', \App\Livewire\AirlinesTable::class)
-    ->middleware(['auth'])
-    ->name('airlines.index');
+    Route::get('/projects', \App\Livewire\ProjectsTable::class)
+        ->name('projects.index');
 
-Route::get('/projects', \App\Livewire\ProjectsTable::class)
-    ->middleware(['auth'])
-    ->name('projects.index');
+    Route::get('/project-teams', \App\Livewire\ProjectSubcontractorTeams::class)
+        ->name('project-teams.index');
 
-Route::get('/project-teams', \App\Livewire\ProjectSubcontractorTeams::class)
-    ->middleware(['auth'])
-    ->name('project-teams.index');
+    Route::get('/project-teams/{project}', \App\Livewire\ProjectSubcontractorTeams::class)
+        ->name('project.teams');
 
-Route::get('/project-teams/{project}', \App\Livewire\ProjectSubcontractorTeams::class)
-    ->middleware(['auth'])
-    ->name('project.teams');
+    // Routes for creating new entities
+    Route::get('/subcontractors/create', \App\Livewire\SubcontractorCreate::class)
+        ->name('subcontractors.create');
 
-
-// Create routes for creating new entities
-
-Route::get('/subcontractors/create', \App\Livewire\SubcontractorCreate::class)
-    ->middleware(['auth'])
-    ->name('subcontractors.create');
+    Route::get('/airlines/create', \App\Livewire\AirlineCreate::class)
+        ->name('airlines.create');
+});
 

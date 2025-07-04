@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         // Aircraft Types
         $aircrafts = ['A350', 'A787', 'B777', 'A330', 'B737'];
         foreach ($aircrafts as $type) {
-            AircraftType::create(['name' => $type, 'manufacturer' => $type[0] === 'A' ? 'Airbus' : 'Boeing']);
+            AircraftType::create(['name' => $type]);
         }
 
         // Airlines
@@ -30,9 +30,9 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Emirates', 'region' => 'Middle East', 'account_executive' => 'Alice'],
             ['name' => 'Air France', 'region' => 'Europe', 'account_executive' => 'Bob'],
             ['name' => 'Lufthansa', 'region' => 'Europe', 'account_executive' => 'Carol'],
-            ['name' => 'Delta', 'region' => 'Americas', 'account_executive' => 'Dave'],
+            ['name' => 'Delta', 'region' => 'North America', 'account_executive' => 'Dave'],
             ['name' => 'Singapore Airlines', 'region' => 'Asia', 'account_executive' => 'Eve'],
-            ['name' => 'United', 'region' => 'Americas', 'account_executive' => 'Frank'],
+            ['name' => 'United', 'region' => 'North America', 'account_executive' => 'Frank'],
         ];
         foreach ($airlines as $row) {
             Airline::create($row);
@@ -40,19 +40,16 @@ class DatabaseSeeder extends Seeder
 
         // Statuses
         $statuses = [
-            // Commercial
-            ['type' => 'commercial', 'status' => 'Not started'],
-            ['type' => 'commercial', 'status' => 'Negotiation'],
-            ['type' => 'commercial', 'status' => 'Agreed'],
-            ['type' => 'commercial', 'status' => 'Signed'],
-            // Design
-            ['type' => 'design', 'status' => 'Not Started'],
-            ['type' => 'design', 'status' => 'In Progress'],
-            ['type' => 'design', 'status' => 'Completed'],
-            // Certification
-            ['type' => 'certification', 'status' => 'Not started'],
-            ['type' => 'certification', 'status' => 'Testing'],
-            ['type' => 'certification', 'status' => 'Certified'],
+            ['name' => 'Commercial - Not started', 'description' => 'Commercial phase not started'],
+            ['name' => 'Commercial - Negotiation', 'description' => 'In commercial negotiation'],
+            ['name' => 'Commercial - Agreed', 'description' => 'Commercial terms agreed'],
+            ['name' => 'Commercial - Signed', 'description' => 'Commercial contract signed'],
+            ['name' => 'Design - Not Started', 'description' => 'Design phase not started'],
+            ['name' => 'Design - In Progress', 'description' => 'Design in progress'],
+            ['name' => 'Design - Completed', 'description' => 'Design completed'],
+            ['name' => 'Certification - Not started', 'description' => 'Certification not started'],
+            ['name' => 'Certification - Testing', 'description' => 'In certification testing'],
+            ['name' => 'Certification - Certified', 'description' => 'Certification completed'],
         ];
         foreach ($statuses as $row) {
             Status::create($row);
@@ -62,18 +59,16 @@ class DatabaseSeeder extends Seeder
         $carNames = ['Tesla', 'Audi', 'BMW', 'Chevy', 'Dacia', 'Fiat', 'Golf', 'Honda', 'Jaguar', 'Kia', 'Lexus', 'Mazda', 'Nissan', 'Opel', 'Porsche', 'Renault', 'Saab', 'Toyota', 'Volvo', 'Zoe'];
         foreach ($carNames as $name) {
             Material::create([
-                'part_number' => strtoupper($name) . '-' . rand(100, 999),
-                'color' => Arr::random(['Red', 'Blue', 'Green', 'Black', 'White', 'Silver', 'Grey']),
-                'comment' => 'Material for ' . $name,
-                'file' => null,
+                'name' => $name . ' Material',
+                'description' => 'Material description for ' . $name,
             ]);
         }
 
         // Projects
         $airlineIds = Airline::pluck('id')->all();
         $aircraftTypeIds = AircraftType::pluck('id')->all();
-        $designStatusIds = Status::where('type', 'design')->pluck('id')->all();
-        $commercialStatusIds = Status::where('type', 'commercial')->pluck('id')->all();
+        $designStatusIds = Status::where('name', 'like', 'Design%')->pluck('id')->all();
+        $commercialStatusIds = Status::where('name', 'like', 'Commercial%')->pluck('id')->all();
 
         for ($i = 1; $i <= 8; $i++) {
             $project = Project::create([
@@ -96,7 +91,7 @@ class DatabaseSeeder extends Seeder
                     $potential = Arr::random([1000, 1500, 2000, 2500]);
                     $comment = ucfirst($surfaceType) . ' note ' . Str::random(3);
 
-                    $certStatusIds = Status::where('type', 'certification')->pluck('id')->all();
+                    $certStatusIds = Status::where('name', 'like', 'Certification%')->pluck('id')->all();
 
                     $surfaceData = [
                         'project_id' => $project->id,

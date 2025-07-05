@@ -52,9 +52,6 @@ class ProjectController extends BaseApiController
                 'commercial_status_id' => 'nullable|exists:statuses,id',
                 'owner' => 'nullable|string|max:255',
                 'comment' => 'nullable|string',
-                'airline_disclosed' => 'boolean',
-                'airline_code_placeholder' => 'nullable|string|max:10',
-                'confidentiality_notes' => 'nullable|string',
             ]);
 
             $project = Project::create($validatedData);
@@ -96,9 +93,6 @@ class ProjectController extends BaseApiController
                 'commercial_status_id' => 'nullable|exists:statuses,id',
                 'owner' => 'nullable|string|max:255',
                 'comment' => 'nullable|string',
-                'airline_disclosed' => 'boolean',
-                'airline_code_placeholder' => 'nullable|string|max:10',
-                'confidentiality_notes' => 'nullable|string',
             ]);
 
             $project->update($validatedData);

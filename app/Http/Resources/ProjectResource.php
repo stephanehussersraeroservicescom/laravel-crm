@@ -20,11 +20,6 @@ class ProjectResource extends JsonResource
             'number_of_aircraft' => $this->number_of_aircraft,
             'owner' => $this->owner,
             'comment' => $this->comment,
-            'airline_disclosed' => $this->airline_disclosed,
-            'airline_code_placeholder' => $this->airline_code_placeholder,
-            'confidentiality_notes' => $this->confidentiality_notes,
-            'display_airline' => $this->display_airline,
-            'display_airline_code' => $this->display_airline_code,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             

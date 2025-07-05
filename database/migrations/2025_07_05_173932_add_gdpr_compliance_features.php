@@ -29,28 +29,13 @@ return new class extends Migration
             });
         }
         
-        // Create encrypted data table for sensitive opportunity data if not exists
-        if (!Schema::hasTable('opportunity_encrypted_data')) {
-            Schema::create('opportunity_encrypted_data', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('opportunity_id')->constrained()->cascadeOnDelete();
-                $table->text('encrypted_financial_data')->nullable();
-                $table->text('encrypted_confidential_notes')->nullable();
-                $table->timestamps();
-                
-                $table->unique('opportunity_id');
-            });
-        }
     }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
-    {
-        // Drop encrypted data table
-        Schema::dropIfExists('opportunity_encrypted_data');
-        
+    {        
         // Remove GDPR columns from contacts
         if (Schema::hasTable('contacts')) {
             Schema::table('contacts', function (Blueprint $table) {

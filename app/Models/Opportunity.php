@@ -195,11 +195,6 @@ class Opportunity extends Model
         return $this->belongsToMany(Material::class, 'opportunity_material');
     }
 
-    // Encrypted data relationship
-    public function encryptedData()
-    {
-        return $this->hasOne(OpportunityEncryptedData::class);
-    }
 
     // Direct relationship to team
     public function team()

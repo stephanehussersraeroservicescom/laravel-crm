@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+use App\Traits\Auditable;
 
 class User extends Authenticatable
 {
@@ -17,6 +19,8 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
+    use HasRoles;
+    use Auditable;
 
     /**
      * The attributes that are mass assignable.
@@ -59,4 +63,35 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    // Define role constants
+    const ROLE_ADMIN = 'admin';
+    const ROLE_PROJECT_MANAGER = 'project_manager';
+    const ROLE_VIEWER = 'viewer';
+
+    // Helper methods for role checking
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(self::ROLE_ADMIN);
+    }
+
+    public function isProjectManager(): bool
+    {
+        return $this->hasRole(self::ROLE_PROJECT_MANAGER);
+    }
+
+    public function isViewer(): bool
+    {
+        return $this->hasRole(self::ROLE_VIEWER);
+    }
+
+    public function canManageProjects(): bool
+    {
+        return $this->hasAnyRole([self::ROLE_ADMIN, self::ROLE_PROJECT_MANAGER]);
+    }
+
+    public function canViewOnly(): bool
+    {
+        return $this->hasRole(self::ROLE_VIEWER) && !$this->hasAnyRole([self::ROLE_ADMIN, self::ROLE_PROJECT_MANAGER]);
+    }
 }

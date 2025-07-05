@@ -58,7 +58,7 @@ class ContactsTable extends Component
         ];
 
         if ($this->editing && $this->editId) {
-            $contact = Contact::find($this->editId);
+            $contact = Contact::withTrashed()->find($this->editId);
             if ($contact && $contact->subcontractor_id === $this->subcontractor->id) {
                 $contact->update($contactData);
             }
@@ -75,7 +75,7 @@ class ContactsTable extends Component
 
     public function edit($id)
     {
-        $contact = Contact::where('subcontractor_id', $this->subcontractor->id)->findOrFail($id);
+        $contact = Contact::withTrashed()->where('subcontractor_id', $this->subcontractor->id)->findOrFail($id);
         $this->name = $contact->name;
         $this->email = $contact->email;
         $this->role = $contact->role;

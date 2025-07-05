@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Project;
 use App\Models\Subcontractor;
 use App\Models\ProjectSubcontractorTeam;
+use App\Models\Opportunity;
 
 class ProjectTeamSeeder extends Seeder
 {
@@ -23,43 +24,96 @@ class ProjectTeamSeeder extends Seeder
             return;
         }
 
-        // Create teams for each project
+        // First, create opportunities for all projects (since they were created without opportunities)
+        $this->createOpportunitiesForProjects($projects);
+
+        // Refresh projects to load the new opportunities
+        $projects = Project::with(['opportunities'])->get();
+
+        // Then create teams for those opportunities
+        $this->createTeamsForOpportunities($projects, $subcontractors);
+    }
+
+    private function createOpportunitiesForProjects($projects)
+    {
+        $cabinClasses = ['first_class', 'business_class', 'premium_economy', 'economy'];
+        $opportunityTypes = ['vertical', 'panels', 'covers', 'others'];
+
         foreach ($projects as $index => $project) {
-            // Main design team
-            $team1 = ProjectSubcontractorTeam::create([
-                'project_id' => $project->id,
-                'main_subcontractor_id' => $subcontractors[$index % $subcontractors->count()]->id,
-                'role' => 'Design',
-                'notes' => 'Lead design contractor for ' . $project->name
-            ]);
-
-            // Add supporting subcontractors
-            $supporters = $subcontractors->skip(($index + 1) % $subcontractors->count())->take(2);
-            $team1->supportingSubcontractors()->attach($supporters->pluck('id'));
-
-            // Manufacturing team
-            if ($subcontractors->count() > 3) {
-                $team2 = ProjectSubcontractorTeam::create([
-                    'project_id' => $project->id,
-                    'main_subcontractor_id' => $subcontractors[($index + 2) % $subcontractors->count()]->id,
-                    'role' => 'Manufacturing',
-                    'notes' => 'Manufacturing lead for ' . $project->name
-                ]);
-
-                // Add one supporter for manufacturing
-                $supporter = $subcontractors[($index + 3) % $subcontractors->count()];
-                $team2->supportingSubcontractors()->attach($supporter->id);
-            }
-
-            // Commercial team for first two projects
-            if ($index < 2 && $subcontractors->count() > 4) {
-                ProjectSubcontractorTeam::create([
-                    'project_id' => $project->id,
-                    'main_subcontractor_id' => $subcontractors[($index + 4) % $subcontractors->count()]->id,
-                    'role' => 'Commercial',
-                    'notes' => 'Commercial lead for ' . $project->name
-                ]);
+            // Create 2-4 random opportunities per project
+            $opportunityCount = rand(2, 4);
+            
+            for ($i = 0; $i < $opportunityCount; $i++) {
+                $type = $opportunityTypes[array_rand($opportunityTypes)];
+                $cabinClass = $cabinClasses[array_rand($cabinClasses)];
+                
+                $opportunityData = [
+                    'type' => $type,
+                    'cabin_class' => $cabinClass,
+                    'status' => 'active',
+                    'probability' => rand(20, 80), // 20% to 80% as integer
+                    'potential_value' => rand(50000, 2000000), // Random value between 50K and 2M
+                ];
+                
+                // Add meaningful names for 'others' type opportunities
+                if ($type === 'others') {
+                    $customNames = [
+                        'Entertainment System',
+                        'Lighting Package', 
+                        'Storage Solutions',
+                        'Power Outlets',
+                        'WiFi Installation'
+                    ];
+                    $opportunityData['name'] = $customNames[array_rand($customNames)];
+                    $opportunityData['description'] = $opportunityData['name'] . ' for ' . $cabinClass . ' cabin';
+                }
+                
+                $opportunity = Opportunity::create($opportunityData);
+                
+                // Attach to project using many-to-many relationship
+                $project->opportunities()->attach($opportunity->id);
             }
         }
+    }
+
+    private function createTeamsForOpportunities($projects, $subcontractors)
+    {
+        $subIndex = 0;
+        $roles = ['Design', 'Manufacturing', 'Commercial', 'Certification'];
+
+        foreach ($projects as $project) {
+            // Create teams for all opportunities
+            foreach ($project->opportunities as $opportunity) {
+                $team = ProjectSubcontractorTeam::create([
+                    'project_id' => $project->id,
+                    'opportunity_id' => $opportunity->id, // Direct foreign key relationship
+                    'main_subcontractor_id' => $subcontractors[$subIndex % $subcontractors->count()]->id,
+                    'role' => $roles[$subIndex % count($roles)],
+                    'notes' => $this->getTeamNotes($opportunity, $project)
+                ]);
+
+                // Add 1-2 supporting subcontractors
+                $supportCount = rand(1, 2);
+                if ($subcontractors->count() > 1) {
+                    $supporters = collect($subcontractors)
+                        ->where('id', '!=', $team->main_subcontractor_id)
+                        ->random(min($supportCount, $subcontractors->count() - 1));
+                    $team->supportingSubcontractors()->attach($supporters->pluck('id'));
+                }
+                
+                $subIndex++;
+            }
+        }
+    }
+
+    private function getTeamNotes($opportunity, $project)
+    {
+        $typeLabel = ucwords(str_replace('_', ' ', $opportunity->type));
+        
+        if ($opportunity->type === 'others') {
+            return "{$opportunity->name} team for {$opportunity->cabin_class} cabin in {$project->name}";
+        }
+        
+        return "{$typeLabel} team for {$opportunity->cabin_class} cabin in {$project->name}";
     }
 }

@@ -43,11 +43,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/projects', \App\Livewire\ProjectsTable::class)
         ->name('projects.index');
 
-    Route::get('/project-teams', \App\Livewire\ProjectSubcontractorTeams::class)
-        ->name('project-teams.index');
+    Route::get('/opportunities', \App\Livewire\ProjectOpportunity::class)
+        ->name('opportunities.index');
 
-    Route::get('/project-teams/{project}', \App\Livewire\ProjectSubcontractorTeams::class)
-        ->name('project.teams');
+    Route::get('/opportunities/{project}', \App\Livewire\ProjectOpportunity::class)
+        ->name('project.opportunities');
 
     // Routes for creating new entities
     Route::get('/subcontractors/create', \App\Livewire\SubcontractorCreate::class)

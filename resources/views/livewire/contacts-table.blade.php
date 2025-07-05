@@ -78,8 +78,7 @@
                     <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                     <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Role</th>
                     <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Phone</th>
-                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edit</th>
-                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delete</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -132,22 +131,29 @@
                             @endif
                         </td>
                         <td class="px-3 sm:px-6 py-4 text-sm font-medium">
-                            <button wire:click="edit({{ $contact->id }})" 
-                                    class="text-blue-600 hover:text-blue-900 font-medium transition-colors duration-200">
-                                Edit
-                            </button>
-                        </td>
-                        <td class="px-3 sm:px-6 py-4 text-sm font-medium">
-                            <button wire:click="delete({{ $contact->id }})" 
-                                    class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200" 
-                                    onclick="return confirm('Are you sure you want to delete this contact?')">
-                                Delete
-                            </button>
+                            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                <button wire:click="edit({{ $contact->id }})" 
+                                        class="text-blue-600 hover:text-blue-900 font-medium transition-colors duration-200 text-left px-2 py-1 rounded hover:bg-blue-50">
+                                    Edit
+                                </button>
+                                @if($contact->trashed())
+                                    <button wire:click="restore({{ $contact->id }})" 
+                                            class="text-green-600 hover:text-green-900 font-medium transition-colors duration-200 text-left px-2 py-1 rounded hover:bg-green-50">
+                                        Restore
+                                    </button>
+                                @else
+                                    <button wire:click="delete({{ $contact->id }})" 
+                                            class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200 text-left px-2 py-1 rounded hover:bg-red-50" 
+                                            onclick="return confirm('Are you sure you want to delete this contact?')">
+                                        Delete
+                                    </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                             @if($search || $roleFilter)
                                 No contacts found matching your search criteria.
                             @else

@@ -44,7 +44,7 @@ class AirlinesTable extends Component
         ]);
 
         if ($this->editing && $this->editId) {
-            $airline = Airline::find($this->editId);
+            $airline = Airline::withTrashed()->find($this->editId);
             if ($airline) {
                 $airline->update([
                     'name' => $this->name,
@@ -65,7 +65,7 @@ class AirlinesTable extends Component
 
     public function edit($id)
     {
-        $airline = Airline::findOrFail($id);
+        $airline = Airline::withTrashed()->findOrFail($id);
         $this->name = $airline->name;
         $this->region = $airline->region;
         $this->account_executive = $airline->account_executive;

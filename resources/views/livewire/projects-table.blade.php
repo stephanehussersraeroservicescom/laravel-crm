@@ -28,8 +28,7 @@
                     <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell"># Aircraft</th>
                     <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Design Status</th>
                     <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Commercial Status</th>
-                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edit</th>
-                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delete</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -92,37 +91,29 @@
                             @endif
                         </td>
                         <td class="px-3 sm:px-6 py-4 text-sm font-medium">
-                            @if($project->trashed())
-                                <button wire:click="restore({{ $project->id }})" 
-                                        class="text-green-600 hover:text-green-900 font-medium transition-colors duration-200">
-                                    Restore
-                                </button>
-                            @else
+                            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                 <button wire:click="edit({{ $project->id }})" 
-                                        class="text-blue-600 hover:text-blue-900 font-medium transition-colors duration-200">
+                                        class="text-blue-600 hover:text-blue-900 font-medium transition-colors duration-200 text-left px-2 py-1 rounded hover:bg-blue-50">
                                     Edit
                                 </button>
-                            @endif
-                        </td>
-                        <td class="px-3 sm:px-6 py-4 text-sm font-medium">
-                            @if($project->trashed())
-                                <button wire:click="forceDelete({{ $project->id }})" 
-                                        class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200" 
-                                        onclick="return confirm('Are you sure you want to permanently delete this project? This action cannot be undone.')">
-                                    Delete Permanently
-                                </button>
-                            @else
-                                <button wire:click="delete({{ $project->id }})" 
-                                        class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200" 
-                                        onclick="return confirm('Are you sure you want to delete this project?')">
-                                    Delete
-                                </button>
-                            @endif
+                                @if($project->trashed())
+                                    <button wire:click="restore({{ $project->id }})" 
+                                            class="text-green-600 hover:text-green-900 font-medium transition-colors duration-200 text-left px-2 py-1 rounded hover:bg-green-50">
+                                        Restore
+                                    </button>
+                                @else
+                                    <button wire:click="delete({{ $project->id }})" 
+                                            class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200 text-left px-2 py-1 rounded hover:bg-red-50" 
+                                            onclick="return confirm('Are you sure you want to delete this project?')">
+                                        Delete
+                                    </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="10" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                             No projects found. Add your first project above.
                         </td>
                     </tr>

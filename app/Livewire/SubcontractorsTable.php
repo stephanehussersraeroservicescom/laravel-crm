@@ -13,6 +13,7 @@ class SubcontractorsTable extends Component
     public $editing = false;
     public $editId = null;
     public $showDeleted = false; // Add option to show deleted records
+    public $search = ''; // Add search functionality
 
     public function save()
     {
@@ -24,7 +25,7 @@ class SubcontractorsTable extends Component
         ]);
 
         if ($this->editing && $this->editId) {
-            $subcontractor = Subcontractor::find($this->editId);
+            $subcontractor = Subcontractor::withTrashed()->find($this->editId);
             if ($subcontractor) {
                 $subcontractor->update([
                     'name' => $this->name,
@@ -47,7 +48,7 @@ class SubcontractorsTable extends Component
 
     public function edit($id)
     {
-        $subcontractor = Subcontractor::findOrFail($id);
+        $subcontractor = Subcontractor::withTrashed()->findOrFail($id);
         $this->name = $subcontractor->name;
         $this->comment = $subcontractor->comment;
         $this->selectedParents = $subcontractor->parents->pluck('id')->toArray();
@@ -93,11 +94,23 @@ class SubcontractorsTable extends Component
         $this->selectedParents = [];
         $this->editing = false;
         $this->editId = null;
+        // Note: We don't reset search and showDeleted as they are filter states
     }
 
     public function render()
     {
         $subcontractorsQuery = $this->showDeleted ? Subcontractor::withTrashed() : Subcontractor::query();
+        
+        // Add search functionality
+        if (!empty($this->search)) {
+            $subcontractorsQuery->where(function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('comment', 'like', '%' . $this->search . '%')
+                      ->orWhereHas('parents', function ($parentQuery) {
+                          $parentQuery->where('name', 'like', '%' . $this->search . '%');
+                      });
+            });
+        }
         
         return view('livewire.subcontractors-table', [
             'subcontractors' => $subcontractorsQuery->with('parents', 'contacts')->orderBy('name')->get(),

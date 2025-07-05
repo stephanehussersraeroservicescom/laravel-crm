@@ -217,6 +217,9 @@ class ComprehensiveSeeder extends Seeder
         ];
         
         foreach ($projects as $project) {
+            // Get the airline to set the default owner
+            $airline = Airline::find($project['airline_id']);
+            $project['owner'] = $airline ? $airline->account_executive : null;
             Project::create($project);
         }
     }

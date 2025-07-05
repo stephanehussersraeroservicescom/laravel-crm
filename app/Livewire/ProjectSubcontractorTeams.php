@@ -6,9 +6,7 @@ use Livewire\Component;
 use App\Models\Project;
 use App\Models\Subcontractor;
 use App\Models\ProjectSubcontractorTeam;
-use App\Models\VerticalSurface;
-use App\Models\Panel;
-use App\Models\Cover;
+use App\Models\Opportunity;
 
 class ProjectSubcontractorTeams extends Component
 {
@@ -22,6 +20,8 @@ class ProjectSubcontractorTeams extends Component
     public $editing = false;
     public $editId = null;
     public $showDeleted = false; // Add option to show deleted records
+    public $search = ''; // Add search functionality
+    public $opportunityTypeFilter = ''; // Add opportunity type filter
 
     public $availableRoles = [
         'Commercial',
@@ -67,11 +67,10 @@ class ProjectSubcontractorTeams extends Component
             fn($id) => $id != $this->mainSubcontractor && $id !== ''
         );
 
-        // Parse the selected opportunity
-        $opportunityType = null;
+        // Parse the selected opportunity to get the ID
         $opportunityId = null;
         if ($this->selectedOpportunity) {
-            [$opportunityType, $opportunityId] = explode(':', $this->selectedOpportunity);
+            [$type, $opportunityId] = explode(':', $this->selectedOpportunity);
         }
 
         $teamData = [
@@ -79,12 +78,11 @@ class ProjectSubcontractorTeams extends Component
             'main_subcontractor_id' => $this->mainSubcontractor,
             'role' => $this->role,
             'notes' => $this->notes,
-            'opportunity_type' => $opportunityType,
             'opportunity_id' => $opportunityId,
         ];
 
         if ($this->editing && $this->editId) {
-            $team = ProjectSubcontractorTeam::find($this->editId);
+            $team = ProjectSubcontractorTeam::withTrashed()->find($this->editId);
             if ($team) {
                 $team->update($teamData);
                 // Sync supporting subcontractors
@@ -101,16 +99,16 @@ class ProjectSubcontractorTeams extends Component
 
     public function edit($id)
     {
-        $team = ProjectSubcontractorTeam::with('supportingSubcontractors')->findOrFail($id);
+        $team = ProjectSubcontractorTeam::withTrashed()->with('supportingSubcontractors')->findOrFail($id);
         $this->selectedProject = $team->project_id;
         $this->mainSubcontractor = $team->main_subcontractor_id;
         $this->supportingSubcontractors = $team->supportingSubcontractors->pluck('id')->toArray();
         $this->role = $team->role;
         $this->notes = $team->notes;
         
-        // Combine opportunity type and id for the dropdown
-        if ($team->opportunity_type && $team->opportunity_id) {
-            $this->selectedOpportunity = $team->opportunity_type . ':' . $team->opportunity_id;
+        // Set the selected opportunity for the dropdown
+        if ($team->opportunity_id) {
+            $this->selectedOpportunity = 'opportunities:' . $team->opportunity_id;
         } else {
             $this->selectedOpportunity = '';
         }
@@ -163,36 +161,31 @@ class ProjectSubcontractorTeams extends Component
         $project = Project::find($this->selectedProject);
         
         if ($project) {
-            // Get vertical surfaces
-            $verticals = VerticalSurface::where('project_id', $project->id)->get();
-            foreach ($verticals as $vertical) {
+            // Get all opportunities for this project using the new many-to-many relationship
+            foreach ($project->opportunities as $opportunity) {
+                $label = $this->getOpportunityLabel($opportunity);
                 $opportunities[] = [
-                    'value' => 'vertical_surfaces:' . $vertical->id,
-                    'label' => ucfirst($vertical->cabin_class) . ' Cabin - Vertical Surfaces'
-                ];
-            }
-            
-            // Get panels
-            $panels = Panel::where('project_id', $project->id)->get();
-            foreach ($panels as $panel) {
-                $opportunities[] = [
-                    'value' => 'panels:' . $panel->id,
-                    'label' => ucfirst($panel->cabin_class) . ' Cabin - Panels'
-                ];
-            }
-            
-            // Get covers
-            $covers = Cover::where('project_id', $project->id)->get();
-            foreach ($covers as $cover) {
-                $opportunities[] = [
-                    'value' => 'covers:' . $cover->id,
-                    'label' => ucfirst($cover->cabin_class) . ' Cabin - Covers'
+                    'value' => 'opportunities:' . $opportunity->id,
+                    'label' => $label
                 ];
             }
         }
         
         return $opportunities;
     }
+
+    private function getOpportunityLabel($opportunity)
+    {
+        $cabinClass = $opportunity->cabin_class ? ucfirst($opportunity->cabin_class) . ' Cabin' : 'No Cabin';
+        $type = ucwords(str_replace('_', ' ', $opportunity->type));
+        
+        if ($opportunity->type === 'other' && $opportunity->name) {
+            return "{$cabinClass} - {$opportunity->name}";
+        }
+        
+        return "{$cabinClass} - {$type}";
+    }
+
 
     private function resetFields()
     {
@@ -220,6 +213,37 @@ class ProjectSubcontractorTeams extends Component
         // Filter by selected project if one is chosen, otherwise show all teams
         if ($this->selectedProject) {
             $teamsQuery->where('project_id', $this->selectedProject);
+        }
+        
+        // Add search functionality
+        if (!empty($this->search)) {
+            $teamsQuery->where(function ($query) {
+                $query->where('role', 'like', '%' . $this->search . '%')
+                      ->orWhere('notes', 'like', '%' . $this->search . '%')
+                      ->orWhereHas('project', function ($projectQuery) {
+                          $projectQuery->where('name', 'like', '%' . $this->search . '%');
+                      })
+                      ->orWhereHas('mainSubcontractor', function ($subQuery) {
+                          $subQuery->where('name', 'like', '%' . $this->search . '%');
+                      })
+                      ->orWhereHas('supportingSubcontractors', function ($supportQuery) {
+                          $supportQuery->where('name', 'like', '%' . $this->search . '%');
+                      });
+            });
+        }
+        
+        // Filter by opportunity type
+        if (!empty($this->opportunityTypeFilter)) {
+            if ($this->opportunityTypeFilter === 'general') {
+                $teamsQuery->where(function ($query) {
+                    $query->whereNull('opportunity_type')
+                          ->orWhere('opportunity_type', '')
+                          ->orWhereNull('opportunity_id')
+                          ->orWhere('opportunity_id', '');
+                });
+            } else {
+                $teamsQuery->where('opportunity_type', $this->opportunityTypeFilter);
+            }
         }
         
         return view('livewire.project-subcontractor-teams', [

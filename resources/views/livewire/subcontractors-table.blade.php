@@ -1,4 +1,16 @@
 <x-table-container title="Subcontractors">
+    <x-management-panel title="Search & Filter Subcontractors">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <x-form-field label="Search" name="search" placeholder="Search by name or comment..." />
+            <div class="space-y-1 flex items-end">
+                <label class="flex items-center">
+                    <input type="checkbox" wire:model.live="showDeleted" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <span class="ml-2 text-sm text-gray-600">Show deleted subcontractors</span>
+                </label>
+            </div>
+        </div>
+    </x-management-panel>
+
     <x-management-panel :editing="$editing" entity-name="Subcontractor">
         <form wire:submit.prevent="save" class="space-y-6">
             <x-form-grid :cols="3">
@@ -49,8 +61,7 @@
                     <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Comment</th>
                     <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Parent Companies</th>
                     <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacts</th>
-                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edit</th>
-                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delete</th>
+                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -99,16 +110,24 @@
                             </a>
                         </td>
                         <td class="px-3 sm:px-6 py-4 text-sm font-medium">
-                            <button wire:click="edit({{ $sub->id }})" 
-                                    class="text-blue-600 hover:text-blue-900 font-medium transition-colors duration-200">
-                                Edit
-                            </button>
-                        </td>
-                        <td class="px-3 sm:px-6 py-4 text-sm font-medium">
-                            <button wire:click="delete({{ $sub->id }})" 
-                                    class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200">
-                                Delete
-                            </button>
+                            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                <button wire:click="edit({{ $sub->id }})" 
+                                        class="text-blue-600 hover:text-blue-900 font-medium transition-colors duration-200 text-left px-2 py-1 rounded hover:bg-blue-50">
+                                    Edit
+                                </button>
+                                @if($sub->trashed())
+                                    <button wire:click="restore({{ $sub->id }})" 
+                                            class="text-green-600 hover:text-green-900 font-medium transition-colors duration-200 text-left px-2 py-1 rounded hover:bg-green-50">
+                                        Restore
+                                    </button>
+                                @else
+                                    <button wire:click="delete({{ $sub->id }})" 
+                                            class="text-red-600 hover:text-red-900 font-medium transition-colors duration-200 text-left px-2 py-1 rounded hover:bg-red-50" 
+                                            onclick="return confirm('Are you sure you want to delete this subcontractor?')">
+                                        Delete
+                                    </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @endforeach

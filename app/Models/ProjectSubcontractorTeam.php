@@ -11,17 +11,15 @@ class ProjectSubcontractorTeam extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'project_id',
         'main_subcontractor_id', 
         'role',
         'notes',
-        'opportunity_type',
         'opportunity_id'
     ];
 
     public function project()
     {
-        return $this->belongsTo(Project::class);
+        return $this->hasOneThrough(Project::class, Opportunity::class, 'id', 'id', 'opportunity_id', 'project_id');
     }
 
     public function mainSubcontractor()
@@ -36,44 +34,23 @@ class ProjectSubcontractorTeam extends Model
             'project_team_supporters', 
             'team_id', 
             'supporting_subcontractor_id'
-        )->withTimestamps();
+        )->withTimestamps()->withPivot('deleted_at')->wherePivotNull('deleted_at');
     }
 
-    // Dynamic relationship to get the specific opportunity
+    // All supporting subcontractors including soft deleted
+    public function allSupportingSubcontractors()
+    {
+        return $this->belongsToMany(
+            Subcontractor::class, 
+            'project_team_supporters', 
+            'team_id', 
+            'supporting_subcontractor_id'
+        )->withTimestamps()->withPivot('deleted_at');
+    }
+
+    // Direct relationship to opportunity
     public function opportunity()
     {
-        if (!$this->opportunity_type || !$this->opportunity_id) {
-            return null;
-        }
-
-        switch ($this->opportunity_type) {
-            case 'vertical_surfaces':
-                return $this->belongsTo(VerticalSurface::class, 'opportunity_id');
-            case 'panels':
-                return $this->belongsTo(Panel::class, 'opportunity_id');
-            case 'covers':
-                return $this->belongsTo(Cover::class, 'opportunity_id');
-            default:
-                return null;
-        }
-    }
-
-    // Helper method to get opportunity instance
-    public function getOpportunityAttribute()
-    {
-        if (!$this->opportunity_type || !$this->opportunity_id) {
-            return null;
-        }
-
-        switch ($this->opportunity_type) {
-            case 'vertical_surfaces':
-                return VerticalSurface::find($this->opportunity_id);
-            case 'panels':
-                return Panel::find($this->opportunity_id);
-            case 'covers':
-                return Cover::find($this->opportunity_id);
-            default:
-                return null;
-        }
+        return $this->belongsTo(Opportunity::class);
     }
 }

@@ -6,27 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        // 1. Drop redundant tables
-        Schema::dropIfExists('project_opportunity');
-        Schema::dropIfExists('opportunity_subcontractor');
-        
-        // 2. Create supporting subcontractors pivot table for teams
-        if (!Schema::hasTable('project_team_supporters')) {
-            Schema::create('project_team_supporters', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('team_id')->constrained('project_subcontractor_teams')->cascadeOnDelete();
-                $table->foreignId('supporting_subcontractor_id')->constrained('subcontractors')->cascadeOnDelete();
-                $table->timestamps();
-                $table->softDeletes();
-                
-                $table->unique(['team_id', 'supporting_subcontractor_id'], 'team_supporter_unique');
-                $table->index(['team_id', 'deleted_at']);
-            });
-        }
-        
-        // 3. Add GDPR compliance columns to contacts
+        // Add GDPR compliance columns to contacts
         if (Schema::hasTable('contacts')) {
             Schema::table('contacts', function (Blueprint $table) {
                 if (!Schema::hasColumn('contacts', 'consent_given_at')) {
@@ -44,7 +29,7 @@ return new class extends Migration
             });
         }
         
-        // 4. Create encrypted data table for sensitive opportunity data
+        // Create encrypted data table for sensitive opportunity data if not exists
         if (!Schema::hasTable('opportunity_encrypted_data')) {
             Schema::create('opportunity_encrypted_data', function (Blueprint $table) {
                 $table->id();
@@ -58,16 +43,23 @@ return new class extends Migration
         }
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        // Drop new tables
+        // Drop encrypted data table
         Schema::dropIfExists('opportunity_encrypted_data');
-        Schema::dropIfExists('project_team_supporters');
         
-        // Remove GDPR columns
+        // Remove GDPR columns from contacts
         if (Schema::hasTable('contacts')) {
             Schema::table('contacts', function (Blueprint $table) {
-                $table->dropColumn(['consent_given_at', 'consent_withdrawn_at', 'marketing_consent', 'data_processing_notes']);
+                $table->dropColumn([
+                    'consent_given_at', 
+                    'consent_withdrawn_at', 
+                    'marketing_consent', 
+                    'data_processing_notes'
+                ]);
             });
         }
     }

@@ -50,8 +50,6 @@ class ProjectManagement extends Component
     #[Validate('nullable|exists:statuses,id')]
     public $commercial_status_id = '';
     
-    #[Validate('required|string|max:255')]
-    public $owner = '';
     
     #[Validate('nullable|string|max:1000')]
     public $comment = '';
@@ -75,7 +73,6 @@ class ProjectManagement extends Component
                 $this->name = $airline->name . ' - ' . ucfirst($context['opportunity_type']) . ' Project';
             }
             
-            $this->owner = auth()->user()->name;
             $this->comment = 'Created from team management for ' . (isset($context['opportunity_type']) ? $context['opportunity_type'] : 'opportunity') . ' staffing';
             
             // Open the modal automatically
@@ -116,7 +113,6 @@ class ProjectManagement extends Component
         if ($this->search) {
             $query->where(function ($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('owner', 'like', '%' . $this->search . '%')
                   ->orWhere('comment', 'like', '%' . $this->search . '%')
                   ->orWhereHas('airline', function ($aq) {
                       $aq->where('name', 'like', '%' . $this->search . '%');
@@ -226,7 +222,6 @@ class ProjectManagement extends Component
         $this->number_of_aircraft = '';
         $this->design_status_id = '';
         $this->commercial_status_id = '';
-        $this->owner = '';
         $this->comment = '';
     }
 
@@ -238,7 +233,6 @@ class ProjectManagement extends Component
         $this->number_of_aircraft = $project->number_of_aircraft;
         $this->design_status_id = $project->design_status_id;
         $this->commercial_status_id = $project->commercial_status_id;
-        $this->owner = $project->owner;
         $this->comment = $project->comment;
     }
 
@@ -251,7 +245,6 @@ class ProjectManagement extends Component
             'number_of_aircraft' => $this->number_of_aircraft ?: null,
             'design_status_id' => $this->design_status_id ?: null,
             'commercial_status_id' => $this->commercial_status_id ?: null,
-            'owner' => $this->owner,
             'comment' => $this->comment,
         ];
     }

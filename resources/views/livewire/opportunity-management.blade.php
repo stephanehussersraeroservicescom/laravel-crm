@@ -70,26 +70,37 @@
                 </select>
             </div>
 
-            <!-- Project Filter moved here for better layout -->
+            <!-- Aircraft Type Filter -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                <select wire:model.live="filterProject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Projects</option>
-                    @foreach($projects as $project)
-                        <option value="{{ $project->id }}">{{ $project->name }} ({{ $project->airline->name }})</option>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Aircraft Type</label>
+                <select wire:model.live="filterAircraftType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Aircraft Types</option>
+                    @foreach($aircraftTypes as $aircraftType)
+                        <option value="{{ $aircraftType->id }}">{{ $aircraftType->name }}</option>
                     @endforeach
                 </select>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            <!-- Project Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
+                <select wire:model.live="filterProject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Projects</option>
+                    @foreach($projects as $project)
+                        <option value="{{ $project->id }}">{{ $project->name }} ({{ $project->airline?->name ?? 'No Airline' }})</option>
+                    @endforeach
+                </select>
+            </div>
+
             <!-- Type Filter -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                 <select wire:model.live="filterType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">All Types</option>
                     @foreach($opportunityTypes as $type)
-                        <option value="{{ $type->value }}">{{ ucfirst($type->value) }}</option>
+                        <option value="{{ $type->value }}">{{ ucfirst($type->value ?? $type->name ?? 'Unknown') }}</option>
                     @endforeach
                 </select>
             </div>
@@ -100,7 +111,7 @@
                 <select wire:model.live="filterStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">All Statuses</option>
                     @foreach($opportunityStatuses as $status)
-                        <option value="{{ $status->value }}">{{ ucfirst($status->value) }}</option>
+                        <option value="{{ $status->value }}">{{ ucfirst($status->value ?? $status->name ?? 'Unknown') }}</option>
                     @endforeach
                 </select>
             </div>
@@ -111,7 +122,7 @@
                 <select wire:model.live="filterCabinClass" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">All Classes</option>
                     @foreach($cabinClasses as $class)
-                        <option value="{{ $class->value }}">{{ str_replace('_', ' ', ucwords($class->value, '_')) }}</option>
+                        <option value="{{ $class->value }}">{{ str_replace('_', ' ', ucwords($class->value ?? $class->name ?? 'unknown', '_')) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -183,14 +194,14 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ $opportunity->project->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $opportunity->project->airline->name }}</div>
+                                <div class="font-medium text-gray-900">{{ $opportunity->project?->name ?? 'No Project' }}</div>
+                                <div class="text-sm text-gray-500">{{ $opportunity->project?->airline?->name ?? 'No Airline' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ ucfirst($opportunity->type->value) }}</div>
+                                <div class="font-medium text-gray-900">{{ ucfirst($opportunity->type?->value ?? $opportunity->type ?? 'Unknown') }}</div>
                                 @if($opportunity->cabin_class)
                                     <div class="text-sm text-gray-500">
-                                        {{ str_replace('_', ' ', ucwords($opportunity->cabin_class->value, '_')) }}
+                                        {{ str_replace('_', ' ', ucwords($opportunity->cabin_class?->value ?? $opportunity->cabin_class ?? '', '_')) }}
                                     </div>
                                 @endif
                             </td>
@@ -214,14 +225,18 @@
                                     @endif
                                 @else
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                        @switch($opportunity->status->value)
+                                        @php
+                                            $statusValue = $opportunity->status?->value ?? $opportunity->status ?? 'unknown';
+                                        @endphp
+                                        @switch($statusValue)
                                             @case('active') bg-green-100 text-green-800 @break
                                             @case('inactive') bg-gray-100 text-gray-800 @break
                                             @case('pending') bg-yellow-100 text-yellow-800 @break
                                             @case('completed') bg-blue-100 text-blue-800 @break
                                             @case('cancelled') bg-red-100 text-red-800 @break
+                                            @default bg-gray-100 text-gray-800 @break
                                         @endswitch">
-                                        {{ ucfirst($opportunity->status->value) }}
+                                        {{ ucfirst($statusValue) }}
                                     </span>
                                 @endif
                             </td>

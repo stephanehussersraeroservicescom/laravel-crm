@@ -27,7 +27,7 @@
 
                         <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                             <div class="py-1">
-                                <a href="{{ route('airlines.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('airlines.*') ? 'bg-gray-100' : '' }}">Airlines</a>
+                                <a href="{{ route('manage.airlines') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.airlines') ? 'bg-gray-100' : '' }}">Airlines</a>
                                 <a href="{{ route('manage.projects') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.projects') ? 'bg-gray-100' : '' }}">Projects</a>
                                 <a href="{{ route('manage.opportunities') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.opportunities') ? 'bg-gray-100' : '' }}">Opportunities</a>
                                 <a href="{{ route('manage.teams') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.teams') ? 'bg-gray-100' : '' }}">Subcontractors</a>
@@ -169,7 +169,7 @@
                     {{ __('Program Management') }}
                 </div>
                 
-                <x-responsive-nav-link href="{{ route('airlines.index') }}" :active="request()->routeIs('airlines.*')">
+                <x-responsive-nav-link href="{{ route('manage.airlines') }}" :active="request()->routeIs('manage.airlines')">
                     {{ __('Airlines') }}
                 </x-responsive-nav-link>
                 

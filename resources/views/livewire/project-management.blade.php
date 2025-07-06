@@ -26,7 +26,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
                 <input type="text" 
                        wire:model.live.debounce.300ms="search" 
-                       placeholder="Search projects, owners, airlines..."
+                       placeholder="Search projects, airlines, comments..."
                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
@@ -128,7 +128,7 @@
                             Status
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Owner
+                            Comment
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
@@ -148,7 +148,7 @@
                             
                             <!-- Airline -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $project->airline->name }}</div>
+                                <div class="text-sm text-gray-900">{{ $project->airline?->name ?? 'No Airline' }}</div>
                             </td>
                             
                             <!-- Aircraft Type -->
@@ -181,9 +181,9 @@
                                 </div>
                             </td>
                             
-                            <!-- Owner -->
+                            <!-- Comment -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $project->owner ?? 'Unassigned' }}</div>
+                                <div class="text-sm text-gray-900">{{ Str::limit($project->comment, 30) ?: 'No comment' }}</div>
                             </td>
                             
                             <!-- Actions -->
@@ -289,18 +289,6 @@
                                 @error('number_of_aircraft') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
-                            <!-- Owner -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Project Owner</label>
-                                <select wire:model="owner" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Select Project Owner</option>
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->name }}">{{ $user->name }} ({{ ucfirst($user->role) }})</option>
-                                    @endforeach
-                                </select>
-                                @error('owner') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
 
                             <!-- Design Status -->
                             <div>

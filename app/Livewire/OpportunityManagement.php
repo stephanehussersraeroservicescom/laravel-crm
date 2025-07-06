@@ -24,6 +24,7 @@ class OpportunityManagement extends Component
     public $filterStatus = '';
     public $filterProject = '';
     public $filterAirline = '';
+    public $filterAircraftType = '';
     public $filterAssignedTo = '';
     public $sortBy = 'created_at';
     public $sortDirection = 'desc';
@@ -159,6 +160,7 @@ class OpportunityManagement extends Component
             ->orderBy('name')
             ->get();
         $airlines = \App\Models\Airline::orderBy('name')->get();
+        $aircraftTypes = \App\Models\AircraftType::orderBy('name')->get();
         $statuses = Status::where('type', 'certification')->get();
         $users = User::orderBy('name')->get();
 
@@ -166,6 +168,7 @@ class OpportunityManagement extends Component
             'opportunities' => $opportunities,
             'projects' => $projects,
             'airlines' => $airlines,
+            'aircraftTypes' => $aircraftTypes,
             'statuses' => $statuses,
             'users' => $users,
             'opportunityTypes' => OpportunityType::cases(),
@@ -176,7 +179,7 @@ class OpportunityManagement extends Component
 
     public function getOpportunities()
     {
-        $query = Opportunity::with(['project.airline', 'certificationStatus', 'assignedTo', 'createdBy', 'deletedBy']);
+        $query = Opportunity::with(['project.airline', 'project.aircraftType', 'certificationStatus', 'assignedTo', 'createdBy', 'deletedBy']);
         
         // Include soft deleted records if checkbox is checked
         if ($this->showDeleted) {
@@ -221,6 +224,12 @@ class OpportunityManagement extends Component
             });
         }
 
+        if ($this->filterAircraftType) {
+            $query->whereHas('project', function ($q) {
+                $q->where('aircraft_type_id', $this->filterAircraftType);
+            });
+        }
+
         if ($this->filterAssignedTo) {
             $query->where('assigned_to', $this->filterAssignedTo);
         }
@@ -250,6 +259,7 @@ class OpportunityManagement extends Component
         $this->filterStatus = '';
         $this->filterProject = '';
         $this->filterAirline = '';
+        $this->filterAircraftType = '';
         $this->filterAssignedTo = '';
         $this->showDeleted = false;
         $this->resetPage();
@@ -432,6 +442,11 @@ class OpportunityManagement extends Component
     }
 
     public function updatedFilterAirline()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterAircraftType()
     {
         $this->resetPage();
     }

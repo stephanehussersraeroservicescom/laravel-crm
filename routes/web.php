@@ -37,8 +37,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/subcontractors/{subcontractor}/contacts', \App\Livewire\ContactsTable::class)
         ->name('contacts.index');
 
-    Route::get('/airlines', \App\Livewire\AirlinesTable::class)
-        ->name('airlines.index');
+    Route::get('/manage/airlines', \App\Livewire\AirlinesTable::class)
+        ->name('manage.airlines');
 
     Route::get('/projects', \App\Livewire\ProjectsTable::class)
         ->name('projects.index');

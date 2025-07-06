@@ -194,7 +194,12 @@ class TeamManagement extends Component
 
     public function openEditModal($teamId)
     {
-        $this->selectedTeam = ProjectSubcontractorTeam::with('supportingSubcontractors')->findOrFail($teamId);
+        $this->selectedTeam = ProjectSubcontractorTeam::with([
+            'opportunity.project.airline',
+            'opportunity.project.aircraftType',
+            'mainSubcontractor', 
+            'supportingSubcontractors'
+        ])->findOrFail($teamId);
         $this->fillForm($this->selectedTeam);
         $this->modalMode = 'edit';
         $this->showModal = true;
@@ -289,12 +294,12 @@ class TeamManagement extends Component
     private function fillForm($team)
     {
         $this->opportunity_id = $team->opportunity_id;
-        $this->selected_airline_id = $team->opportunity->project->airline_id;
-        $this->selected_project_id = $team->opportunity->project_id;
-        $this->selected_opportunity_type = $team->opportunity->type->value;
-        $this->selected_cabin_class = $team->opportunity->cabin_class->value;
+        $this->selected_airline_id = $team->opportunity?->project?->airline_id ?? '';
+        $this->selected_project_id = $team->opportunity?->project_id ?? '';
+        $this->selected_opportunity_type = $team->opportunity?->type?->value ?? '';
+        $this->selected_cabin_class = $team->opportunity?->cabin_class?->value ?? '';
         $this->main_subcontractor_id = $team->main_subcontractor_id;
-        $this->role = $team->role->value;
+        $this->role = $team->role?->value ?? '';
         $this->notes = $team->notes;
         $this->supportingSubcontractors = $team->supportingSubcontractors->pluck('id')->toArray();
         
@@ -444,14 +449,8 @@ class TeamManagement extends Component
     public function updatedFilterProject()
     {
         $this->resetPage();
-        // Reset opportunity filter when project changes
-        $this->filterOpportunity = '';
     }
 
-    public function updatedFilterOpportunity()
-    {
-        $this->resetPage();
-    }
 
     public function updatedFilterMainSubcontractor()
     {

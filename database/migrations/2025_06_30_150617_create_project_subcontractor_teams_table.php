@@ -14,20 +14,21 @@ return new class extends Migration
         // Create project_subcontractor_teams table for main subcontractors
         Schema::create('project_subcontractor_teams', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained(); // Removed cascadeOnDelete for soft delete handling
             $table->foreignId('main_subcontractor_id')->constrained('subcontractors')->cascadeOnDelete();
             $table->enum('role', ['Commercial', 'Project Management', 'Design', 'Certification', 'Manufacturing', 'Subcontractor']);
             
-            // Manually create polymorphic columns with shorter index names
-            $table->string('opportunity_type')->nullable();
+            // Opportunity ID will be constrained later after opportunities table is created
             $table->unsignedBigInteger('opportunity_id')->nullable();
-            $table->index(['opportunity_type', 'opportunity_id'], 'teams_opportunity_index');
             
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
             
-            $table->unique(['project_id', 'main_subcontractor_id', 'role'], 'project_main_sub_role_unique');
+            // Final unique constraint based on opportunity (not project)
+            $table->unique(['opportunity_id', 'main_subcontractor_id', 'role'], 'opportunity_main_sub_role_unique');
+            
+            // Performance indexes
+            $table->index(['opportunity_id']);
         });
         
         // Create pivot table for supporting subcontractors

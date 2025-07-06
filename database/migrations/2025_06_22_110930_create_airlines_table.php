@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('region', [
                         'North America', 'South America', 'Europe', 'Asia', 'Middle East', 'Africa', 'Oceania'
                         ]); 
-            $table->string('account_executive')->nullable(); // You could also use 'user_id' for a relation to a users table
+            $table->foreignId('account_executive_id')->nullable()->constrained('users')->nullOnDelete();
             $table->softDeletes();
             $table->timestamps();
         });

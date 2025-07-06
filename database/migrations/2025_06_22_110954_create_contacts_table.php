@@ -19,8 +19,14 @@ return new class extends Migration
             $table->enum('role', ['engineering', 'program_management', 'design', 'certification'])->nullable();
             $table->string('phone')->nullable();
             $table->text('comment')->nullable();
+            $table->timestamp('consent_given_at')->nullable();
+            $table->timestamp('consent_withdrawn_at')->nullable();
+            $table->text('data_processing_notes')->nullable();
             $table->softDeletes();
             $table->timestamps();
+            
+            // Business logic constraints
+            $table->unique(['subcontractor_id', 'email'], 'unique_contact_email_per_subcontractor');
         });
     }
 

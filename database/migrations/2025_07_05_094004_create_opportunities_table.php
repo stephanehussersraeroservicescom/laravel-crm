@@ -30,6 +30,8 @@ return new class extends Migration
             $table->foreignId('certification_status_id')->nullable()->constrained('statuses')->nullOnDelete();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             
             // Content fields
             $table->string('phy_path')->nullable();

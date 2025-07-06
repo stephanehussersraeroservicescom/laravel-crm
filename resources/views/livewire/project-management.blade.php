@@ -1,14 +1,16 @@
 <div class="space-y-6">
     <!-- Header -->
-    <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-900">Project Management</h1>
-        <button wire:click="openCreateModal" 
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Add Project
-        </button>
+    <div class="w-full mx-auto md:max-w-[90%] pt-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-900">Project Management</h1>
+            <button wire:click="openCreateModal" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add Project
+            </button>
+        </div>
     </div>
 
     <!-- Flash Messages -->
@@ -128,6 +130,9 @@
                             Status
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Owner
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Comment
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -181,6 +186,11 @@
                                 </div>
                             </td>
                             
+                            <!-- Owner -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ $project->owner?->name ?? 'No Owner' }}</div>
+                            </td>
+                            
                             <!-- Comment -->
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ Str::limit($project->comment, 30) ?: 'No comment' }}</div>
@@ -209,7 +219,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                                 No projects found. 
                                 <button wire:click="openCreateModal" class="text-blue-600 hover:text-blue-800">
                                     Create your first project
@@ -289,6 +299,18 @@
                                 @error('number_of_aircraft') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
+                            <!-- Owner -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Owner *</label>
+                                <select wire:model="owner_id" required 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select Owner</option>
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('owner_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
 
                             <!-- Design Status -->
                             <div>

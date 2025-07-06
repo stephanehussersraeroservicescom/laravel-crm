@@ -40,6 +40,7 @@ class ComprehensiveDatabaseSeeder extends Seeder
     private function truncateTables(): void
     {
         $tables = [
+            'project_team_supporters',
             'project_subcontractor_teams',
             'opportunities',
             'contacts',
@@ -195,10 +196,12 @@ class ComprehensiveDatabaseSeeder extends Seeder
                 'aircraft_type_id' => $aircraft->id,
                 'design_status_id' => $designStatus->id,
                 'commercial_status_id' => $commercialStatus->id,
-                'owner' => $users->random()->name, // Assign random user as project owner
+                'owner_id' => $users->random()->id, // Assign random user as project owner
                 'comment' => "Interior design project for {$airline->name} {$aircraft->name} fleet - Project {$i} notes and requirements",
                 'number_of_aircraft' => rand(5, 50),
-                'created_by' => rand(1, 3),
+                'created_by' => $users->random()->id,
+                'updated_by' => $users->random()->id,
+                'deleted_by' => null,
                 'created_at' => Carbon::now()->subDays(rand(1, 365)),
                 'updated_at' => Carbon::now()->subDays(rand(1, 30)),
             ];
@@ -265,6 +268,9 @@ class ComprehensiveDatabaseSeeder extends Seeder
                     'phone' => '+1-' . rand(100, 999) . '-' . rand(100, 999) . '-' . rand(1000, 9999),
                     'role' => $roles[array_rand($roles)],
                     'subcontractor_id' => $subcontractor->id,
+                    'consent_given_at' => Carbon::now()->subDays(rand(1, 365)),
+                    'consent_withdrawn_at' => null,
+                    'data_processing_notes' => 'GDPR compliant contact - consent given for business communications',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ];
@@ -302,10 +308,10 @@ class ComprehensiveDatabaseSeeder extends Seeder
                 'potential_value' => rand(50000, 2000000),
                 'comments' => "Business opportunity for {$cabinClass} cabin enhancement - {$type} implementation",
                 'description' => "Detailed description for {$type} opportunity in {$cabinClass} class",
-                'owner' => $users->random()->name, // Assign random user as opportunity owner
                 'created_by' => $user->id,
                 'assigned_to' => $users->random()->id,
                 'updated_by' => $users->random()->id,
+                'deleted_by' => null,
                 'created_at' => Carbon::now()->subDays(rand(1, 180)),
                 'updated_at' => Carbon::now()->subDays(rand(1, 30)),
             ];

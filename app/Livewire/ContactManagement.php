@@ -193,7 +193,7 @@ class ContactManagement extends Component
         $this->subcontractor_id = $contact->subcontractor_id;
         $this->name = $contact->name;
         $this->email = $contact->email;
-        $this->role = $contact->role;
+        $this->role = $contact->role?->value;
         $this->phone = $contact->phone;
         $this->consent_given_at = $contact->consent_given_at?->format('Y-m-d');
     }

@@ -50,6 +50,8 @@ class ProjectManagement extends Component
     #[Validate('nullable|exists:statuses,id')]
     public $commercial_status_id = '';
     
+    #[Validate('required|exists:users,id')]
+    public $owner_id = '';
     
     #[Validate('nullable|string|max:1000')]
     public $comment = '';
@@ -73,6 +75,7 @@ class ProjectManagement extends Component
                 $this->name = $airline->name . ' - ' . ucfirst($context['opportunity_type']) . ' Project';
             }
             
+            $this->owner_id = auth()->user()->id;
             $this->comment = 'Created from team management for ' . (isset($context['opportunity_type']) ? $context['opportunity_type'] : 'opportunity') . ' staffing';
             
             // Open the modal automatically
@@ -102,7 +105,7 @@ class ProjectManagement extends Component
 
     public function getProjects()
     {
-        $query = Project::with(['airline', 'aircraftType', 'designStatus', 'commercialStatus']);
+        $query = Project::with(['airline', 'aircraftType', 'designStatus', 'commercialStatus', 'owner']);
         
         // Include deleted if checkbox is checked
         if ($this->showDeleted) {
@@ -189,17 +192,21 @@ class ProjectManagement extends Component
 
     public function save()
     {
-        $this->validate();
+        try {
+            $this->validate();
 
-        if ($this->modalMode === 'create') {
-            Project::create($this->getFormData());
-            session()->flash('message', 'Project created successfully.');
-        } else {
-            $this->selectedProject->update($this->getFormData());
-            session()->flash('message', 'Project updated successfully.');
+            if ($this->modalMode === 'create') {
+                Project::create($this->getFormData());
+                session()->flash('message', 'Project created successfully.');
+            } else {
+                $this->selectedProject->update($this->getFormData());
+                session()->flash('message', 'Project updated successfully.');
+            }
+
+            $this->closeModal();
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error saving project: ' . $e->getMessage());
         }
-
-        $this->closeModal();
     }
 
     public function delete($projectId)
@@ -222,6 +229,7 @@ class ProjectManagement extends Component
         $this->number_of_aircraft = '';
         $this->design_status_id = '';
         $this->commercial_status_id = '';
+        $this->owner_id = auth()->user()->id ?? '';
         $this->comment = '';
     }
 
@@ -233,6 +241,7 @@ class ProjectManagement extends Component
         $this->number_of_aircraft = $project->number_of_aircraft;
         $this->design_status_id = $project->design_status_id;
         $this->commercial_status_id = $project->commercial_status_id;
+        $this->owner_id = $project->owner_id;
         $this->comment = $project->comment;
     }
 
@@ -245,6 +254,7 @@ class ProjectManagement extends Component
             'number_of_aircraft' => $this->number_of_aircraft ?: null,
             'design_status_id' => $this->design_status_id ?: null,
             'commercial_status_id' => $this->commercial_status_id ?: null,
+            'owner_id' => $this->owner_id,
             'comment' => $this->comment,
         ];
     }

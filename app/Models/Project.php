@@ -13,7 +13,7 @@ class Project extends Model
     
     protected $fillable = [
         'name', 'airline_id', 'aircraft_type_id', 'number_of_aircraft', 
-        'design_status_id', 'commercial_status_id', 'owner', 'comment'
+        'design_status_id', 'commercial_status_id', 'owner_id', 'comment'
     ];
 
     /**
@@ -24,7 +24,7 @@ class Project extends Model
         return [
             'name' => 'required|string|max:255',
             'airline_id' => 'required|exists:airlines,id',
-            'owner' => 'required|string|max:255',
+            'owner_id' => 'required|exists:users,id',
             'aircraft_type_id' => 'nullable|exists:aircraft_types,id',
             'number_of_aircraft' => 'nullable|integer|min:1',
             'design_status_id' => 'nullable|exists:statuses,id',
@@ -70,6 +70,7 @@ class Project extends Model
     public function commercialStatus() { return $this->belongsTo(Status::class, 'commercial_status_id'); }
     public function airline(){ return $this->belongsTo(\App\Models\Airline::class);}
     public function aircraftType(){ return $this->belongsTo(\App\Models\AircraftType::class);}
+    public function owner() { return $this->belongsTo(User::class, 'owner_id'); }
     
     // Project-specific subcontractor relationships (through opportunities)
     public function subcontractorTeams()

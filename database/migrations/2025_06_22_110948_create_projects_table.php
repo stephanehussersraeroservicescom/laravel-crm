@@ -19,8 +19,11 @@ return new class extends Migration
             $table->integer('number_of_aircraft')->nullable();
             $table->foreignId('design_status_id')->nullable()->constrained('statuses');
             $table->foreignId('commercial_status_id')->nullable()->constrained('statuses');
-            $table->string('owner')->nullable(); // Project owner, defaults to airline's account executive but can be overridden
+            $table->foreignId('owner_id')->constrained('users'); // Project owner (required)
             $table->text('comment')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });

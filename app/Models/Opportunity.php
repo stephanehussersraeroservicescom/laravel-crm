@@ -246,4 +246,87 @@ class Opportunity extends Model
     {
         return $this->status?->label() ?? 'Unknown';
     }
+    
+    /**
+     * Get the opportunity's display name (concatenated format)
+     * Format: "[Airline Name] [Aircraft Type] [Opportunity Type] [Cabin Class] [Project Name]"
+     */
+    public function getDisplayNameAttribute()
+    {
+        $parts = [];
+        
+        // Get airline and aircraft type from project
+        if ($this->project && $this->project->airline) {
+            $parts[] = $this->project->airline->name;
+        }
+        
+        if ($this->project && $this->project->aircraftType) {
+            $parts[] = $this->project->aircraftType->name;
+        }
+        
+        // Add opportunity type
+        if ($this->type) {
+            $parts[] = ucfirst($this->type->value ?? $this->type);
+        }
+        
+        // Add cabin class
+        if ($this->cabin_class) {
+            $cabinClass = $this->cabin_class->value ?? $this->cabin_class;
+            $parts[] = str_replace('_', ' ', ucwords($cabinClass, '_'));
+        }
+        
+        // Add project name
+        if ($this->project && $this->project->name) {
+            $parts[] = $this->project->name;
+        }
+        
+        return implode(' ', $parts);
+    }
+    
+    /**
+     * Scope to search by concatenated display name
+     */
+    public function scopeSearchByDisplayName($query, $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%")
+              ->orWhere('comments', 'like', "%{$search}%")
+              ->orWhere('type', 'like', "%{$search}%")
+              ->orWhere('cabin_class', 'like', "%{$search}%")
+              ->orWhereHas('project', function ($pq) use ($search) {
+                  $pq->where('name', 'like', "%{$search}%")
+                     ->orWhereHas('airline', function ($aq) use ($search) {
+                         $aq->where('name', 'like', "%{$search}%");
+                     })
+                     ->orWhereHas('aircraftType', function ($atq) use ($search) {
+                         $atq->where('name', 'like', "%{$search}%");
+                     });
+              });
+        });
+    }
+    
+    /**
+     * Additional scope filters for enhanced filtering
+     */
+    public function scopeByAirline($query, $airlineId)
+    {
+        return $query->whereHas('project', function ($q) use ($airlineId) {
+            $q->where('airline_id', $airlineId);
+        });
+    }
+    
+    public function scopeByAircraftType($query, $aircraftTypeId)
+    {
+        return $query->whereHas('project', function ($q) use ($aircraftTypeId) {
+            $q->where('aircraft_type_id', $aircraftTypeId);
+        });
+    }
+    
+    public function scopeByProjectName($query, $projectName)
+    {
+        return $query->whereHas('project', function ($q) use ($projectName) {
+            $q->where('name', 'like', "%{$projectName}%");
+        });
+    }
 }

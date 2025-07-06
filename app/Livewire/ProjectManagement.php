@@ -100,7 +100,7 @@ class ProjectManagement extends Component
             'aircraftTypes' => $aircraftTypes,
             'statuses' => $statuses,
             'users' => $users,
-        ]);
+        ])->layout('layouts.app');
     }
 
     public function getProjects()
@@ -112,25 +112,20 @@ class ProjectManagement extends Component
             $query->withTrashed();
         }
 
-        // Search
+        // Search using the new searchByDisplayName scope
         if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
+            $query->searchByDisplayName($this->search)
                   ->orWhere('owner', 'like', '%' . $this->search . '%')
-                  ->orWhere('comment', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('airline', function ($aq) {
-                      $aq->where('name', 'like', '%' . $this->search . '%');
-                  });
-            });
+                  ->orWhere('comment', 'like', '%' . $this->search . '%');
         }
 
-        // Filters
+        // Filters using scopes
         if ($this->filterAirline) {
-            $query->where('airline_id', $this->filterAirline);
+            $query->byAirline($this->filterAirline);
         }
         
         if ($this->filterAircraftType) {
-            $query->where('aircraft_type_id', $this->filterAircraftType);
+            $query->byAircraftType($this->filterAircraftType);
         }
         
         if ($this->filterDesignStatus) {

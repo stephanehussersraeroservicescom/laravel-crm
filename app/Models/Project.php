@@ -71,6 +71,58 @@ class Project extends Model
     public function airline(){ return $this->belongsTo(\App\Models\Airline::class);}
     public function aircraftType(){ return $this->belongsTo(\App\Models\AircraftType::class);}
     
+    /**
+     * Get the project's display name (concatenated format)
+     * Format: "[Airline Name] [Aircraft Type] [Project Name]"
+     */
+    public function getDisplayNameAttribute()
+    {
+        $parts = [];
+        
+        if ($this->airline) {
+            $parts[] = $this->airline->name;
+        }
+        
+        if ($this->aircraftType) {
+            $parts[] = $this->aircraftType->name;
+        }
+        
+        if ($this->name) {
+            $parts[] = $this->name;
+        }
+        
+        return implode(' ', $parts);
+    }
+    
+    /**
+     * Scope to search by concatenated display name
+     */
+    public function scopeSearchByDisplayName($query, $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhereHas('airline', function ($aq) use ($search) {
+                  $aq->where('name', 'like', "%{$search}%");
+              })
+              ->orWhereHas('aircraftType', function ($atq) use ($search) {
+                  $atq->where('name', 'like', "%{$search}%");
+              });
+        });
+    }
+    
+    /**
+     * Scope filters
+     */
+    public function scopeByAirline($query, $airlineId)
+    {
+        return $query->where('airline_id', $airlineId);
+    }
+    
+    public function scopeByAircraftType($query, $aircraftTypeId)
+    {
+        return $query->where('aircraft_type_id', $aircraftTypeId);
+    }
+    
     // Project-specific subcontractor relationships (through opportunities)
     public function subcontractorTeams()
     {

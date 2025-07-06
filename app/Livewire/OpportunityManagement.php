@@ -24,6 +24,7 @@ class OpportunityManagement extends Component
     public $filterStatus = '';
     public $filterProject = '';
     public $filterAirline = '';
+    public $filterAircraftType = '';
     public $filterAssignedTo = '';
     public $sortBy = 'created_at';
     public $sortDirection = 'desc';
@@ -152,13 +153,14 @@ class OpportunityManagement extends Component
     public function render()
     {
         $opportunities = $this->getOpportunities();
-        // Get unique projects
-        $projects = Project::with('airline')
+        // Get unique projects with airline and aircraft type
+        $projects = Project::with(['airline', 'aircraftType'])
             ->select('projects.*')
             ->distinct()
             ->orderBy('name')
             ->get();
         $airlines = \App\Models\Airline::orderBy('name')->get();
+        $aircraftTypes = \App\Models\AircraftType::orderBy('name')->get();
         $statuses = Status::where('type', 'certification')->get();
         $users = User::orderBy('name')->get();
 
@@ -166,6 +168,7 @@ class OpportunityManagement extends Component
             'opportunities' => $opportunities,
             'projects' => $projects,
             'airlines' => $airlines,
+            'aircraftTypes' => $aircraftTypes,
             'statuses' => $statuses,
             'users' => $users,
             'opportunityTypes' => OpportunityType::cases(),
@@ -183,19 +186,9 @@ class OpportunityManagement extends Component
             $query->withTrashed();
         }
 
-        // Search
+        // Search using the new searchByDisplayName scope
         if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%')
-                  ->orWhere('comments', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('project', function ($pq) {
-                      $pq->where('name', 'like', '%' . $this->search . '%');
-                  })
-                  ->orWhereHas('project.airline', function ($aq) {
-                      $aq->where('name', 'like', '%' . $this->search . '%');
-                  });
-            });
+            $query->searchByDisplayName($this->search);
         }
 
         // Filters
@@ -216,9 +209,11 @@ class OpportunityManagement extends Component
         }
 
         if ($this->filterAirline) {
-            $query->whereHas('project', function ($q) {
-                $q->where('airline_id', $this->filterAirline);
-            });
+            $query->byAirline($this->filterAirline);
+        }
+
+        if ($this->filterAircraftType) {
+            $query->byAircraftType($this->filterAircraftType);
         }
 
         if ($this->filterAssignedTo) {
@@ -250,6 +245,7 @@ class OpportunityManagement extends Component
         $this->filterStatus = '';
         $this->filterProject = '';
         $this->filterAirline = '';
+        $this->filterAircraftType = '';
         $this->filterAssignedTo = '';
         $this->showDeleted = false;
         $this->resetPage();
@@ -432,6 +428,11 @@ class OpportunityManagement extends Component
     }
 
     public function updatedFilterAirline()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterAircraftType()
     {
         $this->resetPage();
     }

@@ -190,7 +190,7 @@ class ComprehensiveDatabaseSeeder extends Seeder
             $commercialStatus = $commercialStatuses->random();
             
             $projects[] = [
-                'name' => "Project {$i} - {$airline->name} {$aircraft->name}",
+                'name' => "Project {$i}",
                 'airline_id' => $airline->id,
                 'aircraft_type_id' => $aircraft->id,
                 'design_status_id' => $designStatus->id,
@@ -293,7 +293,7 @@ class ComprehensiveDatabaseSeeder extends Seeder
             $type = $types[array_rand($types)];
             
             $opportunities[] = [
-                'name' => "Opportunity {$i} - {$type}",
+                'name' => "Opportunity {$i}",
                 'project_id' => $project->id,
                 'type' => $type,
                 'cabin_class' => $cabinClass,
@@ -302,7 +302,6 @@ class ComprehensiveDatabaseSeeder extends Seeder
                 'potential_value' => rand(50000, 2000000),
                 'comments' => "Business opportunity for {$cabinClass} cabin enhancement - {$type} implementation",
                 'description' => "Detailed description for {$type} opportunity in {$cabinClass} class",
-                'owner' => $users->random()->name, // Assign random user as opportunity owner
                 'created_by' => $user->id,
                 'assigned_to' => $users->random()->id,
                 'updated_by' => $users->random()->id,

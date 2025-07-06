@@ -140,7 +140,7 @@
                         <tr class="hover:bg-gray-50 {{ $project->trashed() ? 'bg-red-50 opacity-75' : '' }}">
                             <!-- Project Name -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ $project->name }}</div>
+                                <div class="font-medium text-gray-900">{{ $project->display_name }}</div>
                                 @if($project->comment)
                                     <div class="text-sm text-gray-500">{{ Str::limit($project->comment, 50) }}</div>
                                 @endif

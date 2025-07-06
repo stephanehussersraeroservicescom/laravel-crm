@@ -47,7 +47,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Assigned User Filter -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
@@ -70,13 +70,24 @@
                 </select>
             </div>
 
-            <!-- Project Filter moved here for better layout -->
+            <!-- Aircraft Type Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Aircraft Type</label>
+                <select wire:model.live="filterAircraftType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Aircraft Types</option>
+                    @foreach($aircraftTypes as $aircraftType)
+                        <option value="{{ $aircraftType->id }}">{{ $aircraftType->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Project Filter -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
                 <select wire:model.live="filterProject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">All Projects</option>
                     @foreach($projects as $project)
-                        <option value="{{ $project->id }}">{{ $project->name }} ({{ $project->airline->name }})</option>
+                        <option value="{{ $project->id }}">{{ $project->display_name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -174,7 +185,7 @@
                         <tr class="hover:bg-gray-300 {{ $opportunity->trashed() ? 'bg-red-50 opacity-75' : '' }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="font-medium text-gray-900">
-                                    {{ $opportunity->name ?: 'Untitled Opportunity' }}
+                                    {{ $opportunity->display_name ?: 'Untitled Opportunity' }}
                                 </div>
                                 @if($opportunity->description)
                                     <div class="text-sm text-gray-500 truncate max-w-xs">
@@ -183,8 +194,10 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ $opportunity->project->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $opportunity->project->airline->name }}</div>
+                                <div class="font-medium text-gray-900">{{ $opportunity->project->display_name }}</div>
+                                @if($opportunity->project->comment)
+                                    <div class="text-sm text-gray-500">{{ Str::limit($opportunity->project->comment, 30) }}</div>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="font-medium text-gray-900">{{ ucfirst($opportunity->type->value) }}</div>
@@ -296,7 +309,7 @@
                                     <option value="">Select Project</option>
                                     @foreach($projects as $project)
                                         <option value="{{ $project->id }}">
-                                            {{ $project->name }} ({{ $project->airline->name }})
+                                            {{ $project->display_name }}
                                         </option>
                                     @endforeach
                                 </select>

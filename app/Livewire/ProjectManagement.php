@@ -112,11 +112,13 @@ class ProjectManagement extends Component
             $query->withTrashed();
         }
 
-        // Search using the new searchByDisplayName scope
+        // Search
         if ($this->search) {
-            $query->searchByDisplayName($this->search)
+            $query->where(function ($q) {
+                $q->searchByDisplayName($this->search)
                   ->orWhere('owner', 'like', '%' . $this->search . '%')
                   ->orWhere('comment', 'like', '%' . $this->search . '%');
+            });
         }
 
         // Filters using scopes

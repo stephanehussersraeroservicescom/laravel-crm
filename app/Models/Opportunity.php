@@ -288,8 +288,7 @@ class Opportunity extends Model
      */
     public function scopeSearchByDisplayName($query, $search)
     {
-        return $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
+        return $query->where('name', 'like', "%{$search}%")
               ->orWhere('description', 'like', "%{$search}%")
               ->orWhere('comments', 'like', "%{$search}%")
               ->orWhere('type', 'like', "%{$search}%")
@@ -303,7 +302,6 @@ class Opportunity extends Model
                          $atq->where('name', 'like', "%{$search}%");
                      });
               });
-        });
     }
     
     /**

@@ -99,15 +99,13 @@ class Project extends Model
      */
     public function scopeSearchByDisplayName($query, $search)
     {
-        return $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
+        return $query->where('name', 'like', "%{$search}%")
               ->orWhereHas('airline', function ($aq) use ($search) {
                   $aq->where('name', 'like', "%{$search}%");
               })
               ->orWhereHas('aircraftType', function ($atq) use ($search) {
                   $atq->where('name', 'like', "%{$search}%");
               });
-        });
     }
     
     /**

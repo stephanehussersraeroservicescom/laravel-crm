@@ -70,6 +70,11 @@ class TeamManagement extends Component
 
     // Supporting subcontractors
     public $supportingSubcontractors = [];
+    
+    // New subcontractor creation
+    public $showNewSubcontractorForm = false;
+    public $newSubcontractorName = '';
+    public $newSubcontractorComment = '';
 
     public function render()
     {
@@ -78,6 +83,7 @@ class TeamManagement extends Component
         $projects = Project::with('airline')
             ->when($this->filterAirline, fn($q) => $q->where('airline_id', $this->filterAirline))
             ->orderBy('name')->get();
+        // Always get fresh list of subcontractors to include newly created ones
         $subcontractors = Subcontractor::orderBy('name')->get();
         
         $this->updateFilteredProjects();
@@ -271,6 +277,48 @@ class TeamManagement extends Component
         unset($this->supportingSubcontractors[$index]);
         $this->supportingSubcontractors = array_values($this->supportingSubcontractors);
     }
+    
+    public function toggleNewSubcontractorForm()
+    {
+        $this->showNewSubcontractorForm = !$this->showNewSubcontractorForm;
+        if (!$this->showNewSubcontractorForm) {
+            $this->newSubcontractorName = '';
+            $this->newSubcontractorComment = '';
+        }
+    }
+    
+    public function createNewSubcontractor()
+    {
+        // Trim the name to avoid whitespace issues
+        $this->newSubcontractorName = trim($this->newSubcontractorName);
+        
+        $this->validate([
+            'newSubcontractorName' => 'required|string|max:255|unique:subcontractors,name',
+            'newSubcontractorComment' => 'nullable|string|max:1000',
+        ], [
+            'newSubcontractorName.unique' => 'A subcontractor with this name already exists. Please choose a different name.',
+            'newSubcontractorName.required' => 'Subcontractor name is required.',
+        ]);
+        
+        try {
+            $subcontractor = Subcontractor::create([
+                'name' => $this->newSubcontractorName,
+                'comment' => $this->newSubcontractorComment,
+            ]);
+            
+            // Auto-select the newly created subcontractor
+            $this->main_subcontractor_id = $subcontractor->id;
+            
+            // Reset form
+            $this->showNewSubcontractorForm = false;
+            $this->newSubcontractorName = '';
+            $this->newSubcontractorComment = '';
+            
+            session()->flash('message', 'Subcontractor created successfully and selected.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error creating subcontractor: ' . $e->getMessage());
+        }
+    }
 
     private function resetForm()
     {
@@ -289,6 +337,9 @@ class TeamManagement extends Component
         $this->opportunityCount = 0;
         $this->totalProjectsForAirline = 0;
         $this->totalOpportunitiesForSelection = 0;
+        $this->showNewSubcontractorForm = false;
+        $this->newSubcontractorName = '';
+        $this->newSubcontractorComment = '';
     }
 
     private function fillForm($team)
@@ -485,6 +536,21 @@ class TeamManagement extends Component
     public function updatedShowDeleted()
     {
         $this->resetPage();
+    }
+    
+    public function updatedNewSubcontractorName()
+    {
+        // Real-time validation for subcontractor name
+        if ($this->newSubcontractorName) {
+            $trimmedName = trim($this->newSubcontractorName);
+            $exists = Subcontractor::where('name', $trimmedName)->exists();
+            
+            if ($exists) {
+                $this->addError('newSubcontractorName', 'A subcontractor with this name already exists.');
+            } else {
+                $this->resetErrorBag('newSubcontractorName');
+            }
+        }
     }
 
     // Confirmation dialog methods

@@ -503,14 +503,57 @@
                             <!-- Main Subcontractor -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Main Subcontractor *</label>
-                                <select wire:model="main_subcontractor_id" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Select Main Subcontractor</option>
-                                    @foreach($subcontractors as $subcontractor)
-                                        <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('main_subcontractor_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <div class="space-y-2">
+                                    <select wire:model="main_subcontractor_id" required 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            {{ $showNewSubcontractorForm ? 'disabled' : '' }}>
+                                        <option value="">Select Main Subcontractor</option>
+                                        @foreach($subcontractors as $subcontractor)
+                                            <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('main_subcontractor_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    
+                                    <!-- Toggle to add new subcontractor -->
+                                    <button type="button" 
+                                            wire:click="toggleNewSubcontractorForm"
+                                            class="text-sm text-blue-600 hover:text-blue-800">
+                                        {{ $showNewSubcontractorForm ? '← Back to list' : '+ Add New Subcontractor' }}
+                                    </button>
+                                    
+                                    <!-- New Subcontractor Form -->
+                                    @if($showNewSubcontractorForm)
+                                        <div class="border border-blue-300 rounded-md p-3 bg-blue-50">
+                                            <div class="text-sm font-medium text-gray-700 mb-2">Create New Subcontractor</div>
+                                            
+                                            <div class="space-y-2">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700">Name *</label>
+                                                    <input type="text" 
+                                                           wire:model.live.debounce.300ms="newSubcontractorName" 
+                                                           placeholder="Enter subcontractor name"
+                                                           class="w-full px-2 py-1 text-sm border {{ $errors->has('newSubcontractorName') ? 'border-red-300' : 'border-gray-300' }} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    @error('newSubcontractorName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                                </div>
+                                                
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700">Comment</label>
+                                                    <textarea wire:model="newSubcontractorComment" 
+                                                              rows="2"
+                                                              placeholder="Optional comment about this subcontractor"
+                                                              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                                    @error('newSubcontractorComment') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                                </div>
+                                                
+                                                <button type="button" 
+                                                        wire:click="createNewSubcontractor"
+                                                        class="w-full px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                                    Create Subcontractor
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
 
                             <!-- Role -->
@@ -544,8 +587,10 @@
                                                         class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                                     <option value="">Select Subcontractor</option>
                                                     @foreach($subcontractors as $subcontractor)
-                                                        @if($subcontractor->id != $main_subcontractor_id)
+                                                        @if($subcontractor->id != $main_subcontractor_id && !in_array($subcontractor->id, array_filter($supportingSubcontractors)))
                                                             <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
+                                                        @elseif($subcontractor->id == $supportingId)
+                                                            <option value="{{ $subcontractor->id }}" selected>{{ $subcontractor->name }}</option>
                                                         @endif
                                                     @endforeach
                                                 </select>

@@ -3,330 +3,376 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use App\Models\Opportunity;
 use App\Models\Project;
-use App\Models\Subcontractor;
+use App\Models\Status;
 use App\Models\User;
-use App\Models\Attachment;
-use App\Models\Action;
-use Illuminate\Support\Facades\Storage;
+use App\Enums\OpportunityType;
+use App\Enums\CabinClass;
+use App\Enums\OpportunityStatus;
+use Livewire\Attributes\Validate;
 
 class OpportunityManagement extends Component
 {
-    use WithFileUploads, WithPagination;
+    use WithPagination;
 
-    // Form properties
-    public $selectedProject = null;
-    public $type = '';
-    public $cabin_class = '';
-    public $probability = 0;
-    public $potential_value = '';
-    public $status = 'draft';
-    public $comments = '';
-    public $name = '';
-    public $description = '';
-    public $assigned_to = '';
-
-    // Subcontractor assignments
-    public $selectedSubcontractors = [];
-    public $subcontractorRoles = [];
-    public $subcontractorNotes = [];
-
-    // Actions/Tasks
-    public $actionTitle = '';
-    public $actionDescription = '';
-    public $actionType = 'task';
-    public $actionPriority = 'medium';
-    public $actionAssignedTo = '';
-    public $actionDueDate = '';
-
-    // File uploads
-    public $attachments = [];
-
-    // UI state
-    public $editing = false;
-    public $editId = null;
-    public $showAttachments = false;
-    public $showActions = false;
+    // Search and Filter Properties
+    public $search = '';
+    public $filterType = '';
+    public $filterCabinClass = '';
+    public $filterStatus = '';
+    public $filterProject = '';
+    public $filterAirline = '';
+    public $filterAssignedTo = '';
+    public $sortBy = 'created_at';
+    public $sortDirection = 'desc';
+    public $perPage = 10;
     public $showDeleted = false;
 
-    // Filters
-    public $filterProject = '';
-    public $filterType = '';
-    public $filterStatus = '';
-    public $filterCabinClass = '';
-    public $search = '';
+    // Modal Properties
+    public $showModal = false;
+    public $modalMode = 'create'; // 'create' or 'edit'
+    public $selectedOpportunity = null;
 
-    public $availableTypes = [
-        'vertical' => 'Vertical',
-        'panels' => 'Panels', 
-        'covers' => 'Covers',
-        'others' => 'Others'
-    ];
+    // Form Properties
+    #[Validate('required|exists:projects,id')]
+    public $project_id = '';
+    
+    #[Validate('required|string')]
+    public $type = '';
+    
+    #[Validate('nullable|string')]
+    public $cabin_class = '';
+    
+    #[Validate('required|string')]
+    public $status = 'active';
+    
+    #[Validate('required|integer|min:0|max:100')]
+    public $probability = 50;
+    
+    #[Validate('required|numeric|min:0')]
+    public $potential_value = 0;
+    
+    #[Validate('nullable|string|max:255')]
+    public $name = '';
+    
+    #[Validate('nullable|string|max:1000')]
+    public $description = '';
+    
+    #[Validate('nullable|string|max:1000')]
+    public $comments = '';
+    
+    #[Validate('nullable|exists:statuses,id')]
+    public $certification_status_id = '';
+    
+    #[Validate('nullable|exists:users,id')]
+    public $assigned_to = '';
+    
+    #[Validate('nullable|exists:users,id')]
+    public $created_by = '';
 
-    public $availableCabinClasses = [
-        'first_class' => 'First Class',
-        'business_class' => 'Business Class',
-        'premium_economy' => 'Premium Economy',
-        'economy' => 'Economy'
-    ];
-
-    public $availableStatuses = [
-        'draft' => 'Draft',
-        'active' => 'Active',
-        'on_hold' => 'On Hold',
-        'won' => 'Won',
-        'lost' => 'Lost',
-        'cancelled' => 'Cancelled'
-    ];
-
-    public $availableActionTypes = [
-        'task' => 'Task',
-        'call' => 'Call',
-        'meeting' => 'Meeting',
-        'follow_up' => 'Follow Up',
-        'email' => 'Email',
-        'other' => 'Other'
-    ];
-
-    public $availablePriorities = [
-        'low' => 'Low',
-        'medium' => 'Medium',
-        'high' => 'High',
-        'urgent' => 'Urgent'
-    ];
-
-    public function rules()
+    public function mount()
     {
-        return [
-            'selectedProject' => 'required|exists:projects,id',
-            'type' => 'required|in:vertical,panels,covers,others',
-            'cabin_class' => 'required|in:first_class,business_class,premium_economy,economy',
-            'probability' => 'required|integer|min:0|max:100',
-            'potential_value' => 'nullable|numeric|min:0',
-            'status' => 'required|in:draft,active,on_hold,won,lost,cancelled',
-            'comments' => 'nullable|string',
-            'name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'assigned_to' => 'nullable|exists:users,id',
-            'selectedSubcontractors' => 'array',
-            'selectedSubcontractors.*' => 'exists:subcontractors,id',
-            'attachments.*' => 'file|max:10240', // 10MB max
-        ];
+        $this->created_by = auth()->id();
+        
+        // Set default filter to current user if they have any opportunities
+        $currentUserId = auth()->id();
+        $userHasOpportunities = Opportunity::where('assigned_to', $currentUserId)->exists();
+        
+        if ($userHasOpportunities) {
+            $this->filterAssignedTo = $currentUserId;
+        }
+    }
+
+    public function render()
+    {
+        $opportunities = $this->getOpportunities();
+        // Get unique projects
+        $projects = Project::with('airline')
+            ->select('projects.*')
+            ->distinct()
+            ->orderBy('name')
+            ->get();
+        $airlines = \App\Models\Airline::orderBy('name')->get();
+        $statuses = Status::where('type', 'certification')->get();
+        $users = User::orderBy('name')->get();
+
+        return view('livewire.opportunity-management', [
+            'opportunities' => $opportunities,
+            'projects' => $projects,
+            'airlines' => $airlines,
+            'statuses' => $statuses,
+            'users' => $users,
+            'opportunityTypes' => OpportunityType::cases(),
+            'cabinClasses' => CabinClass::cases(),
+            'opportunityStatuses' => OpportunityStatus::cases(),
+        ])->layout('layouts.app');
+    }
+
+    public function getOpportunities()
+    {
+        $query = Opportunity::with(['project.airline', 'certificationStatus', 'assignedTo', 'createdBy', 'deletedBy']);
+        
+        // Include soft deleted records if checkbox is checked
+        if ($this->showDeleted) {
+            $query->withTrashed();
+        }
+
+        // Search
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%')
+                  ->orWhere('comments', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('project', function ($pq) {
+                      $pq->where('name', 'like', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('project.airline', function ($aq) {
+                      $aq->where('name', 'like', '%' . $this->search . '%');
+                  });
+            });
+        }
+
+        // Filters
+        if ($this->filterType) {
+            $query->where('type', $this->filterType);
+        }
+
+        if ($this->filterCabinClass) {
+            $query->where('cabin_class', $this->filterCabinClass);
+        }
+
+        if ($this->filterStatus) {
+            $query->where('status', $this->filterStatus);
+        }
+
+        if ($this->filterProject) {
+            $query->where('project_id', $this->filterProject);
+        }
+
+        if ($this->filterAirline) {
+            $query->whereHas('project', function ($q) {
+                $q->where('airline_id', $this->filterAirline);
+            });
+        }
+
+        if ($this->filterAssignedTo) {
+            $query->where('assigned_to', $this->filterAssignedTo);
+        }
+
+        // Sorting
+        $query->orderBy($this->sortBy, $this->sortDirection);
+
+        return $query->paginate($this->perPage);
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortBy === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $field;
+            $this->sortDirection = 'asc';
+        }
+        $this->resetPage();
+    }
+
+    public function clearFilters()
+    {
+        $this->search = '';
+        $this->filterType = '';
+        $this->filterCabinClass = '';
+        $this->filterStatus = '';
+        $this->filterProject = '';
+        $this->filterAirline = '';
+        $this->filterAssignedTo = '';
+        $this->showDeleted = false;
+        $this->resetPage();
+    }
+
+    public function updatedShowDeleted()
+    {
+        $this->resetPage();
+    }
+
+    public function openCreateModal()
+    {
+        $this->resetForm();
+        $this->modalMode = 'create';
+        $this->showModal = true;
+    }
+
+    public function openEditModal($opportunityId)
+    {
+        $this->selectedOpportunity = Opportunity::findOrFail($opportunityId);
+        $this->fillForm($this->selectedOpportunity);
+        $this->modalMode = 'edit';
+        $this->showModal = true;
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->resetForm();
+        $this->selectedOpportunity = null;
     }
 
     public function save()
     {
         $this->validate();
-
-        $data = [
-            'type' => $this->type,
-            'cabin_class' => $this->cabin_class,
-            'probability' => $this->probability,
-            'potential_value' => $this->potential_value ?: null,
-            'status' => $this->status,
-            'comments' => $this->comments,
-            'name' => $this->name,
-            'description' => $this->description,
-            'assigned_to' => $this->assigned_to ?: null,
-            'created_by' => auth()->id(),
-        ];
-
-        if ($this->editing && $this->editId) {
-            $opportunity = Opportunity::findOrFail($this->editId);
-            $opportunity->update($data);
-        } else {
-            $opportunity = Opportunity::create($data);
-            // Attach to project
-            $opportunity->projects()->attach($this->selectedProject);
-        }
-
-        // Sync subcontractors with roles
-        $subcontractorData = [];
-        foreach ($this->selectedSubcontractors as $index => $subcontractorId) {
-            $subcontractorData[$subcontractorId] = [
-                'role' => $this->subcontractorRoles[$index] ?? 'supporting',
-                'notes' => $this->subcontractorNotes[$index] ?? null,
-            ];
-        }
-        $opportunity->subcontractors()->sync($subcontractorData);
-
-        // Handle file uploads
-        if (!empty($this->attachments)) {
-            foreach ($this->attachments as $file) {
-                $path = $file->store('opportunities/' . $opportunity->id, 'public');
-                
-                Attachment::create([
-                    'attachable_type' => Opportunity::class,
-                    'attachable_id' => $opportunity->id,
-                    'name' => $file->getClientOriginalName(),
-                    'file_path' => $path,
-                    'mime_type' => $file->getMimeType(),
-                    'file_size' => $file->getSize(),
-                    'uploaded_by' => auth()->id(),
-                ]);
-            }
-        }
-
-        $this->resetForm();
-        session()->flash('message', $this->editing ? 'Opportunity updated successfully!' : 'Opportunity created successfully!');
-    }
-
-    public function addAction($opportunityId)
-    {
-        $this->validate([
-            'actionTitle' => 'required|string|max:255',
-            'actionDescription' => 'nullable|string',
-            'actionType' => 'required|in:task,call,meeting,follow_up,email,other',
-            'actionPriority' => 'required|in:low,medium,high,urgent',
-            'actionAssignedTo' => 'nullable|exists:users,id',
-            'actionDueDate' => 'nullable|date|after:now',
-        ]);
-
-        Action::create([
-            'actionable_type' => Opportunity::class,
-            'actionable_id' => $opportunityId,
-            'title' => $this->actionTitle,
-            'description' => $this->actionDescription,
-            'type' => $this->actionType,
-            'priority' => $this->actionPriority,
-            'assigned_to' => $this->actionAssignedTo ?: null,
-            'created_by' => auth()->id(),
-            'due_date' => $this->actionDueDate ?: null,
-        ]);
-
-        $this->resetActionForm();
-        session()->flash('message', 'Action added successfully!');
-    }
-
-    public function edit($id)
-    {
-        $opportunity = Opportunity::with(['subcontractors', 'projects'])->findOrFail($id);
         
-        $this->editId = $id;
-        $this->editing = true;
-        $this->selectedProject = $opportunity->projects->first()?->id;
-        $this->type = $opportunity->type;
-        $this->cabin_class = $opportunity->cabin_class;
+        // Additional enum validation
+        $typeValues = array_column(OpportunityType::cases(), 'value');
+        $statusValues = array_column(OpportunityStatus::cases(), 'value');
+        $cabinValues = array_column(CabinClass::cases(), 'value');
+        
+        if (!in_array($this->type, $typeValues)) {
+            $this->addError('type', 'Invalid opportunity type.');
+            return;
+        }
+        
+        if (!in_array($this->status, $statusValues)) {
+            $this->addError('status', 'Invalid opportunity status.');
+            return;
+        }
+        
+        if ($this->cabin_class && !in_array($this->cabin_class, $cabinValues)) {
+            $this->addError('cabin_class', 'Invalid cabin class.');
+            return;
+        }
+
+        try {
+            if ($this->modalMode === 'create') {
+                $this->created_by = auth()->id();
+                $data = $this->getFormData();
+                $data['updated_by'] = auth()->id();
+                Opportunity::create($data);
+                session()->flash('message', 'Opportunity created successfully.');
+            } else {
+                $data = $this->getFormData();
+                $data['updated_by'] = auth()->id();
+                $this->selectedOpportunity->update($data);
+                session()->flash('message', 'Opportunity updated successfully.');
+            }
+            
+            $this->closeModal();
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error saving opportunity: ' . $e->getMessage());
+        }
+    }
+
+    public function delete($opportunityId)
+    {
+        try {
+            $opportunity = Opportunity::findOrFail($opportunityId);
+            $opportunity->update(['deleted_by' => auth()->id()]);
+            $opportunity->delete();
+            session()->flash('message', 'Opportunity deleted successfully.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error deleting opportunity: ' . $e->getMessage());
+        }
+    }
+
+    public function restore($opportunityId)
+    {
+        try {
+            $opportunity = Opportunity::withTrashed()->findOrFail($opportunityId);
+            $opportunity->update(['deleted_by' => null]);
+            $opportunity->restore();
+            session()->flash('message', 'Opportunity restored successfully.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error restoring opportunity: ' . $e->getMessage());
+        }
+    }
+
+    private function resetForm()
+    {
+        $this->project_id = '';
+        $this->type = '';
+        $this->cabin_class = '';
+        $this->status = 'active';
+        $this->probability = 50;
+        $this->potential_value = 0;
+        $this->name = '';
+        $this->description = '';
+        $this->comments = '';
+        $this->certification_status_id = '';
+        $this->assigned_to = '';
+        $this->created_by = auth()->id();
+    }
+
+    private function fillForm($opportunity)
+    {
+        $this->project_id = $opportunity->project_id;
+        $this->type = $opportunity->type?->value ?? $opportunity->type;
+        $this->cabin_class = $opportunity->cabin_class?->value ?? $opportunity->cabin_class;
+        $this->status = $opportunity->status?->value ?? $opportunity->status;
         $this->probability = $opportunity->probability;
         $this->potential_value = $opportunity->potential_value;
-        $this->status = $opportunity->status;
-        $this->comments = $opportunity->comments;
         $this->name = $opportunity->name;
         $this->description = $opportunity->description;
+        $this->comments = $opportunity->comments;
+        $this->certification_status_id = $opportunity->certification_status_id;
         $this->assigned_to = $opportunity->assigned_to;
-
-        // Load subcontractors
-        $this->selectedSubcontractors = $opportunity->subcontractors->pluck('id')->toArray();
-        $this->subcontractorRoles = $opportunity->subcontractors->pluck('pivot.role')->toArray();
-        $this->subcontractorNotes = $opportunity->subcontractors->pluck('pivot.notes')->toArray();
+        $this->created_by = $opportunity->created_by;
     }
 
-    public function delete($id)
+    private function getFormData()
     {
-        $opportunity = Opportunity::findOrFail($id);
-        $opportunity->delete();
-        session()->flash('message', 'Opportunity deleted successfully!');
+        return [
+            'project_id' => $this->project_id,
+            'type' => $this->type,
+            'cabin_class' => $this->cabin_class,
+            'status' => $this->status,
+            'probability' => $this->probability,
+            'potential_value' => $this->potential_value,
+            'name' => $this->name,
+            'description' => $this->description,
+            'comments' => $this->comments,
+            'certification_status_id' => $this->certification_status_id ?: null,
+            'assigned_to' => $this->assigned_to ?: null,
+            'created_by' => $this->created_by,
+        ];
     }
 
-    public function restore($id)
+    public function updatedSearch()
     {
-        $opportunity = Opportunity::withTrashed()->findOrFail($id);
-        $opportunity->restore();
-        session()->flash('message', 'Opportunity restored successfully!');
+        $this->resetPage();
     }
 
-    public function forceDelete($id)
+    public function updatedFilterType()
     {
-        $opportunity = Opportunity::withTrashed()->findOrFail($id);
-        
-        // Delete all associated files from storage
-        foreach ($opportunity->attachments()->withTrashed()->get() as $attachment) {
-            Storage::disk('public')->delete($attachment->file_path);
-        }
-        
-        $opportunity->forceDelete();
-        session()->flash('message', 'Opportunity permanently deleted!');
+        $this->resetPage();
     }
 
-    public function toggleShowDeleted()
+    public function updatedFilterCabinClass()
     {
-        $this->showDeleted = !$this->showDeleted;
+        $this->resetPage();
     }
 
-    public function deleteAttachment($id)
+    public function updatedFilterStatus()
     {
-        $attachment = Attachment::findOrFail($id);
-        $attachment->delete(); // Soft delete - file stays in storage
-        session()->flash('message', 'Attachment deleted successfully!');
+        $this->resetPage();
     }
 
-    public function restoreAttachment($id)
+    public function updatedFilterProject()
     {
-        $attachment = Attachment::withTrashed()->findOrFail($id);
-        $attachment->restore();
-        session()->flash('message', 'Attachment restored successfully!');
+        $this->resetPage();
     }
 
-    public function forceDeleteAttachment($id)
+    public function updatedFilterAirline()
     {
-        $attachment = Attachment::withTrashed()->findOrFail($id);
-        Storage::disk('public')->delete($attachment->file_path);
-        $attachment->forceDelete();
-        session()->flash('message', 'Attachment permanently deleted!');
+        $this->resetPage();
     }
 
-    public function resetForm()
+    public function updatedFilterAssignedTo()
     {
-        $this->reset([
-            'selectedProject', 'type', 'cabin_class', 'probability', 'potential_value',
-            'status', 'comments', 'name', 'description', 'assigned_to',
-            'selectedSubcontractors', 'subcontractorRoles', 'subcontractorNotes',
-            'attachments', 'editing', 'editId'
-        ]);
+        $this->resetPage();
     }
 
-    public function resetActionForm()
+    public function updatedPerPage()
     {
-        $this->reset([
-            'actionTitle', 'actionDescription', 'actionType', 'actionPriority',
-            'actionAssignedTo', 'actionDueDate'
-        ]);
-    }
-
-    public function render()
-    {
-        $query = $this->showDeleted 
-            ? Opportunity::withTrashed() 
-            : Opportunity::query();
-            
-        $query = $query->with(['projects.airline', 'subcontractors', 'assignedTo', 'createdBy'])
-            ->with(['attachments' => function($q) {
-                $this->showDeleted ? $q->withTrashed() : $q;
-            }])
-            ->with(['actions' => function($q) {
-                $this->showDeleted ? $q->withTrashed() : $q;
-            }])
-            ->when($this->filterProject, fn($q) => $q->whereHas('projects', fn($pq) => $pq->where('projects.id', $this->filterProject)))
-            ->when($this->filterType, fn($q) => $q->where('type', $this->filterType))
-            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
-            ->when($this->filterCabinClass, fn($q) => $q->where('cabin_class', $this->filterCabinClass))
-            ->when($this->search, function($q) {
-                $q->where(function($query) {
-                    $query->where('name', 'like', '%' . $this->search . '%')
-                          ->orWhere('description', 'like', '%' . $this->search . '%')
-                          ->orWhere('comments', 'like', '%' . $this->search . '%')
-                          ->orWhereHas('projects', fn($pq) => $pq->where('name', 'like', '%' . $this->search . '%'));
-                });
-            });
-
-        return view('livewire.opportunity-management', [
-            'opportunities' => $query->latest()->paginate(10),
-            'projects' => Project::with('airline')->orderBy('name')->get(),
-            'subcontractors' => Subcontractor::orderBy('name')->get(),
-            'users' => User::orderBy('name')->get(),
-        ]);
+        $this->resetPage();
     }
 }

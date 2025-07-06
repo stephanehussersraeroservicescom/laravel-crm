@@ -55,5 +55,15 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/airlines/create', \App\Livewire\AirlineCreate::class)
         ->name('airlines.create');
+
+    // New Management Components
+    Route::get('/manage/opportunities', \App\Livewire\OpportunityManagement::class)
+        ->name('manage.opportunities');
+
+    Route::get('/manage/teams', \App\Livewire\TeamManagement::class)
+        ->name('manage.teams');
+
+    Route::get('/manage/contacts', \App\Livewire\ContactManagement::class)
+        ->name('manage.contacts');
 });
 

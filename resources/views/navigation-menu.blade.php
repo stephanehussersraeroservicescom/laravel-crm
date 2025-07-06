@@ -15,6 +15,18 @@
                     <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    
+                    <x-nav-link href="{{ route('manage.opportunities') }}" :active="request()->routeIs('manage.opportunities')">
+                        {{ __('Opportunities') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link href="{{ route('manage.teams') }}" :active="request()->routeIs('manage.teams')">
+                        {{ __('Teams') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link href="{{ route('manage.contacts') }}" :active="request()->routeIs('manage.contacts')">
+                        {{ __('Contacts') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -141,6 +153,18 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link href="{{ route('manage.opportunities') }}" :active="request()->routeIs('manage.opportunities')">
+                {{ __('Opportunities') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link href="{{ route('manage.teams') }}" :active="request()->routeIs('manage.teams')">
+                {{ __('Teams') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link href="{{ route('manage.contacts') }}" :active="request()->routeIs('manage.contacts')">
+                {{ __('Contacts') }}
             </x-responsive-nav-link>
         </div>
 

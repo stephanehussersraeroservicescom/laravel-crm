@@ -115,7 +115,7 @@ class OpportunitySeeder extends Seeder
                 'cabin_class' => 'premium_economy',
                 'probability' => 40,
                 'potential_value' => 290000.00,
-                'status' => 'draft',
+                'status' => 'pending',
                 'description' => 'Premium economy divider walls',
                 'comments' => 'Early stage discussions',
                 'created_by' => $users->first()?->id,
@@ -124,33 +124,12 @@ class OpportunitySeeder extends Seeder
         ];
         
         foreach ($opportunities as $oppData) {
-            $opportunity = Opportunity::create($oppData);
-            
-            // Attach to first available project if any exist
+            // Add project_id to opportunity data
             if ($projects->count() > 0) {
-                $opportunity->projects()->attach($projects->random()->id);
+                $oppData['project_id'] = $projects->random()->id;
             }
             
-            // Assign subcontractors if any exist
-            if ($subcontractors->count() > 0) {
-                $leadSubcontractor = $subcontractors->random();
-                $opportunity->subcontractors()->attach($leadSubcontractor->id, [
-                    'role' => 'lead',
-                    'notes' => 'Primary contractor for this opportunity'
-                ]);
-                
-                // Add supporting subcontractors
-                $supportingCount = min(2, $subcontractors->count() - 1);
-                if ($supportingCount > 0) {
-                    $supportingSubcontractors = $subcontractors->except($leadSubcontractor->id)->random($supportingCount);
-                    foreach ($supportingSubcontractors as $supporter) {
-                        $opportunity->subcontractors()->attach($supporter->id, [
-                            'role' => 'supporting',
-                            'notes' => 'Supporting contractor role'
-                        ]);
-                    }
-                }
-            }
+            $opportunity = Opportunity::create($oppData);
             
             // Create sample actions for some opportunities
             if (rand(1, 3) === 1) {
@@ -188,6 +167,5 @@ class OpportunitySeeder extends Seeder
         $this->command->info('Created:');
         $this->command->info('- ' . Opportunity::count() . ' opportunities');
         $this->command->info('- ' . Action::count() . ' actions');
-        $this->command->info('- Opportunity-subcontractor relationships established');
     }
 }

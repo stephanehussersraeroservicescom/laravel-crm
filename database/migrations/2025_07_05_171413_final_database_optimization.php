@@ -65,9 +65,6 @@ return new class extends Migration
             if (!$this->hasIndex('projects', 'projects_commercial_status_id_index')) {
                 $table->index(['commercial_status_id']);
             }
-            if (!$this->hasIndex('projects', 'projects_airline_disclosed_index')) {
-                $table->index(['airline_disclosed']);
-            }
         });
 
         Schema::table('project_subcontractor_teams', function (Blueprint $table) {

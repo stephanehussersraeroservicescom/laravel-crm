@@ -13,7 +13,7 @@ class SubcontractorSeeder extends Seeder
     {
         // Step 1: Create 50 subcontractors
         for ($i = 1; $i <= 50; $i++) {
-            $sub = Subcontractor::create([
+            $sub = Subcontractor::firstOrCreate([
                 'name' => 'Subcontractor ' . $i,
             ]);
 

@@ -48,6 +48,7 @@ class ProjectTeamSeeder extends Seeder
                 $cabinClass = $cabinClasses[array_rand($cabinClasses)];
                 
                 $opportunityData = [
+                    'project_id' => $project->id,
                     'type' => $type,
                     'cabin_class' => $cabinClass,
                     'status' => 'active',
@@ -69,9 +70,6 @@ class ProjectTeamSeeder extends Seeder
                 }
                 
                 $opportunity = Opportunity::create($opportunityData);
-                
-                // Attach to project using many-to-many relationship
-                $project->opportunities()->attach($opportunity->id);
             }
         }
     }
@@ -85,7 +83,6 @@ class ProjectTeamSeeder extends Seeder
             // Create teams for all opportunities
             foreach ($project->opportunities as $opportunity) {
                 $team = ProjectSubcontractorTeam::create([
-                    'project_id' => $project->id,
                     'opportunity_id' => $opportunity->id, // Direct foreign key relationship
                     'main_subcontractor_id' => $subcontractors[$subIndex % $subcontractors->count()]->id,
                     'role' => $roles[$subIndex % count($roles)],
@@ -108,12 +105,15 @@ class ProjectTeamSeeder extends Seeder
 
     private function getTeamNotes($opportunity, $project)
     {
-        $typeLabel = ucwords(str_replace('_', ' ', $opportunity->type));
+        $typeValue = $opportunity->type->value ?? $opportunity->type;
+        $typeLabel = ucwords(str_replace('_', ' ', $typeValue));
         
-        if ($opportunity->type === 'others') {
-            return "{$opportunity->name} team for {$opportunity->cabin_class} cabin in {$project->name}";
+        $cabinClassValue = $opportunity->cabin_class->value ?? $opportunity->cabin_class;
+        
+        if ($typeValue === 'others') {
+            return "{$opportunity->name} team for {$cabinClassValue} cabin in {$project->name}";
         }
         
-        return "{$typeLabel} team for {$opportunity->cabin_class} cabin in {$project->name}";
+        return "{$typeLabel} team for {$cabinClassValue} cabin in {$project->name}";
     }
 }

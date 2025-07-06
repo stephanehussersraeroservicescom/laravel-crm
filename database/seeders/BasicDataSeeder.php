@@ -20,7 +20,6 @@ class BasicDataSeeder extends Seeder
 
         // Seed Airlines
         $airlines = [
-            ['name' => 'Non-Disclosed Airline', 'region' => 'North America'],
             ['name' => 'Delta Air Lines', 'region' => 'North America', 'account_executive' => 'John Smith'],
             ['name' => 'American Airlines', 'region' => 'North America', 'account_executive' => 'Jane Doe'],
             ['name' => 'United Airlines', 'region' => 'North America', 'account_executive' => 'Mike Johnson'],
@@ -28,6 +27,7 @@ class BasicDataSeeder extends Seeder
             ['name' => 'British Airways', 'region' => 'Europe', 'account_executive' => 'Sarah Williams'],
             ['name' => 'Emirates', 'region' => 'Middle East', 'account_executive' => 'Ahmed Al-Rashid'],
             ['name' => 'Singapore Airlines', 'region' => 'Asia', 'account_executive' => 'Li Wei'],
+            ['name' => 'Air France', 'region' => 'Europe', 'account_executive' => 'Pierre Dubois'],
         ];
 
         foreach ($airlines as $airline) {
@@ -123,16 +123,16 @@ class BasicDataSeeder extends Seeder
             ]);
         }
 
-        // Create sample projects (including confidential ones)
-        $confidentialAirline = Airline::where('name', 'Non-Disclosed Airline')->first();
+        // Create sample projects
         $deltaAirline = Airline::where('name', 'Delta Air Lines')->first();
+        $lufthansaAirline = Airline::where('name', 'Lufthansa')->first();
 
         $designStatus = Status::where('type', 'design')->first();
         $commercialStatus = Status::where('type', 'commercial')->first();
         $boeing777 = AircraftType::where('name', 'Boeing 777')->first();
         $airbusA350 = AircraftType::where('name', 'Airbus A350')->first();
 
-        // Regular disclosed project
+        // Regular project
         $project1 = Project::create([
             'name' => 'Delta Premium Economy Refresh',
             'airline_id' => $deltaAirline->id,
@@ -142,22 +142,18 @@ class BasicDataSeeder extends Seeder
             'commercial_status_id' => $commercialStatus->id,
             'owner' => 'Project Team Alpha',
             'comment' => 'Premium economy cabin refresh for international routes',
-            'airline_disclosed' => true,
         ]);
 
-        // Confidential project
+        // Second project
         $project2 = Project::create([
-            'name' => 'Major European Carrier Business Class',
-            'airline_id' => $confidentialAirline->id,
+            'name' => 'Lufthansa Business Class Upgrade',
+            'airline_id' => $lufthansaAirline->id,
             'aircraft_type_id' => $airbusA350->id,
             'number_of_aircraft' => 25,
             'design_status_id' => $designStatus->id,
             'commercial_status_id' => $commercialStatus->id,
             'owner' => 'Project Team Beta',
-            'comment' => 'Confidential business class upgrade project',
-            'airline_disclosed' => false,
-            'airline_code_placeholder' => 'MAJOR-EU-001',
-            'confidentiality_notes' => 'Large European carrier, NDA expires December 2025',
+            'comment' => 'Business class upgrade project for long-haul fleet',
         ]);
 
         // Create opportunities for each project
@@ -166,13 +162,13 @@ class BasicDataSeeder extends Seeder
 
         echo "✅ Basic data seeded successfully!\n";
         echo "📊 Created:\n";
-        echo "   - " . Airline::count() . " Airlines (including confidential)\n";
+        echo "   - " . Airline::count() . " Airlines\n";
         echo "   - " . AircraftType::count() . " Aircraft Types\n";
         echo "   - " . Status::count() . " Statuses\n";
         echo "   - " . Material::count() . " Materials\n";
         echo "   - " . Subcontractor::count() . " Subcontractors\n";
         echo "   - " . Contact::count() . " Contacts\n";
-        echo "   - " . Project::count() . " Projects (1 disclosed, 1 confidential)\n";
+        echo "   - " . Project::count() . " Projects\n";
         echo "   - " . Opportunity::count() . " Opportunities\n";
     }
 

@@ -12,10 +12,17 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UserSeeder::class,           // Always create stef and dominic users
-            ComprehensiveSeeder::class,  // Create other sample data
-            ContactSeeder::class,        // Create contacts for subcontractors
-            ProjectTeamSeeder::class,    // Create project teams
+            // Core data first
+            RolePermissionSeeder::class,  // Roles and permissions
+            UserSeeder::class,           // Admin users
+            BasicDataSeeder::class,      // Airlines, aircraft types, statuses
+            
+            // Business data
+            SubcontractorSeeder::class,  // Subcontractors
+            ContactSeeder::class,        // Contacts for subcontractors
+            ComprehensiveSeeder::class,  // Projects and opportunities
+            OpportunitySeeder::class,    // Additional opportunities if needed
+            ProjectTeamSeeder::class,    // Project teams and assignments
         ]);
     }
 }

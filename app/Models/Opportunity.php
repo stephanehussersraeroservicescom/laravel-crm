@@ -7,62 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use App\Traits\Auditable;
+use App\Enums\OpportunityType;
+use App\Enums\CabinClass;
+use App\Enums\OpportunityStatus;
 
-enum OpportunityType: string
-{
-    case VERTICAL = 'vertical';
-    case PANELS = 'panels';
-    case COVERS = 'covers';
-    case OTHERS = 'others';
-    
-    public function label(): string
-    {
-        return match($this) {
-            self::VERTICAL => 'Vertical',
-            self::PANELS => 'Panels',
-            self::COVERS => 'Covers',
-            self::OTHERS => 'Others',
-        };
-    }
-}
-
-enum CabinClass: string
-{
-    case FIRST_CLASS = 'first_class';
-    case BUSINESS_CLASS = 'business_class';
-    case PREMIUM_ECONOMY = 'premium_economy';
-    case ECONOMY = 'economy';
-    
-    public function label(): string
-    {
-        return match($this) {
-            self::FIRST_CLASS => 'First Class',
-            self::BUSINESS_CLASS => 'Business Class',
-            self::PREMIUM_ECONOMY => 'Premium Economy',
-            self::ECONOMY => 'Economy',
-        };
-    }
-}
-
-enum OpportunityStatus: string
-{
-    case ACTIVE = 'active';
-    case INACTIVE = 'inactive';
-    case PENDING = 'pending';
-    case COMPLETED = 'completed';
-    case CANCELLED = 'cancelled';
-    
-    public function label(): string
-    {
-        return match($this) {
-            self::ACTIVE => 'Active',
-            self::INACTIVE => 'Inactive',
-            self::PENDING => 'Pending',
-            self::COMPLETED => 'Completed',
-            self::CANCELLED => 'Cancelled',
-        };
-    }
-}
 
 class Opportunity extends Model
 {
@@ -113,7 +61,9 @@ class Opportunity extends Model
         'name',
         'description',
         'created_by',
-        'assigned_to'
+        'assigned_to',
+        'updated_by',
+        'deleted_by'
     ];
     
     protected $casts = [
@@ -177,6 +127,11 @@ class Opportunity extends Model
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 
     // Polymorphic relationships

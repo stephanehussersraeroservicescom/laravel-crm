@@ -186,14 +186,26 @@
                     @forelse($opportunities as $opportunity)
                         <tr class="hover:bg-gray-300 {{ $opportunity->trashed() ? 'bg-red-50 opacity-75' : '' }}">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">
-                                    {{ $opportunity->name ?: 'Untitled Opportunity' }}
-                                </div>
-                                @if($opportunity->description)
-                                    <div class="text-sm text-gray-500 truncate max-w-xs">
-                                        {{ Str::limit($opportunity->description, 50) }}
+                                <div class="flex items-center space-x-2">
+                                    <div class="flex-1">
+                                        <div class="font-medium text-gray-900">
+                                            {{ $opportunity->name ?: 'Untitled Opportunity' }}
+                                        </div>
+                                        @if($opportunity->description)
+                                            <div class="text-sm text-gray-500 truncate max-w-xs">
+                                                {{ Str::limit($opportunity->description, 50) }}
+                                            </div>
+                                        @endif
                                     </div>
-                                @endif
+                                    @if($opportunity->attachments && $opportunity->attachments->count() > 0)
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                            </svg>
+                                            <span class="text-xs text-blue-500 ml-1">{{ $opportunity->attachments->count() }}</span>
+                                        </div>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="font-medium text-gray-900">{{ $opportunity->project?->name ?? 'No Project' }}</div>
@@ -305,33 +317,45 @@
                     <!-- Modal Content -->
                     <form wire:submit.prevent="save" class="mt-4 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Airline Filter (for filtering projects) -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Filter by Airline 
+                                    <span class="text-xs text-gray-500">(optional - helps narrow down project list)</span>
+                                </label>
+                                <select wire:model.live="modalAirlineFilter" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                                    <option value="">All Airlines</option>
+                                    @foreach($airlines as $airline)
+                                        <option value="{{ $airline->id }}">{{ $airline->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <!-- Project -->
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Project *</label>
-                                <select wire:model="project_id" required 
+                                <select wire:model.live="project_id" required 
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="">Select Project</option>
-                                    @foreach($projects as $project)
+                                    @foreach($filteredProjects as $project)
                                         <option value="{{ $project->id }}">
-                                            {{ $project->name }} ({{ $project->airline->name }})
+                                            {{ $project->name }} ({{ $project->airline?->name ?? 'No Airline' }})
                                         </option>
                                     @endforeach
                                 </select>
                                 @error('project_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-
-                            <!-- Name -->
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                                <input type="text" wire:model="name" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                @if($modalAirlineFilter && $filteredProjects->count() === 0)
+                                    <div class="text-xs text-gray-500 mt-1">No projects found for selected airline</div>
+                                @elseif($modalAirlineFilter)
+                                    <div class="text-xs text-gray-500 mt-1">Showing {{ $filteredProjects->count() }} project(s) for selected airline</div>
+                                @endif
                             </div>
 
                             <!-- Type -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Type *</label>
-                                <select wire:model="type" required 
+                                <select wire:model.live="type" required 
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="">Select Type</option>
                                     @foreach($opportunityTypes as $type)
@@ -344,7 +368,7 @@
                             <!-- Cabin Class -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Cabin Class</label>
-                                <select wire:model="cabin_class" 
+                                <select wire:model.live="cabin_class" 
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="">Select Cabin Class</option>
                                     @foreach($cabinClasses as $class)
@@ -354,6 +378,29 @@
                                     @endforeach
                                 </select>
                                 @error('cabin_class') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Opportunity Name (moved here below type and cabin class) -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Opportunity Name
+                                    @if($project_id || $type || $cabin_class)
+                                        <span class="text-xs text-gray-500 ml-2">(Auto-generated based on selections)</span>
+                                    @endif
+                                </label>
+                                <div class="relative">
+                                    <input type="text" wire:model.live="name" 
+                                           placeholder="{{ !$project_id && !$type && !$cabin_class ? 'Select project, type, and cabin class first' : 'You can add additional details here' }}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    @if($nameManuallyEdited && $autoGeneratedName && $name !== $autoGeneratedName)
+                                        <div class="text-xs text-blue-600 mt-1">
+                                            <span class="cursor-pointer hover:underline" wire:click="$set('name', autoGeneratedName); $set('nameManuallyEdited', false)">
+                                                Reset to auto-generated: {{ $autoGeneratedName }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                </div>
+                                @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <!-- Probability -->
@@ -425,6 +472,70 @@
                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                                 @error('comments') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
+
+                            <!-- File Attachments -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">File Attachments</label>
+                                
+                                <!-- Existing Attachments -->
+                                @if($existingAttachments && count($existingAttachments) > 0)
+                                    <div class="mb-4">
+                                        <h4 class="text-sm font-medium text-gray-600 mb-2">Current Files:</h4>
+                                        <div class="space-y-2">
+                                            @foreach($existingAttachments as $attachment)
+                                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                                                    <div class="flex items-center space-x-2">
+                                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                                        </svg>
+                                                        <span class="text-sm text-gray-700">{{ $attachment->name }}</span>
+                                                        <span class="text-xs text-gray-500">({{ $attachment->formatted_file_size }})</span>
+                                                    </div>
+                                                    <div class="flex items-center space-x-2">
+                                                        <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank" 
+                                                           class="text-blue-600 hover:text-blue-800 text-xs">
+                                                            Download
+                                                        </a>
+                                                        <button type="button" wire:click="deleteExistingAttachment({{ $attachment->id }})"
+                                                                class="text-red-600 hover:text-red-800 text-xs">
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <!-- New File Upload -->
+                                <div class="space-y-2">
+                                    <div class="flex items-center space-x-2">
+                                        <input type="file" wire:model="attachments" multiple 
+                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                    </div>
+                                    @error('attachments.*') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    
+                                    <!-- Preview selected files -->
+                                    @if($attachments && count($attachments) > 0)
+                                        <div class="mt-2">
+                                            <h5 class="text-xs font-medium text-gray-600 mb-1">Files to upload:</h5>
+                                            <div class="space-y-1">
+                                                @foreach($attachments as $index => $file)
+                                                    @if($file)
+                                                        <div class="flex items-center justify-between p-1 bg-blue-50 rounded border text-xs">
+                                                            <span class="text-gray-700">{{ $file->getClientOriginalName() }}</span>
+                                                            <button type="button" wire:click="removeAttachment({{ $index }})"
+                                                                    class="text-red-600 hover:text-red-800">
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Modal Footer -->
@@ -439,6 +550,35 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Delete Attachment Confirmation Modal -->
+    @if($attachmentToDelete)
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-1/2 transform -translate-y-1/2 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mt-2">Delete Attachment</h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Are you sure you want to delete this file? This action cannot be undone.
+                    </p>
+                    <div class="flex justify-center space-x-3 mt-4">
+                        <button wire:click="cancelDeleteAttachment" 
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                            Cancel
+                        </button>
+                        <button wire:click="confirmDeleteAttachment"
+                                class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700">
+                            Delete
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

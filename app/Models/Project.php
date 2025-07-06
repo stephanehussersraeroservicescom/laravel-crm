@@ -85,4 +85,10 @@ class Project extends Model
                    ->withTimestamps();
     }
 
+    // Polymorphic relationships for file attachments
+    public function attachments()
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
+    }
+
 }

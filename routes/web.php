@@ -60,6 +60,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/manage/opportunities', \App\Livewire\OpportunityManagement::class)
         ->name('manage.opportunities');
 
+    Route::get('/manage/projects', \App\Livewire\ProjectManagement::class)
+        ->name('manage.projects');
+
     Route::get('/manage/teams', \App\Livewire\TeamManagement::class)
         ->name('manage.teams');
 

@@ -19,8 +19,8 @@
     @endif
 
     <!-- Search and Filter Panel -->
-    <div class="bg-white p-6 rounded-lg shadow-sm border">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <div class="w-full mx-auto bg-white p-8 rounded-lg shadow-sm border-2 border-gray-400 md:max-w-[90%]">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <!-- Search -->
             <div class="lg:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -28,17 +28,6 @@
                        wire:model.live.debounce.300ms="search" 
                        placeholder="Search contacts, roles, companies..."
                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <!-- Subcontractor Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Subcontractor</label>
-                <select wire:model.live="filterSubcontractor" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Subcontractors</option>
-                    @foreach($subcontractors as $subcontractor)
-                        <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
-                    @endforeach
-                </select>
             </div>
 
             <!-- Per Page -->
@@ -53,32 +42,41 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Role Filter -->
+            <!-- Subcontractor Filter -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <input type="text" 
-                       wire:model.live.debounce.300ms="filterRole" 
-                       placeholder="Filter by role..."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <!-- Marketing Consent Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Marketing Consent</label>
-                <select wire:model.live="filterMarketingConsent" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Contacts</option>
-                    <option value="1">Consented</option>
-                    <option value="0">Not Consented</option>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Subcontractor</label>
+                <select wire:model.live="filterSubcontractor" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Subcontractors</option>
+                    @foreach($subcontractors as $subcontractor)
+                        <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
+                    @endforeach
                 </select>
             </div>
 
-            <!-- Clear Filters -->
-            <div class="flex items-end">
-                <button wire:click="clearFilters" 
-                        class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                    Clear Filters
-                </button>
+            <!-- Role Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select wire:model.live="filterRole" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Roles</option>
+                    @foreach($roles as $role)
+                        <option value="{{ $role->value }}">{{ $role->label() }}</option>
+                    @endforeach
+                </select>
             </div>
+        </div>
+
+        <div class="flex justify-between items-center mt-6">
+            <!-- Show Deleted Checkbox -->
+            <label class="flex items-center">
+                <input type="checkbox" wire:model.live="showDeleted" 
+                       class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <span class="ml-2 text-sm text-gray-700">Show deleted contacts</span>
+            </label>
+            
+            <button wire:click="clearFilters" 
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                Clear Filters
+            </button>
         </div>
     </div>
 
@@ -120,16 +118,13 @@
                             @endif
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Marketing Consent
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
                         </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($contacts as $contact)
-                        <tr class="hover:bg-gray-300">
+                        <tr class="hover:bg-gray-300 {{ $contact->trashed() ? 'bg-red-50 opacity-75' : '' }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="font-medium text-gray-900">{{ $contact->name }}</div>
                             </td>
@@ -152,7 +147,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($contact->role)
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                        {{ $contact->role }}
+                                        {{ $contact->role->label() }}
                                     </span>
                                 @else
                                     <span class="text-gray-400">No role</span>
@@ -161,36 +156,29 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="font-medium text-gray-900">{{ $contact->subcontractor->name }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center space-x-2">
-                                    <button wire:click="toggleMarketingConsent({{ $contact->id }})"
-                                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                                                   {{ $contact->marketing_consent ? 'bg-blue-600' : 'bg-gray-200' }}">
-                                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-                                                     {{ $contact->marketing_consent ? 'translate-x-6' : 'translate-x-1' }}"></span>
-                                    </button>
-                                    <span class="text-xs text-gray-500">
-                                        @if($contact->marketing_consent && $contact->consent_given_at)
-                                            {{ $contact->consent_given_at->format('M j, Y') }}
-                                        @endif
-                                    </span>
-                                </div>
-                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                 <button wire:click="openEditModal({{ $contact->id }})" 
                                         class="text-blue-600 hover:text-blue-900 transition-colors">
                                     Edit
                                 </button>
-                                <button wire:click="delete({{ $contact->id }})" 
-                                        onclick="return confirm('Are you sure you want to delete this contact?')"
-                                        class="text-red-600 hover:text-red-900 transition-colors">
-                                    Delete
-                                </button>
+                                @if($contact->trashed())
+                                    <button wire:click="delete({{ $contact->id }})" 
+                                            onclick="return confirm('Are you sure you want to restore this contact?')"
+                                            class="text-green-600 hover:text-green-900 transition-colors">
+                                        Restore
+                                    </button>
+                                @else
+                                    <button wire:click="delete({{ $contact->id }})" 
+                                            onclick="return confirm('Are you sure you want to delete this contact?')"
+                                            class="text-red-600 hover:text-red-900 transition-colors">
+                                        Delete
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                 No contacts found. 
                                 <button wire:click="openCreateModal" class="text-blue-600 hover:text-blue-800">
                                     Create your first contact
@@ -271,37 +259,13 @@
                                 <select wire:model="role" 
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="">Select Role</option>
-                                    @foreach($roles as $role)
-                                        <option value="{{ $role }}">{{ $role }}</option>
+                                    @foreach($roles as $roleOption)
+                                        <option value="{{ $roleOption->value }}">{{ $roleOption->label() }}</option>
                                     @endforeach
                                 </select>
                                 @error('role') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
-                            <!-- Marketing Consent -->
-                            <div class="md:col-span-2">
-                                <div class="flex items-center space-x-3">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" wire:model="marketing_consent" 
-                                               class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                        <span class="ml-2 text-sm text-gray-700">Marketing consent</span>
-                                    </label>
-                                </div>
-                                <div class="text-xs text-gray-500 mt-1">
-                                    Check this box if the contact has consented to receive marketing communications
-                                </div>
-                                @error('marketing_consent') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-
-                            <!-- Consent Date (only show in edit mode) -->
-                            @if($modalMode === 'edit' && $consent_given_at)
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Consent Given Date</label>
-                                    <input type="date" wire:model="consent_given_at" 
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    @error('consent_given_at') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                            @endif
                         </div>
 
                         <!-- Modal Footer -->

@@ -20,9 +20,6 @@ return new class extends Migration
                 if (!Schema::hasColumn('contacts', 'consent_withdrawn_at')) {
                     $table->timestamp('consent_withdrawn_at')->nullable();
                 }
-                if (!Schema::hasColumn('contacts', 'marketing_consent')) {
-                    $table->boolean('marketing_consent')->default(false);
-                }
                 if (!Schema::hasColumn('contacts', 'data_processing_notes')) {
                     $table->text('data_processing_notes')->nullable();
                 }
@@ -42,7 +39,6 @@ return new class extends Migration
                 $table->dropColumn([
                     'consent_given_at', 
                     'consent_withdrawn_at', 
-                    'marketing_consent', 
                     'data_processing_notes'
                 ]);
             });

@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Contact;
 use App\Models\Subcontractor;
+use App\Enums\ContactRole;
 
 class ContactSeeder extends Seeder
 {
@@ -32,14 +33,14 @@ class ContactSeeder extends Seeder
             [
                 'name' => 'Jean-Pierre Martin',
                 'email' => 'jp.martin@zodiac-aerospace.com',
-                'role' => 'Sales Director',
+                'role' => ContactRole::PROGRAM_MANAGEMENT->value,
                 'phone' => '+33 1 55 61 63 00',
                 'comment' => 'Primary contact for commercial negotiations'
             ],
             [
                 'name' => 'Sophie Dubois',
                 'email' => 'sophie.dubois@zodiac-aerospace.com',
-                'role' => 'Project Manager',
+                'role' => ContactRole::PROGRAM_MANAGEMENT->value,
                 'phone' => '+33 1 55 61 63 15',
                 'comment' => 'Technical project coordination'
             ],
@@ -48,14 +49,14 @@ class ContactSeeder extends Seeder
             [
                 'name' => 'Michael Anderson',
                 'email' => 'michael.anderson@safran-cabin.com',
-                'role' => 'Business Development',
+                'role' => ContactRole::PROGRAM_MANAGEMENT->value,
                 'phone' => '+1 425 717 0800',
                 'comment' => 'US market specialist'
             ],
             [
                 'name' => 'Elena Rodriguez',
                 'email' => 'elena.rodriguez@safran-cabin.com',
-                'role' => 'Technical Lead',
+                'role' => ContactRole::ENGINEERING->value,
                 'phone' => '+1 425 717 0825',
                 'comment' => 'Cabin systems integration expert'
             ],
@@ -64,14 +65,14 @@ class ContactSeeder extends Seeder
             [
                 'name' => 'David Chen',
                 'email' => 'david.chen@collins.com',
-                'role' => 'Account Manager',
+                'role' => ContactRole::PROGRAM_MANAGEMENT->value,
                 'phone' => '+1 319 295 5000',
                 'comment' => 'Key account management for premium airlines'
             ],
             [
                 'name' => 'Sarah Johnson',
                 'email' => 'sarah.johnson@collins.com',
-                'role' => 'Design Engineer',
+                'role' => ContactRole::DESIGN->value,
                 'phone' => '+1 319 295 5050',
                 'comment' => 'Interior design and certification specialist'
             ],
@@ -80,14 +81,14 @@ class ContactSeeder extends Seeder
             [
                 'name' => 'Takeshi Yamamoto',
                 'email' => 'takeshi.yamamoto@jamco.co.jp',
-                'role' => 'International Sales',
+                'role' => ContactRole::PROGRAM_MANAGEMENT->value,
                 'phone' => '+81 42 593 7100',
                 'comment' => 'Asian market development'
             ],
             [
                 'name' => 'Lisa Thompson',
                 'email' => 'lisa.thompson@jamco.co.jp',
-                'role' => 'Program Manager',
+                'role' => ContactRole::PROGRAM_MANAGEMENT->value,
                 'phone' => '+81 42 593 7120',
                 'comment' => 'Program delivery and quality assurance'
             ],
@@ -96,14 +97,14 @@ class ContactSeeder extends Seeder
             [
                 'name' => 'Klaus Weber',
                 'email' => 'klaus.weber@diehl.com',
-                'role' => 'Sales Manager',
+                'role' => ContactRole::PROGRAM_MANAGEMENT->value,
                 'phone' => '+49 911 618 2500',
                 'comment' => 'Cabin systems and lighting solutions'
             ],
             [
                 'name' => 'Anna Mueller',
                 'email' => 'anna.mueller@diehl.com',
-                'role' => 'Technical Support',
+                'role' => ContactRole::ENGINEERING->value,
                 'phone' => '+49 911 618 2515',
                 'comment' => 'Technical support and maintenance'
             ],
@@ -132,7 +133,7 @@ class ContactSeeder extends Seeder
                     'subcontractor_id' => $subcontractor->id,
                     'name' => "Contact {$contactNumber}",
                     'email' => "contact{$contactNumber}@" . strtolower(str_replace(' ', '', $subcontractor->name)) . ".com",
-                    'role' => $contactNumber == 1 ? 'Sales Manager' : 'Technical Lead',
+                    'role' => $contactNumber == 1 ? ContactRole::PROGRAM_MANAGEMENT->value : ContactRole::ENGINEERING->value,
                     'phone' => '+1 555 ' . str_pad($subcontractor->id * 100 + $contactNumber, 4, '0', STR_PAD_LEFT),
                     'comment' => "Generic contact for {$subcontractor->name}",
                 ]);

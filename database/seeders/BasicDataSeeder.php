@@ -11,6 +11,7 @@ use App\Models\Subcontractor;
 use App\Models\Contact;
 use App\Models\Project;
 use App\Models\Opportunity;
+use App\Enums\ContactRole;
 
 class BasicDataSeeder extends Seeder
 {
@@ -106,20 +107,16 @@ class BasicDataSeeder extends Seeder
                 'subcontractor_id' => $subcontractor->id,
                 'name' => 'John Manager',
                 'email' => strtolower(str_replace(' ', '.', $subcontractor->name)) . '@example.com',
-                'role' => 'Project Manager',
+                'role' => ContactRole::PROGRAM_MANAGEMENT->value,
                 'phone' => '+1-555-' . rand(1000, 9999),
-                'consent_given_at' => now(),
-                'marketing_consent' => true,
             ]);
 
             Contact::create([
                 'subcontractor_id' => $subcontractor->id,
                 'name' => 'Sarah Engineer',
                 'email' => 'sarah.' . strtolower(str_replace(' ', '.', $subcontractor->name)) . '@example.com',
-                'role' => 'Lead Engineer',
+                'role' => ContactRole::ENGINEERING->value,
                 'phone' => '+1-555-' . rand(1000, 9999),
-                'consent_given_at' => now(),
-                'marketing_consent' => false,
             ]);
         }
 

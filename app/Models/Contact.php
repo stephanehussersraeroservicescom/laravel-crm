@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ContactRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,13 +13,13 @@ class Contact extends Model
     
     protected $fillable = [
         'subcontractor_id', 'name', 'email', 'role', 'phone', 'comment',
-        'consent_given_at', 'consent_withdrawn_at', 'marketing_consent', 'data_processing_notes'
+        'consent_given_at', 'consent_withdrawn_at', 'data_processing_notes'
     ];
 
     protected $casts = [
         'consent_given_at' => 'datetime',
         'consent_withdrawn_at' => 'datetime',
-        'marketing_consent' => 'boolean',
+        'role' => ContactRole::class,
     ];
 
     public function subcontractor()
@@ -39,7 +40,6 @@ class Contact extends Model
     {
         $this->update([
             'consent_withdrawn_at' => now(),
-            'marketing_consent' => false,
         ]);
     }
 
@@ -54,10 +54,4 @@ class Contact extends Model
                     ->whereNull('consent_withdrawn_at');
     }
 
-    public function scopeWithMarketingConsent($query)
-    {
-        return $query->where('marketing_consent', true)
-                    ->whereNotNull('consent_given_at')
-                    ->whereNull('consent_withdrawn_at');
-    }
 }

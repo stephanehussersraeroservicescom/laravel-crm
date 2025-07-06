@@ -20,6 +20,10 @@
                         {{ __('Opportunities') }}
                     </x-nav-link>
                     
+                    <x-nav-link href="{{ route('manage.projects') }}" :active="request()->routeIs('manage.projects')">
+                        {{ __('Projects') }}
+                    </x-nav-link>
+                    
                     <x-nav-link href="{{ route('manage.teams') }}" :active="request()->routeIs('manage.teams')">
                         {{ __('Teams') }}
                     </x-nav-link>
@@ -157,6 +161,10 @@
             
             <x-responsive-nav-link href="{{ route('manage.opportunities') }}" :active="request()->routeIs('manage.opportunities')">
                 {{ __('Opportunities') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link href="{{ route('manage.projects') }}" :active="request()->routeIs('manage.projects')">
+                {{ __('Projects') }}
             </x-responsive-nav-link>
             
             <x-responsive-nav-link href="{{ route('manage.teams') }}" :active="request()->routeIs('manage.teams')">

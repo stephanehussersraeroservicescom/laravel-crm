@@ -76,12 +76,75 @@ class OpportunityManagement extends Component
     {
         $this->created_by = auth()->id();
         
-        // Set default filter to current user if they have any opportunities
-        $currentUserId = auth()->id();
-        $userHasOpportunities = Opportunity::where('assigned_to', $currentUserId)->exists();
-        
-        if ($userHasOpportunities) {
-            $this->filterAssignedTo = $currentUserId;
+        // Check for team creation context (redirected from team management)
+        if (session()->has('team_creation_context')) {
+            $context = session()->get('team_creation_context');
+            session()->forget('team_creation_context');
+            
+            // Pre-fill form with context data and open modal
+            if (isset($context['airline_id'])) {
+                $this->filterAirline = $context['airline_id'];
+            }
+            
+            if (isset($context['project_id'])) {
+                $this->project_id = $context['project_id'];
+            }
+            
+            if (isset($context['opportunity_type'])) {
+                $this->type = $context['opportunity_type'];
+            }
+            
+            if (isset($context['cabin_class'])) {
+                $this->cabin_class = $context['cabin_class'];
+            }
+            
+            // Auto-generate name: Airline + Aircraft Type + Project Name + Opportunity Type
+            if (isset($context['project_id'])) {
+                $project = Project::with(['airline', 'aircraftType'])->find($context['project_id']);
+                if ($project) {
+                    $nameParts = [];
+                    
+                    // Add airline name
+                    if ($project->airline) {
+                        $nameParts[] = $project->airline->name;
+                    }
+                    
+                    // Add aircraft type if available
+                    if ($project->aircraftType) {
+                        $nameParts[] = $project->aircraftType->name;
+                    }
+                    
+                    // Add project name
+                    $nameParts[] = $project->name;
+                    
+                    // Add opportunity type if available
+                    if (isset($context['opportunity_type'])) {
+                        $nameParts[] = ucfirst($context['opportunity_type']);
+                    }
+                    
+                    $this->name = implode(' - ', $nameParts);
+                }
+            } elseif (isset($context['opportunity_type']) && isset($context['cabin_class'])) {
+                // Fallback to simple naming if project not available
+                $this->name = ucfirst($context['opportunity_type']) . ' - ' . ucfirst(str_replace('_', ' ', $context['cabin_class']));
+            }
+            
+            $this->description = 'Created from team management for staffing purposes';
+            $this->assigned_to = auth()->id();
+            
+            // Open the modal automatically
+            $this->modalMode = 'create';
+            $this->showModal = true;
+            
+            session()->flash('message', 'Opportunity creation form pre-filled from team management context.');
+        } else {
+            // Set default filter to current user if they have any opportunities
+            $currentUserId = auth()->id();
+            $userHasOpportunities = Opportunity::where('assigned_to', $currentUserId)->exists();
+            
+            if ($userHasOpportunities) {
+                $this->filterAssignedTo = $currentUserId;
+            }
         }
     }
 

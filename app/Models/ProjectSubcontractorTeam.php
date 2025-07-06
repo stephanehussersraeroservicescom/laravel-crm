@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TeamRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -15,6 +16,10 @@ class ProjectSubcontractorTeam extends Model
         'role',
         'notes',
         'opportunity_id'
+    ];
+
+    protected $casts = [
+        'role' => TeamRole::class,
     ];
 
     public function project()
@@ -34,7 +39,7 @@ class ProjectSubcontractorTeam extends Model
             'project_team_supporters', 
             'team_id', 
             'supporting_subcontractor_id'
-        )->withTimestamps()->withPivot('deleted_at')->wherePivotNull('deleted_at');
+        )->withTimestamps();
     }
 
     // All supporting subcontractors including soft deleted
@@ -45,7 +50,7 @@ class ProjectSubcontractorTeam extends Model
             'project_team_supporters', 
             'team_id', 
             'supporting_subcontractor_id'
-        )->withTimestamps()->withPivot('deleted_at');
+        )->withTimestamps();
     }
 
     // Direct relationship to opportunity

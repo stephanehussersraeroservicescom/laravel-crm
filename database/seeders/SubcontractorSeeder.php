@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Subcontractor;
 use App\Models\Contact;
+use App\Enums\ContactRole;
 use Illuminate\Support\Str;
 
 class SubcontractorSeeder extends Seeder
@@ -23,7 +24,7 @@ class SubcontractorSeeder extends Seeder
                     'subcontractor_id' => $sub->id,
                     'name' => 'Contact ' . Str::random(5),
                     'email' => 'contact' . rand(1000,9999) . '@example.com',
-                    'role' => ['Sales', 'Manager', 'QA'][array_rand(['Sales', 'Manager', 'QA'])],
+                    'role' => [ContactRole::PROGRAM_MANAGEMENT->value, ContactRole::ENGINEERING->value, ContactRole::DESIGN->value][array_rand([ContactRole::PROGRAM_MANAGEMENT->value, ContactRole::ENGINEERING->value, ContactRole::DESIGN->value])],
                     'phone' => '+33 1 45 ' . rand(100000, 999999),
                 ]);
             }

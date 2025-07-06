@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('subcontractor_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('email')->nullable();
-            $table->string('role')->nullable();
+            $table->enum('role', ['engineering', 'program_management', 'design', 'certification'])->nullable();
             $table->string('phone')->nullable();
             $table->text('comment')->nullable();
             $table->softDeletes();

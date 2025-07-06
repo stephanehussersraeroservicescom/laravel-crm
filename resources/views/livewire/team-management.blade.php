@@ -79,7 +79,7 @@
                 <select wire:model.live="filterProject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">All Projects</option>
                     @foreach($projects as $project)
-                        <option value="{{ $project->id }}">{{ $project->name }} ({{ $project->airline->name }})</option>
+                        <option value="{{ $project->id }}">{{ $project->display_name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -170,14 +170,14 @@
                         <tr class="hover:bg-gray-300 {{ $team->trashed() ? 'bg-red-50 opacity-75' : '' }}">
                             <!-- Project / Airline (Column 1) -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ $team->opportunity->project->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $team->opportunity->project->airline->name }}</div>
+                                <div class="font-medium text-gray-900">{{ $team->opportunity->project->display_name ?? 'Unknown Project' }}</div>
+                                <div class="text-sm text-gray-500">Project Details</div>
                             </td>
                             
                             <!-- Opportunity (Column 2) -->
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="font-medium text-gray-900">
-                                    {{ $team->opportunity->name ?: 'Untitled Opportunity' }}
+                                    {{ $team->opportunity->display_name ?: 'Untitled Opportunity' }}
                                 </div>
                                 <div class="text-sm text-gray-500">
                                     {{ $team->opportunity->type->label() }} - 

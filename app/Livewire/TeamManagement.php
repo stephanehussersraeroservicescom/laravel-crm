@@ -75,7 +75,7 @@ class TeamManagement extends Component
     {
         $teams = $this->getTeams();
         $airlines = Airline::orderBy('name')->get();
-        $projects = Project::with('airline')
+        $projects = Project::with(['airline', 'aircraftType'])
             ->when($this->filterAirline, fn($q) => $q->where('airline_id', $this->filterAirline))
             ->orderBy('name')->get();
         $subcontractors = Subcontractor::orderBy('name')->get();
@@ -97,7 +97,8 @@ class TeamManagement extends Component
     public function getTeams()
     {
         $query = ProjectSubcontractorTeam::with([
-            'opportunity.project.airline', 
+            'opportunity.project.airline',
+            'opportunity.project.aircraftType',
             'mainSubcontractor', 
             'supportingSubcontractors'
         ]);

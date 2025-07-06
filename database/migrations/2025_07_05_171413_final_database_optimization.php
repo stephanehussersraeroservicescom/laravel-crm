@@ -12,18 +12,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Update opportunities table with proper project_id FK and enums
+        // Add performance indexes to opportunities table
         Schema::table('opportunities', function (Blueprint $table) {
-            // Add project_id FK if it doesn't exist
-            if (!Schema::hasColumn('opportunities', 'project_id')) {
-                $table->foreignId('project_id')->constrained()->cascadeOnDelete();
-            }
-            
-            // Add proper enum constraints
-            $table->enum('type', ['vertical', 'panels', 'covers', 'others'])->default('others')->change();
-            $table->enum('cabin_class', ['first_class', 'business_class', 'premium_economy', 'economy'])->nullable()->change();
-            $table->enum('status', ['active', 'inactive', 'pending', 'completed', 'cancelled'])->default('active')->change();
-            
             // Add proper indexes if they don't exist
             if (!$this->hasIndex('opportunities', 'opportunities_project_id_type_index')) {
                 $table->index(['project_id', 'type']);
@@ -94,6 +84,62 @@ return new class extends Migration
         // Add database-level constraints for business rules
         DB::statement('ALTER TABLE opportunities ADD CONSTRAINT check_probability_range CHECK (probability >= 0 AND probability <= 100)');
         DB::statement('ALTER TABLE opportunities ADD CONSTRAINT check_potential_value_positive CHECK (potential_value >= 0)');
+        
+        // Fix airlines table - convert account_executive string to foreign key
+        if (Schema::hasColumn('airlines', 'account_executive')) {
+            Schema::table('airlines', function (Blueprint $table) {
+                $table->foreignId('account_executive_id')->nullable()->constrained('users')->nullOnDelete()->after('account_executive');
+            });
+            
+            // Update existing data if possible (convert string names to user IDs)
+            // This would require custom logic based on your data
+            
+            Schema::table('airlines', function (Blueprint $table) {
+                $table->dropColumn('account_executive');
+            });
+        }
+        
+        // Add audit columns to projects table
+        Schema::table('projects', function (Blueprint $table) {
+            if (!Schema::hasColumn('projects', 'created_by')) {
+                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete()->after('comment');
+            }
+            if (!Schema::hasColumn('projects', 'updated_by')) {
+                $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete()->after('created_by');
+            }
+            if (!Schema::hasColumn('projects', 'deleted_by')) {
+                $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_by');
+            }
+        });
+        
+        // Add audit columns to opportunities table
+        Schema::table('opportunities', function (Blueprint $table) {
+            if (!Schema::hasColumn('opportunities', 'updated_by')) {
+                $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete()->after('assigned_to');
+            }
+            if (!Schema::hasColumn('opportunities', 'deleted_by')) {
+                $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_by');
+            }
+        });
+        
+        // Add unique constraints for business logic
+        Schema::table('contacts', function (Blueprint $table) {
+            if (!$this->constraintExists('contacts', 'unique_contact_email_per_subcontractor')) {
+                $table->unique(['subcontractor_id', 'email'], 'unique_contact_email_per_subcontractor');
+            }
+        });
+        
+        // Add soft delete performance indexes
+        $softDeleteTables = ['projects', 'opportunities', 'project_subcontractor_teams', 'contacts'];
+        foreach ($softDeleteTables as $table) {
+            if (Schema::hasColumn($table, 'deleted_at')) {
+                Schema::table($table, function (Blueprint $tableSchema) use ($table) {
+                    if (!$this->hasIndex($table, "idx_{$table}_deleted_at")) {
+                        $tableSchema->index('deleted_at', "idx_{$table}_deleted_at");
+                    }
+                });
+            }
+        }
     }
 
     private function hasIndex(string $table, string $index): bool
@@ -104,6 +150,19 @@ return new class extends Migration
         
         return in_array($index, $indexes);
     }
+    
+    /**
+     * Check if a constraint exists on a table
+     */
+    private function constraintExists(string $table, string $constraint): bool
+    {
+        try {
+            $indexes = Schema::getConnection()->getDoctrineSchemaManager()->listTableIndexes($table);
+            return array_key_exists($constraint, $indexes);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
 
     /**
      * Reverse the migrations.
@@ -113,6 +172,43 @@ return new class extends Migration
         // Remove constraints
         DB::statement('ALTER TABLE opportunities DROP CONSTRAINT IF EXISTS check_probability_range');
         DB::statement('ALTER TABLE opportunities DROP CONSTRAINT IF EXISTS check_potential_value_positive');
+        
+        // Remove audit columns from projects table
+        Schema::table('projects', function (Blueprint $table) {
+            if (Schema::hasColumn('projects', 'created_by')) {
+                $table->dropForeign(['created_by']);
+                $table->dropColumn('created_by');
+            }
+            if (Schema::hasColumn('projects', 'updated_by')) {
+                $table->dropForeign(['updated_by']);
+                $table->dropColumn('updated_by');
+            }
+            if (Schema::hasColumn('projects', 'deleted_by')) {
+                $table->dropForeign(['deleted_by']);
+                $table->dropColumn('deleted_by');
+            }
+        });
+        
+        // Remove audit columns from opportunities table
+        Schema::table('opportunities', function (Blueprint $table) {
+            if (Schema::hasColumn('opportunities', 'updated_by')) {
+                $table->dropForeign(['updated_by']);
+                $table->dropColumn('updated_by');
+            }
+            if (Schema::hasColumn('opportunities', 'deleted_by')) {
+                $table->dropForeign(['deleted_by']);
+                $table->dropColumn('deleted_by');
+            }
+        });
+        
+        // Restore account_executive as string
+        Schema::table('airlines', function (Blueprint $table) {
+            $table->string('account_executive')->nullable()->after('region');
+            if (Schema::hasColumn('airlines', 'account_executive_id')) {
+                $table->dropForeign(['account_executive_id']);
+                $table->dropColumn('account_executive_id');
+            }
+        });
 
         // Recreate redundant tables
         Schema::create('project_opportunity', function (Blueprint $table) {

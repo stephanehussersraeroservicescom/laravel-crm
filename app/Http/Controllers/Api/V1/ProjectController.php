@@ -50,7 +50,7 @@ class ProjectController extends BaseApiController
                 'number_of_aircraft' => 'nullable|integer|min:1',
                 'design_status_id' => 'nullable|exists:statuses,id',
                 'commercial_status_id' => 'nullable|exists:statuses,id',
-                'owner' => 'nullable|string|max:255',
+                'owner' => 'required|string|max:255',
                 'comment' => 'nullable|string',
             ]);
 
@@ -91,7 +91,7 @@ class ProjectController extends BaseApiController
                 'number_of_aircraft' => 'nullable|integer|min:1',
                 'design_status_id' => 'nullable|exists:statuses,id',
                 'commercial_status_id' => 'nullable|exists:statuses,id',
-                'owner' => 'nullable|string|max:255',
+                'owner' => 'sometimes|required|string|max:255',
                 'comment' => 'nullable|string',
             ]);
 

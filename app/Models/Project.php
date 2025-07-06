@@ -16,6 +16,23 @@ class Project extends Model
         'design_status_id', 'commercial_status_id', 'owner', 'comment'
     ];
 
+    /**
+     * Validation rules for project creation and updates
+     */
+    public static function validationRules()
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'airline_id' => 'required|exists:airlines,id',
+            'owner' => 'required|string|max:255',
+            'aircraft_type_id' => 'nullable|exists:aircraft_types,id',
+            'number_of_aircraft' => 'nullable|integer|min:1',
+            'design_status_id' => 'nullable|exists:statuses,id',
+            'commercial_status_id' => 'nullable|exists:statuses,id',
+            'comment' => 'nullable|string',
+        ];
+    }
+
     protected static function boot()
     {
         parent::boot();

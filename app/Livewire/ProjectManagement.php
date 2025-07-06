@@ -50,7 +50,7 @@ class ProjectManagement extends Component
     #[Validate('nullable|exists:statuses,id')]
     public $commercial_status_id = '';
     
-    #[Validate('nullable|string')]
+    #[Validate('required|string|max:255')]
     public $owner = '';
     
     #[Validate('nullable|string|max:1000')]

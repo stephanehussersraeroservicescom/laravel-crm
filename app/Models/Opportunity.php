@@ -65,6 +65,27 @@ class Opportunity extends Model
         'updated_by',
         'deleted_by'
     ];
+
+    /**
+     * Validation rules for opportunity creation and updates
+     */
+    public static function validationRules()
+    {
+        return [
+            'project_id' => 'required|exists:projects,id',
+            'type' => 'required|in:vertical,panels,covers,others',
+            'cabin_class' => 'required|in:first_class,business_class,premium_economy,economy',
+            'name' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'probability' => 'nullable|integer|min:0|max:100',
+            'potential_value' => 'nullable|numeric|min:0',
+            'status' => 'nullable|string|max:255',
+            'certification_status_id' => 'nullable|exists:statuses,id',
+            'phy_path' => 'nullable|string|max:255',
+            'comments' => 'nullable|string',
+            'assigned_to' => 'required|exists:users,id',
+        ];
+    }
     
     protected $casts = [
         'type' => OpportunityType::class,

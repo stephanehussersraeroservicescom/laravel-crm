@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('opportunities', function (Blueprint $table) {
-            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete()->after('assigned_to');
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete()->after('updated_by');
+            $table->dropColumn('owner');
         });
     }
 
@@ -23,9 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('opportunities', function (Blueprint $table) {
-            $table->dropForeign(['updated_by']);
-            $table->dropForeign(['deleted_by']);
-            $table->dropColumn(['updated_by', 'deleted_by']);
+            $table->string('owner')->after('assigned_to')->comment('Opportunity owner - responsible for the opportunity');
         });
     }
 };

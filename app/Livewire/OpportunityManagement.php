@@ -66,7 +66,7 @@ class OpportunityManagement extends Component
     #[Validate('nullable|exists:statuses,id')]
     public $certification_status_id = '';
     
-    #[Validate('nullable|exists:users,id')]
+    #[Validate('required|exists:users,id')]
     public $assigned_to = '';
     
     #[Validate('nullable|exists:users,id')]
@@ -75,6 +75,7 @@ class OpportunityManagement extends Component
     public function mount()
     {
         $this->created_by = auth()->id();
+        $this->assigned_to = auth()->id();
         
         // Check for team creation context (redirected from team management)
         if (session()->has('team_creation_context')) {
@@ -285,6 +286,12 @@ class OpportunityManagement extends Component
     {
         $this->validate();
         
+        // Check if assigned_to field is empty
+        if (empty($this->assigned_to)) {
+            $this->addError('assigned_to', 'The assigned to field is required.');
+            return;
+        }
+        
         // Additional enum validation
         $typeValues = array_column(OpportunityType::cases(), 'value');
         $statusValues = array_column(OpportunityStatus::cases(), 'value');
@@ -361,7 +368,7 @@ class OpportunityManagement extends Component
         $this->description = '';
         $this->comments = '';
         $this->certification_status_id = '';
-        $this->assigned_to = '';
+        $this->assigned_to = auth()->id();
         $this->created_by = auth()->id();
     }
 
@@ -394,7 +401,7 @@ class OpportunityManagement extends Component
             'description' => $this->description,
             'comments' => $this->comments,
             'certification_status_id' => $this->certification_status_id ?: null,
-            'assigned_to' => $this->assigned_to ?: null,
+            'assigned_to' => $this->assigned_to,
             'created_by' => $this->created_by,
         ];
     }

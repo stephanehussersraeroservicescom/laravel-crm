@@ -1,84 +1,72 @@
 <div class="space-y-6">
     <!-- Header -->
-    <div class="w-full mx-auto md:max-w-[90%] pt-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900">Contact Management</h1>
-            <button wire:click="openCreateModal" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+    <x-atomic.molecules.navigation.page-header title="Contact Management">
+        <x-slot name="actions">
+            <x-atomic.atoms.buttons.primary-button wire:click="openCreateModal">
                 <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Add Contact
-            </button>
-        </div>
-    </div>
+            </x-atomic.atoms.buttons.primary-button>
+        </x-slot>
+    </x-atomic.molecules.navigation.page-header>
 
     <!-- Flash Messages -->
-    @if (session()->has('message'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('message') }}
-        </div>
-    @endif
+    <x-atomic.atoms.feedback.flash-message type="success" :message="session('message')" />
 
     <!-- Search and Filter Panel -->
     <div class="w-full mx-auto bg-white p-8 rounded-lg shadow-sm border-2 border-gray-400 md:max-w-[90%]">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <!-- Search -->
-            <div class="lg:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                <input type="text" 
-                       wire:model.live.debounce.300ms="search" 
-                       placeholder="Search contacts, roles, companies..."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
+            <x-atomic.molecules.forms.search-field 
+                span="wide"
+                label="Search"
+                placeholder="Search contacts, roles, companies..."
+                wire:model.live.debounce.300ms="search"
+            />
 
             <!-- Per Page -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Show</label>
-                <select wire:model.live="perPage" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Show">
+                <x-atomic.atoms.forms.form-select wire:model.live="perPage">
                     <option value="10">10 per page</option>
                     <option value="25">25 per page</option>
                     <option value="50">50 per page</option>
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <!-- Subcontractor Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Subcontractor</label>
-                <select wire:model.live="filterSubcontractor" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Subcontractor">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterSubcontractor">
                     <option value="">All Subcontractors</option>
                     @foreach($subcontractors as $subcontractor)
                         <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Role Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select wire:model.live="filterRole" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Role">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterRole">
                     <option value="">All Roles</option>
                     @foreach($roles as $role)
                         <option value="{{ $role->value }}">{{ $role->label() }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
         </div>
 
         <div class="flex justify-between items-center mt-6">
             <!-- Show Deleted Checkbox -->
-            <label class="flex items-center">
-                <input type="checkbox" wire:model.live="showDeleted" 
-                       class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                <span class="ml-2 text-sm text-gray-700">Show deleted contacts</span>
-            </label>
+            <x-atomic.atoms.forms.form-checkbox 
+                wire:model.live="showDeleted"
+                label="Show deleted contacts"
+            />
             
-            <button wire:click="clearFilters" 
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+            <x-atomic.atoms.buttons.secondary-button variant="gray" wire:click="clearFilters">
                 Clear Filters
-            </button>
+            </x-atomic.atoms.buttons.secondary-button>
         </div>
     </div>
 
@@ -148,9 +136,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($contact->role)
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    <x-atomic.atoms.feedback.status-badge variant="primary">
                                         {{ $contact->role->label() }}
-                                    </span>
+                                    </x-atomic.atoms.feedback.status-badge>
                                 @else
                                     <span class="text-gray-400">No role</span>
                                 @endif
@@ -159,22 +147,28 @@
                                 <div class="font-medium text-gray-900">{{ $contact->subcontractor->name }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                <button wire:click="openEditModal({{ $contact->id }})" 
-                                        class="text-blue-600 hover:text-blue-900 transition-colors">
+                                <x-atomic.atoms.buttons.action-link 
+                                    variant="primary" 
+                                    wire:click="openEditModal({{ $contact->id }})"
+                                >
                                     Edit
-                                </button>
+                                </x-atomic.atoms.buttons.action-link>
                                 @if($contact->trashed())
-                                    <button wire:click="delete({{ $contact->id }})" 
-                                            onclick="return confirm('Are you sure you want to restore this contact?')"
-                                            class="text-green-600 hover:text-green-900 transition-colors">
+                                    <x-atomic.atoms.buttons.action-link 
+                                        variant="success" 
+                                        wire:click="delete({{ $contact->id }})" 
+                                        onclick="return confirm('Are you sure you want to restore this contact?')"
+                                    >
                                         Restore
-                                    </button>
+                                    </x-atomic.atoms.buttons.action-link>
                                 @else
-                                    <button wire:click="delete({{ $contact->id }})" 
-                                            onclick="return confirm('Are you sure you want to delete this contact?')"
-                                            class="text-red-600 hover:text-red-900 transition-colors">
+                                    <x-atomic.atoms.buttons.action-link 
+                                        variant="danger" 
+                                        wire:click="delete({{ $contact->id }})" 
+                                        onclick="return confirm('Are you sure you want to delete this contact?')"
+                                    >
                                         Delete
-                                    </button>
+                                    </x-atomic.atoms.buttons.action-link>
                                 @endif
                             </td>
                         </tr>
@@ -182,9 +176,9 @@
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                 No contacts found. 
-                                <button wire:click="openCreateModal" class="text-blue-600 hover:text-blue-800">
+                                <x-atomic.atoms.buttons.action-link variant="primary" wire:click="openCreateModal">
                                     Create your first contact
-                                </button>
+                                </x-atomic.atoms.buttons.action-link>
                             </td>
                         </tr>
                     @endforelse
@@ -220,66 +214,80 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Subcontractor -->
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Subcontractor *</label>
-                                <select wire:model="subcontractor_id" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Select Subcontractor</option>
-                                    @foreach($subcontractors as $subcontractor)
-                                        <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('subcontractor_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <x-atomic.molecules.forms.form-field-group 
+                                    label="Subcontractor" 
+                                    name="subcontractor_id" 
+                                    :required="true"
+                                >
+                                    <x-atomic.atoms.forms.form-select wire:model="subcontractor_id" required>
+                                        <option value="">Select Subcontractor</option>
+                                        @foreach($subcontractors as $subcontractor)
+                                            <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
+                                        @endforeach
+                                    </x-atomic.atoms.forms.form-select>
+                                </x-atomic.molecules.forms.form-field-group>
                             </div>
 
                             <!-- Name -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                                <input type="text" wire:model="name" required 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
+                            <x-atomic.molecules.forms.form-field-group 
+                                label="Name" 
+                                name="name" 
+                                :required="true"
+                            >
+                                <x-atomic.atoms.forms.form-input 
+                                    type="text" 
+                                    wire:model="name" 
+                                    required 
+                                />
+                            </x-atomic.molecules.forms.form-field-group>
 
                             <!-- Email -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                                <input type="email" wire:model="email" required 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
+                            <x-atomic.molecules.forms.form-field-group 
+                                label="Email" 
+                                name="email" 
+                                :required="true"
+                            >
+                                <x-atomic.atoms.forms.form-input 
+                                    type="email" 
+                                    wire:model="email" 
+                                    required 
+                                />
+                            </x-atomic.molecules.forms.form-field-group>
 
                             <!-- Phone -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                                <input type="tel" wire:model="phone" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @error('phone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
+                            <x-atomic.molecules.forms.form-field-group 
+                                label="Phone" 
+                                name="phone"
+                            >
+                                <x-atomic.atoms.forms.form-input 
+                                    type="tel" 
+                                    wire:model="phone" 
+                                />
+                            </x-atomic.molecules.forms.form-field-group>
 
                             <!-- Role -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                                <select wire:model="role" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <x-atomic.molecules.forms.form-field-group 
+                                label="Role" 
+                                name="role"
+                            >
+                                <x-atomic.atoms.forms.form-select wire:model="role">
                                     <option value="">Select Role</option>
                                     @foreach($roles as $roleOption)
                                         <option value="{{ $roleOption->value }}">{{ $roleOption->label() }}</option>
                                     @endforeach
-                                </select>
-                                @error('role') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
+                                </x-atomic.atoms.forms.form-select>
+                            </x-atomic.molecules.forms.form-field-group>
 
                         </div>
 
                         <!-- Modal Footer -->
                         <div class="flex justify-end space-x-3 pt-4 border-t">
-                            <button type="button" wire:click="closeModal" 
-                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                            <x-atomic.atoms.buttons.secondary-button type="button" wire:click="closeModal">
                                 Cancel
-                            </button>
-                            <button type="submit" 
-                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
+                            </x-atomic.atoms.buttons.secondary-button>
+                            <x-atomic.atoms.buttons.primary-button type="submit">
                                 {{ $modalMode === 'create' ? 'Create' : 'Update' }} Contact
-                            </button>
+                            </x-atomic.atoms.buttons.primary-button>
                         </div>
                     </form>
                 </div>

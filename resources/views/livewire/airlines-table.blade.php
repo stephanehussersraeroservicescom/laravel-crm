@@ -1,37 +1,25 @@
 <div class="space-y-6">
     <!-- Header -->
-    <div class="w-full mx-auto md:max-w-[90%] pt-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900">Airlines Management</h1>
+    <x-atomic.molecules.navigation.page-header title="Airlines Management">
+        <x-slot name="actions">
             @if($editing)
-                <button wire:click="cancelEdit" 
-                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                <x-atomic.atoms.buttons.secondary-button variant="gray" wire:click="cancelEdit">
                     Cancel
-                </button>
+                </x-atomic.atoms.buttons.secondary-button>
             @else
-                <button wire:click="openAddForm" 
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                <x-atomic.atoms.buttons.primary-button wire:click="openAddForm">
                     <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                     Add Airline
-                </button>
+                </x-atomic.atoms.buttons.primary-button>
             @endif
-        </div>
-    </div>
+        </x-slot>
+    </x-atomic.molecules.navigation.page-header>
 
     <!-- Flash Messages -->
-    @if (session()->has('message'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('message') }}
-        </div>
-    @endif
-    
-    @if (session()->has('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {{ session('error') }}
-        </div>
-    @endif
+    <x-atomic.atoms.feedback.flash-message type="success" :message="session('message')" />
+    <x-atomic.atoms.feedback.flash-message type="error" :message="session('error')" />
 
     <!-- Add/Edit Form -->
     @if($editing)
@@ -40,49 +28,51 @@
             
             <form wire:submit.prevent="save" class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Airline Name *</label>
-                        <input type="text" wire:model.live="name" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               required>
-                        @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </div>
+                    <x-atomic.molecules.forms.form-field-group 
+                        label="Airline Name" 
+                        name="name" 
+                        :required="true"
+                    >
+                        <x-atomic.atoms.forms.form-input 
+                            type="text" 
+                            wire:model.live="name" 
+                            required 
+                        />
+                    </x-atomic.molecules.forms.form-field-group>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Region *</label>
-                        <select wire:model.live="region" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required>
+                    <x-atomic.molecules.forms.form-field-group 
+                        label="Region" 
+                        name="region" 
+                        :required="true"
+                    >
+                        <x-atomic.atoms.forms.form-select wire:model.live="region" required>
                             <option value="">Select Region...</option>
                             @foreach($availableRegions as $regionOption)
                                 <option value="{{ $regionOption }}">{{ $regionOption }}</option>
                             @endforeach
-                        </select>
-                        @error('region') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </div>
+                        </x-atomic.atoms.forms.form-select>
+                    </x-atomic.molecules.forms.form-field-group>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Account Executive</label>
-                        <select wire:model.live="account_executive_id" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <x-atomic.molecules.forms.form-field-group 
+                        label="Account Executive" 
+                        name="account_executive_id"
+                    >
+                        <x-atomic.atoms.forms.form-select wire:model.live="account_executive_id">
                             <option value="">Select Account Executive...</option>
                             @foreach($salesUsers as $user)
                                 <option value="{{ $user->id }}">{{ $user->name }}</option>
                             @endforeach
-                        </select>
-                        @error('account_executive_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </div>
+                        </x-atomic.atoms.forms.form-select>
+                    </x-atomic.molecules.forms.form-field-group>
                 </div>
                 
                 <div class="flex justify-end space-x-3">
-                    <button type="button" wire:click="cancelEdit" 
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                    <x-atomic.atoms.buttons.secondary-button type="button" wire:click="cancelEdit">
                         Cancel
-                    </button>
-                    <button type="submit" 
-                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
+                    </x-atomic.atoms.buttons.secondary-button>
+                    <x-atomic.atoms.buttons.primary-button type="submit">
                         {{ $editId ? 'Update' : 'Add' }} Airline
-                    </button>
+                    </x-atomic.atoms.buttons.primary-button>
                 </div>
             </form>
         </div>
@@ -92,26 +82,24 @@
     <div class="w-full mx-auto bg-white p-8 rounded-lg shadow-sm border-2 border-gray-400 md:max-w-[90%]">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <!-- Region Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Region</label>
-                <select wire:model.live="filterRegion" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Region">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterRegion">
                     <option value="">All Regions</option>
                     @foreach($availableRegions as $region)
                         <option value="{{ $region }}">{{ $region }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Account Executive Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Account Executive</label>
-                <select wire:model.live="filterAccountExecutive" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Account Executive">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterAccountExecutive">
                     <option value="">All Account Executives</option>
                     @foreach($salesUsers as $user)
-                        <option value="{{ $user->name }}">{{ $user->name }}</option>
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
         </div>
 
         <div class="flex justify-between items-center">
@@ -122,10 +110,9 @@
                 <span class="ml-2 text-sm text-gray-700">Show deleted airlines</span>
             </label>
             
-            <button wire:click="clearFilters" 
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+            <x-atomic.atoms.buttons.secondary-button variant="gray" wire:click="clearFilters">
                 Clear Filters
-            </button>
+            </x-atomic.atoms.buttons.secondary-button>
         </div>
     </div>
 
@@ -176,21 +163,27 @@
                             @endif
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                 @if($airline->trashed())
-                                    <button wire:click="restore({{ $airline->id }})" 
-                                            onclick="return confirm('Are you sure you want to restore this airline?')"
-                                            class="text-green-600 hover:text-green-900 transition-colors">
+                                    <x-atomic.atoms.buttons.action-link 
+                                        variant="success" 
+                                        wire:click="restore({{ $airline->id }})" 
+                                        onclick="return confirm('Are you sure you want to restore this airline?')"
+                                    >
                                         Restore
-                                    </button>
+                                    </x-atomic.atoms.buttons.action-link>
                                 @else
-                                    <button wire:click="edit({{ $airline->id }})" 
-                                            class="text-blue-600 hover:text-blue-900 transition-colors">
+                                    <x-atomic.atoms.buttons.action-link 
+                                        variant="primary" 
+                                        wire:click="edit({{ $airline->id }})"
+                                    >
                                         Edit
-                                    </button>
-                                    <button wire:click="delete({{ $airline->id }})" 
-                                            onclick="return confirm('Are you sure you want to delete this airline?')"
-                                            class="text-red-600 hover:text-red-900 transition-colors">
+                                    </x-atomic.atoms.buttons.action-link>
+                                    <x-atomic.atoms.buttons.action-link 
+                                        variant="danger" 
+                                        wire:click="delete({{ $airline->id }})" 
+                                        onclick="return confirm('Are you sure you want to delete this airline?')"
+                                    >
                                         Delete
-                                    </button>
+                                    </x-atomic.atoms.buttons.action-link>
                                 @endif
                             </td>
                         </tr>
@@ -198,9 +191,9 @@
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                                 No airlines found. 
-                                <button wire:click="$toggle('editing')" class="text-blue-600 hover:text-blue-800">
+                                <x-atomic.atoms.buttons.action-link variant="primary" wire:click="$toggle('editing')">
                                     Create your first airline
-                                </button>
+                                </x-atomic.atoms.buttons.action-link>
                             </td>
                         </tr>
                     @endforelse

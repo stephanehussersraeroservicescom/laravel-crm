@@ -1,139 +1,124 @@
 <div class="space-y-6">
     <!-- Header -->
-    <div class="w-full mx-auto md:max-w-[90%] pt-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900">Subcontractor Management</h1>
-            <button wire:click="openCreateModal" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+    <x-atomic.molecules.navigation.page-header title="Subcontractor Management">
+        <x-slot name="actions">
+            <x-atomic.atoms.buttons.primary-button wire:click="openCreateModal">
                 <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Add Team
-            </button>
-        </div>
-    </div>
+            </x-atomic.atoms.buttons.primary-button>
+        </x-slot>
+    </x-atomic.molecules.navigation.page-header>
 
     <!-- Flash Messages -->
-    @if (session()->has('message'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('message') }}
-        </div>
-    @endif
+    <x-atomic.atoms.feedback.flash-message type="success" :message="session('message')" />
 
     <!-- Search and Filter Panel -->
     <div class="w-full mx-auto bg-white p-8 rounded-lg shadow-sm border-2 border-gray-400 md:max-w-[90%]">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <!-- Search Opportunity Type -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search Opportunity Type</label>
-                <input type="text" 
-                       wire:model.live.debounce.300ms="searchOpportunityType" 
-                       placeholder="panels, vertical, etc."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
+            <x-atomic.molecules.forms.form-field-group label="Search Opportunity Type">
+                <x-atomic.atoms.forms.form-input 
+                    type="text" 
+                    wire:model.live.debounce.300ms="searchOpportunityType" 
+                    placeholder="panels, vertical, etc."
+                />
+            </x-atomic.molecules.forms.form-field-group>
             
             <!-- Search Cabin Area -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search Cabin Area</label>
-                <input type="text" 
-                       wire:model.live.debounce.300ms="searchCabinArea" 
-                       placeholder="first class, economy, etc."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
+            <x-atomic.molecules.forms.form-field-group label="Search Cabin Area">
+                <x-atomic.atoms.forms.form-input 
+                    type="text" 
+                    wire:model.live.debounce.300ms="searchCabinArea" 
+                    placeholder="first class, economy, etc."
+                />
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Role Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select wire:model.live="filterRole" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Role">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterRole">
                     <option value="">All Roles</option>
                     @foreach($teamRoles as $role)
                         <option value="{{ $role->value }}">{{ $role->label() }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
             
             <!-- Per Page -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Show</label>
-                <select wire:model.live="perPage" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Show">
+                <x-atomic.atoms.forms.form-select wire:model.live="perPage">
                     <option value="10">10 per page</option>
                     <option value="25">25 per page</option>
                     <option value="50">50 per page</option>
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <!-- Airline Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Airline</label>
-                <select wire:model.live="filterAirline" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Airline">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterAirline">
                     <option value="">All Airlines</option>
                     @foreach($airlines as $airline)
                         <option value="{{ $airline->id }}">{{ $airline->name }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Project Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                <select wire:model.live="filterProject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Project">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterProject">
                     <option value="">All Projects</option>
                     @foreach($projects as $project)
                         <option value="{{ $project->id }}">{{ $project->name }} ({{ $project->airline?->name ?? 'No Airline' }})</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Main Subcontractor Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Main Subcontractor</label>
-                <select wire:model.live="filterMainSubcontractor" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Main Subcontractor">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterMainSubcontractor">
                     <option value="">All Subcontractors</option>
                     @foreach($subcontractors as $subcontractor)
                         <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-6">
             <!-- Opportunity Type Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Opportunity Type</label>
-                <select wire:model.live="filterOpportunityType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Opportunity Type">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterOpportunityType">
                     <option value="">All Types</option>
                     @foreach($opportunityTypes as $type)
                         <option value="{{ $type->value }}">{{ $type->label() }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Cabin Class Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Cabin Class</label>
-                <select wire:model.live="filterCabinClass" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Cabin Class">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterCabinClass">
                     <option value="">All Classes</option>
                     @foreach($cabinClasses as $class)
                         <option value="{{ $class->value }}">{{ $class->label() }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
         </div>
 
         <div class="flex justify-between items-center mt-6">
             <!-- Show Deleted Checkbox -->
-            <label class="flex items-center">
-                <input type="checkbox" wire:model.live="showDeleted" 
-                       class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                <span class="ml-2 text-sm text-gray-700">Show deleted teams</span>
-            </label>
+            <x-atomic.atoms.forms.form-checkbox 
+                wire:model.live="showDeleted"
+                label="Show deleted teams"
+            />
             
-            <button wire:click="clearFilters" 
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+            <x-atomic.atoms.buttons.secondary-button variant="gray" wire:click="clearFilters">
                 Clear Filters
-            </button>
+            </x-atomic.atoms.buttons.secondary-button>
         </div>
     </div>
 
@@ -172,50 +157,34 @@
                         <tr class="hover:bg-gray-300 {{ $team->trashed() ? 'bg-red-50 opacity-75' : '' }}">
                             <!-- Project / Airline (Column 1) -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ $team->opportunity?->project?->name ?? 'Unknown Project' }}</div>
-                                <div class="text-sm text-gray-500">{{ $team->opportunity?->project?->airline?->name ?? 'Unknown Airline' }}</div>
+                                <x-atomic.molecules.data.project-airline-cell 
+                                    :projectName="$team->opportunity?->project?->name ?? 'Unknown Project'"
+                                    :airlineName="$team->opportunity?->project?->airline?->name ?? 'Unknown Airline'"
+                                />
                             </td>
                             
                             <!-- Opportunity (Column 2) -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">
-                                    {{ $team->opportunity?->name ?: 'Untitled Opportunity' }}
-                                </div>
-                                <div class="text-sm text-gray-500">
-                                    {{ $team->opportunity?->type?->label() ?? 'Unknown Type' }} - 
-                                    @if($team->opportunity?->cabin_class)
-                                        {{ $team->opportunity->cabin_class->label() }}
-                                    @else
-                                        All Classes
-                                    @endif
-                                </div>
+                                <x-atomic.molecules.data.team-opportunity-cell 
+                                    :opportunityName="$team->opportunity?->name"
+                                    :opportunityType="$team->opportunity?->type?->label()"
+                                    :cabinClass="$team->opportunity?->cabin_class?->label()"
+                                />
                             </td>
                             
                             <!-- Subcontractors (Regrouped - Column 3) -->
                             <td class="px-6 py-4">
-                                <!-- Main Subcontractor (Bold) -->
-                                <div class="font-bold text-gray-900 mb-1">{{ $team->mainSubcontractor?->name ?? 'Unknown Subcontractor' }}</div>
-                                
-                                <!-- Supporting Subcontractors (Standard) -->
-                                @if($team->supportingSubcontractors->count() > 0)
-                                    <div class="space-y-1">
-                                        @foreach($team->supportingSubcontractors->take(3) as $supporting)
-                                            <div class="text-sm text-gray-600">{{ $supporting->name }}</div>
-                                        @endforeach
-                                        @if($team->supportingSubcontractors->count() > 3)
-                                            <div class="text-xs text-gray-400">
-                                                +{{ $team->supportingSubcontractors->count() - 3 }} more
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endif
+                                <x-atomic.molecules.data.subcontractor-list 
+                                    :mainSubcontractor="$team->mainSubcontractor?->name"
+                                    :supportingSubcontractors="$team->supportingSubcontractors"
+                                />
                             </td>
                             
                             <!-- Role (Column 4) -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                <x-atomic.atoms.feedback.status-badge variant="primary">
                                     {{ $team->role?->label() ?? 'Unknown Role' }}
-                                </span>
+                                </x-atomic.atoms.feedback.status-badge>
                             </td>
                             
                             <!-- Notes (Column 5) -->
@@ -231,22 +200,28 @@
                             
                             <!-- Actions (Column 6) -->
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                <button wire:click="openEditModal({{ $team->id }})" 
-                                        class="text-blue-600 hover:text-blue-900 transition-colors">
+                                <x-atomic.atoms.buttons.action-link 
+                                    variant="primary" 
+                                    wire:click="openEditModal({{ $team->id }})"
+                                >
                                     Edit
-                                </button>
+                                </x-atomic.atoms.buttons.action-link>
                                 @if($team->trashed())
-                                    <button wire:click="delete({{ $team->id }})" 
-                                            onclick="return confirm('Are you sure you want to restore this team?')"
-                                            class="text-green-600 hover:text-green-900 transition-colors">
+                                    <x-atomic.atoms.buttons.action-link 
+                                        variant="success" 
+                                        wire:click="delete({{ $team->id }})" 
+                                        onclick="return confirm('Are you sure you want to restore this team?')"
+                                    >
                                         Restore
-                                    </button>
+                                    </x-atomic.atoms.buttons.action-link>
                                 @else
-                                    <button wire:click="delete({{ $team->id }})" 
-                                            onclick="return confirm('Are you sure you want to delete this team?')"
-                                            class="text-red-600 hover:text-red-900 transition-colors">
+                                    <x-atomic.atoms.buttons.action-link 
+                                        variant="danger" 
+                                        wire:click="delete({{ $team->id }})" 
+                                        onclick="return confirm('Are you sure you want to delete this team?')"
+                                    >
                                         Delete
-                                    </button>
+                                    </x-atomic.atoms.buttons.action-link>
                                 @endif
                             </td>
                         </tr>
@@ -254,9 +229,9 @@
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                 No teams found. 
-                                <button wire:click="openCreateModal" class="text-blue-600 hover:text-blue-800">
+                                <x-atomic.atoms.buttons.action-link variant="primary" wire:click="openCreateModal">
                                     Create your first team
-                                </button>
+                                </x-atomic.atoms.buttons.action-link>
                             </td>
                         </tr>
                     @endforelse
@@ -291,122 +266,110 @@
                     <form wire:submit.prevent="save" class="mt-4 space-y-4">
                         <!-- Selection Summary -->
                         @if($selected_airline_id)
-                            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                                <div class="text-sm font-medium text-blue-900">
-                                    @php
-                                        $airline = $airlines->find($selected_airline_id);
-                                        $summary = $totalProjectsForAirline . ' active projects for ' . $airline->name;
-                                        
-                                        if ($selected_opportunity_type) {
-                                            $selectedType = collect($opportunityTypes)->firstWhere('value', $selected_opportunity_type);
-                                            $opportunityLabel = $selectedType ? $selectedType->label() : 'opportunities';
-                                            $summary .= ' and ' . $totalOpportunitiesForSelection . ' related ' . strtolower($opportunityLabel) . ' opportunities';
-                                        } else {
-                                            $summary .= ' and ' . $totalOpportunitiesForSelection . ' related opportunities';
-                                        }
-                                    @endphp
-                                    📊 {{ $summary }}
-                                </div>
-                            </div>
+                            @php
+                                $airline = $airlines->find($selected_airline_id);
+                                $summary = $totalProjectsForAirline . ' active projects for ' . $airline->name;
+                                
+                                if ($selected_opportunity_type) {
+                                    $selectedType = collect($opportunityTypes)->firstWhere('value', $selected_opportunity_type);
+                                    $opportunityLabel = $selectedType ? $selectedType->label() : 'opportunities';
+                                    $summary .= ' and ' . $totalOpportunitiesForSelection . ' related ' . strtolower($opportunityLabel) . ' opportunities';
+                                } else {
+                                    $summary .= ' and ' . $totalOpportunitiesForSelection . ' related opportunities';
+                                }
+                            @endphp
+                            <x-atomic.molecules.feedback.alert-box type="info" class="mb-6">
+                                {{ $summary }}
+                            </x-atomic.molecules.feedback.alert-box>
                         @endif
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Airline Selection -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Airline *</label>
-                                <select wire:model.live="selected_airline_id" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Select Airline</option>
-                                    @foreach($airlines as $airline)
-                                        <option value="{{ $airline->id }}">{{ $airline->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('selected_airline_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <x-atomic.molecules.forms.form-field-group 
+                                    label="Airline" 
+                                    name="selected_airline_id" 
+                                    :required="true"
+                                >
+                                    <x-atomic.atoms.forms.form-select wire:model.live="selected_airline_id" required>
+                                        <option value="">Select Airline</option>
+                                        @foreach($airlines as $airline)
+                                            <option value="{{ $airline->id }}">{{ $airline->name }}</option>
+                                        @endforeach
+                                    </x-atomic.atoms.forms.form-select>
+                                </x-atomic.molecules.forms.form-field-group>
                                 
                                 <!-- Project Creation Dialog (only when airline has NO projects at all) -->
                                 @if($selected_airline_id && $totalProjectsForAirline === 0)
-                                    <div class="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                                        <div class="text-sm text-yellow-800 mb-3">
-                                            ⚠ No projects found for {{ $airlines->find($selected_airline_id)->name }}.
-                                        </div>
-                                        <div class="text-sm text-yellow-700 mb-3">
-                                            Would you like to create the first project for this airline?
-                                        </div>
-                                        <div class="flex space-x-2">
-                                            <button type="button" 
-                                                    wire:click="createProject"
-                                                    class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                                Yes, Create Project
-                                            </button>
-                                            <button type="button" 
-                                                    wire:click="cancelNoProject"
-                                                    class="px-3 py-1 text-sm bg-gray-500 text-white rounded-md hover:bg-gray-600">
-                                                No, Cancel
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <x-atomic.molecules.feedback.dialog-box 
+                                        type="warning"
+                                        title="⚠ No projects found for {{ $airlines->find($selected_airline_id)->name }}."
+                                        message="Would you like to create the first project for this airline?"
+                                        :actions="[
+                                            ['label' => 'Yes, Create Project', 'action' => 'createProject', 'variant' => 'primary'],
+                                            ['label' => 'No, Cancel', 'action' => 'cancelNoProject', 'variant' => 'secondary']
+                                        ]"
+                                    />
                                 @endif
                             </div>
 
                             <!-- Opportunity Type Selection -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Opportunity Type *</label>
-                                <select wire:model.live="selected_opportunity_type" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        {{ !$selected_airline_id ? 'disabled' : '' }}>
-                                    <option value="">{{ $selected_airline_id ? 'Select Type' : 'Select Airline First' }}</option>
-                                    @foreach($opportunityTypes as $type)
-                                        <option value="{{ $type->value }}">{{ $type->label() }}</option>
-                                    @endforeach
-                                </select>
-                                @error('selected_opportunity_type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <x-atomic.molecules.forms.form-field-group 
+                                    label="Opportunity Type" 
+                                    name="selected_opportunity_type" 
+                                    :required="true"
+                                >
+                                    <x-atomic.atoms.forms.form-select 
+                                        wire:model.live="selected_opportunity_type" 
+                                        required
+                                        :disabled="!$selected_airline_id"
+                                    >
+                                        <option value="">{{ $selected_airline_id ? 'Select Type' : 'Select Airline First' }}</option>
+                                        @foreach($opportunityTypes as $type)
+                                            <option value="{{ $type->value }}">{{ $type->label() }}</option>
+                                        @endforeach
+                                    </x-atomic.atoms.forms.form-select>
+                                </x-atomic.molecules.forms.form-field-group>
                                 
                                 <!-- Combined Project/Opportunity Creation Dialog -->
                                 @if($selected_airline_id && $selected_opportunity_type && !$selected_cabin_class && $totalProjectsForAirline > 0 && $totalOpportunitiesForSelection === 0)
-                                    <div class="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                                        <div class="text-sm text-yellow-800 mb-3">
-                                            @php
-                                                $selectedType = collect($opportunityTypes)->firstWhere('value', $selected_opportunity_type);
-                                                $airlineName = $airlines->find($selected_airline_id)->name;
-                                            @endphp
-                                            ⚠ No {{ $selectedType ? $selectedType->label() : 'opportunities' }} found for {{ $airlineName }}.
-                                        </div>
-                                        <div class="text-sm text-yellow-700 mb-3">
-                                            {{ $airlineName }} has {{ $totalProjectsForAirline }} existing project(s). Would you like to:
-                                        </div>
-                                        <div class="space-y-2">
-                                            <button type="button" 
-                                                    wire:click="createOpportunityInExistingProject"
-                                                    class="w-full px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 text-left">
-                                                ✓ Add {{ $selectedType ? $selectedType->label() : 'opportunity' }} to existing project
-                                            </button>
-                                            <button type="button" 
-                                                    wire:click="createProject"
-                                                    class="w-full px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 text-left">
-                                                + Create new project for {{ $selectedType ? $selectedType->label() : 'this type' }}
-                                            </button>
-                                            <button type="button" 
-                                                    wire:click="cancelNoOpportunity"
-                                                    class="w-full px-3 py-2 text-sm bg-gray-500 text-white rounded-md hover:bg-gray-600 text-left">
-                                                ✕ Cancel
-                                            </button>
-                                        </div>
-                                    </div>
+                                    @php
+                                        $selectedType = collect($opportunityTypes)->firstWhere('value', $selected_opportunity_type);
+                                        $airlineName = $airlines->find($selected_airline_id)->name;
+                                        $typeLabel = $selectedType ? $selectedType->label() : 'opportunity';
+                                    @endphp
+                                    <x-atomic.molecules.feedback.dialog-box 
+                                        type="warning"
+                                        title="⚠ No {{ $typeLabel }} found for {{ $airlineName }}."
+                                        message="{{ $airlineName }} has {{ $totalProjectsForAirline }} existing project(s). Would you like to:"
+                                        :actions="[
+                                            ['label' => '✓ Add ' . $typeLabel . ' to existing project', 'action' => 'createOpportunityInExistingProject', 'variant' => 'primary'],
+                                            ['label' => '+ Create new project for ' . $typeLabel, 'action' => 'createProject', 'variant' => 'primary'],
+                                            ['label' => '✕ Cancel', 'action' => 'cancelNoOpportunity', 'variant' => 'secondary']
+                                        ]"
+                                    />
                                 @endif
                             </div>
 
                             <!-- Cabin Class Selection -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Cabin Class *</label>
-                                <select wire:model.live="selected_cabin_class" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        {{ !$selected_opportunity_type ? 'disabled' : '' }}>
-                                    <option value="">{{ $selected_opportunity_type ? 'Select Cabin Class' : 'Select Type First' }}</option>
-                                    @foreach($cabinClasses as $class)
-                                        <option value="{{ $class->value }}">{{ $class->label() }}</option>
-                                    @endforeach
-                                </select>
-                                @error('selected_cabin_class') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <x-atomic.molecules.forms.form-field-group 
+                                    label="Cabin Class" 
+                                    name="selected_cabin_class" 
+                                    :required="true"
+                                >
+                                    <x-atomic.atoms.forms.form-select 
+                                        wire:model.live="selected_cabin_class" 
+                                        required
+                                        :disabled="!$selected_opportunity_type"
+                                    >
+                                        <option value="">{{ $selected_opportunity_type ? 'Select Cabin Class' : 'Select Type First' }}</option>
+                                        @foreach($cabinClasses as $class)
+                                            <option value="{{ $class->value }}">{{ $class->label() }}</option>
+                                        @endforeach
+                                    </x-atomic.atoms.forms.form-select>
+                                </x-atomic.molecules.forms.form-field-group>
                                 
                                 <!-- Combined Project/Opportunity Creation Dialog (after cabin class) -->
                                 @if($selected_airline_id && $selected_opportunity_type && $selected_cabin_class && $totalProjectsForAirline > 0 && $opportunityCount === 0)
@@ -445,103 +408,99 @@
 
                             <!-- Project Selection -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Project *
-                                    @if($selected_cabin_class && $projectCount > 0)
-                                        <span class="ml-2 text-xs text-purple-600">({{ $filteredProjects->count() }} matching projects)</span>
-                                    @endif
-                                </label>
-                                <select wire:model.live="selected_project_id" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        {{ !$selected_cabin_class ? 'disabled' : '' }}>
-                                    <option value="">{{ $selected_cabin_class ? 'Select Project' : 'Select Cabin Class First' }}</option>
-                                    @foreach($filteredProjects as $project)
-                                        <option value="{{ $project->id }}">{{ $project->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('selected_project_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <x-atomic.molecules.forms.form-field-group 
+                                    name="selected_project_id" 
+                                    :required="true"
+                                >
+                                    <x-slot name="label">
+                                        Project
+                                        @if($selected_cabin_class && $projectCount > 0)
+                                            <span class="ml-2 text-xs text-purple-600">({{ $filteredProjects->count() }} matching projects)</span>
+                                        @endif
+                                    </x-slot>
+                                    <x-atomic.atoms.forms.form-select 
+                                        wire:model.live="selected_project_id" 
+                                        required
+                                        :disabled="!$selected_cabin_class"
+                                    >
+                                        <option value="">{{ $selected_cabin_class ? 'Select Project' : 'Select Cabin Class First' }}</option>
+                                        @foreach($filteredProjects as $project)
+                                            <option value="{{ $project->id }}">{{ $project->name }}</option>
+                                        @endforeach
+                                    </x-atomic.atoms.forms.form-select>
+                                </x-atomic.molecules.forms.form-field-group>
                             </div>
 
                             <!-- Opportunity Selection Result -->
                             @if($selected_airline_id && $selected_project_id && $selected_opportunity_type && $selected_cabin_class)
                                 <div class="md:col-span-2">
                                     @if($filteredOpportunities->count() > 0)
-                                        <div class="bg-green-50 border border-green-200 rounded-md p-3">
-                                            <div class="text-sm font-medium text-green-800">
-                                                @if($filteredOpportunities->count() === 1)
-                                                    ✓ Opportunity found: {{ $filteredOpportunities->first()->name ?: 'Auto-generated' }}
-                                                @else
-                                                    ✓ {{ $filteredOpportunities->count() }} opportunities found matching your criteria
-                                                @endif
-                                            </div>
-                                        </div>
+                                        <x-atomic.molecules.feedback.alert-box type="success">
+                                            @if($filteredOpportunities->count() === 1)
+                                                ✓ Opportunity found: {{ $filteredOpportunities->first()->name ?: 'Auto-generated' }}
+                                            @else
+                                                ✓ {{ $filteredOpportunities->count() }} opportunities found matching your criteria
+                                            @endif
+                                        </x-atomic.molecules.feedback.alert-box>
                                     @else
-                                        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                                            <div class="text-sm font-medium text-yellow-800 mb-3">
-                                                ⚠ No opportunity exists for this combination
-                                            </div>
-                                            <div class="text-sm text-yellow-700 mb-3">
-                                                Would you like to create a new opportunity for this project?
-                                            </div>
-                                            <div class="flex space-x-2">
-                                                <button type="button" 
-                                                        wire:click="createOpportunity"
-                                                        class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                                    Yes, Create Opportunity
-                                                </button>
-                                                <button type="button" 
-                                                        wire:click="cancelNoOpportunity"
-                                                        class="px-3 py-1 text-sm bg-gray-500 text-white rounded-md hover:bg-gray-600">
-                                                    No, Cancel
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <x-atomic.molecules.feedback.dialog-box 
+                                            type="warning"
+                                            title="⚠ No opportunity exists for this combination"
+                                            message="Would you like to create a new opportunity for this project?"
+                                            :actions="[
+                                                ['label' => 'Yes, Create Opportunity', 'action' => 'createOpportunity', 'variant' => 'primary'],
+                                                ['label' => 'No, Cancel', 'action' => 'cancelNoOpportunity', 'variant' => 'secondary']
+                                            ]"
+                                        />
                                     @endif
                                 </div>
                             @endif
 
                             <!-- Main Subcontractor -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Main Subcontractor *</label>
-                                <div class="space-y-2">
-                                    <select wire:model="main_subcontractor_id" required 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            {{ $showNewSubcontractorForm ? 'disabled' : '' }}>
-                                        <option value="">Select Main Subcontractor</option>
-                                        @foreach($subcontractors as $subcontractor)
-                                            <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('main_subcontractor_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                    
-                                    <!-- Toggle to add new subcontractor -->
-                                    <button type="button" 
-                                            wire:click="toggleNewSubcontractorForm"
-                                            class="text-sm text-blue-600 hover:text-blue-800">
-                                        {{ $showNewSubcontractorForm ? '← Back to list' : '+ Add New Subcontractor' }}
-                                    </button>
-                                    
-                                    <!-- New Subcontractor Form -->
-                                    @if($showNewSubcontractorForm)
-                                        <div class="border border-blue-300 rounded-md p-3 bg-blue-50">
-                                            <div class="text-sm font-medium text-gray-700 mb-2">Create New Subcontractor</div>
-                                            
+                                <x-atomic.molecules.forms.form-field-group 
+                                    label="Main Subcontractor" 
+                                    name="main_subcontractor_id" 
+                                    :required="true"
+                                >
+                                    <x-atomic.molecules.forms.inline-create-form
+                                        title="Create New Subcontractor"
+                                        :showForm="$showNewSubcontractorForm"
+                                        toggleAction="toggleNewSubcontractorForm"
+                                        toggleText="+ Add New Subcontractor"
+                                    >
+                                        <x-atomic.atoms.forms.form-select 
+                                            wire:model="main_subcontractor_id" 
+                                            required
+                                            :disabled="$showNewSubcontractorForm"
+                                        >
+                                            <option value="">Select Main Subcontractor</option>
+                                            @foreach($subcontractors as $subcontractor)
+                                                <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
+                                            @endforeach
+                                        </x-atomic.atoms.forms.form-select>
+                                        
+                                        <x-slot name="form">
                                             <div class="space-y-2">
                                                 <div>
                                                     <label class="block text-xs font-medium text-gray-700">Name *</label>
-                                                    <input type="text" 
-                                                           wire:model.live.debounce.300ms="newSubcontractorName" 
-                                                           placeholder="Enter subcontractor name"
-                                                           class="w-full px-2 py-1 text-sm border {{ $errors->has('newSubcontractorName') ? 'border-red-300' : 'border-gray-300' }} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    <x-atomic.atoms.forms.form-input 
+                                                        type="text" 
+                                                        wire:model.live.debounce.300ms="newSubcontractorName" 
+                                                        placeholder="Enter subcontractor name"
+                                                        class="text-sm px-2 py-1 {{ $errors->has('newSubcontractorName') ? 'border-red-300' : '' }}"
+                                                    />
                                                     @error('newSubcontractorName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                                 </div>
                                                 
                                                 <div>
                                                     <label class="block text-xs font-medium text-gray-700">Comment</label>
-                                                    <textarea wire:model="newSubcontractorComment" 
-                                                              rows="2"
-                                                              placeholder="Optional comment about this subcontractor"
-                                                              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                                    <x-atomic.atoms.forms.form-textarea 
+                                                        wire:model="newSubcontractorComment" 
+                                                        rows="2"
+                                                        placeholder="Optional comment about this subcontractor"
+                                                        class="text-sm px-2 py-1"
+                                                    />
                                                     @error('newSubcontractorComment') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                                 </div>
                                                 
@@ -551,85 +510,63 @@
                                                     Create Subcontractor
                                                 </button>
                                             </div>
-                                        </div>
-                                    @endif
-                                </div>
+                                        </x-slot>
+                                    </x-atomic.molecules.forms.inline-create-form>
+                                </x-atomic.molecules.forms.form-field-group>
                             </div>
 
                             <!-- Role -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-                                <select wire:model="role" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <x-atomic.molecules.forms.form-field-group 
+                                label="Role" 
+                                name="role" 
+                                :required="true"
+                            >
+                                <x-atomic.atoms.forms.form-select wire:model="role" required>
                                     <option value="">Select Role</option>
                                     @foreach($teamRoles as $roleOption)
                                         <option value="{{ $roleOption->value }}">{{ $roleOption->label() }}</option>
                                     @endforeach
-                                </select>
-                                @error('role') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
+                                </x-atomic.atoms.forms.form-select>
+                            </x-atomic.molecules.forms.form-field-group>
 
                             <!-- Supporting Subcontractors -->
                             <div class="md:col-span-2">
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="block text-sm font-medium text-gray-700">Supporting Subcontractors</label>
-                                    <button type="button" wire:click="addSupportingSubcontractor" 
-                                            class="text-blue-600 hover:text-blue-800 text-sm">
-                                        + Add Supporting Subcontractor
-                                    </button>
-                                </div>
-                                
-                                @if(count($supportingSubcontractors) > 0)
-                                    <div class="space-y-2">
-                                        @foreach($supportingSubcontractors as $index => $supportingId)
-                                            <div class="flex items-center space-x-2">
-                                                <select wire:model="supportingSubcontractors.{{ $index }}" 
-                                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                    <option value="">Select Subcontractor</option>
-                                                    @foreach($subcontractors as $subcontractor)
-                                                        @if($subcontractor->id != $main_subcontractor_id && !in_array($subcontractor->id, array_filter($supportingSubcontractors)))
-                                                            <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
-                                                        @elseif($subcontractor->id == $supportingId)
-                                                            <option value="{{ $subcontractor->id }}" selected>{{ $subcontractor->name }}</option>
-                                                        @endif
-                                                    @endforeach
-                                                </select>
-                                                <button type="button" wire:click="removeSupportingSubcontractor({{ $index }})" 
-                                                        class="text-red-600 hover:text-red-800">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <div class="text-sm text-gray-500 py-2">
-                                        No supporting subcontractors added yet.
-                                    </div>
-                                @endif
+                                <x-atomic.molecules.forms.dynamic-select-list 
+                                    label="Supporting Subcontractors"
+                                    addButtonText="+ Add Supporting Subcontractor"
+                                    addAction="addSupportingSubcontractor"
+                                    removeAction="removeSupportingSubcontractor"
+                                    :items="$supportingSubcontractors"
+                                    wireModel="supportingSubcontractors"
+                                    :options="$subcontractors"
+                                    :excludeIds="[$main_subcontractor_id]"
+                                    emptyText="No supporting subcontractors added yet."
+                                />
                             </div>
 
                             <!-- Notes -->
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                                <textarea wire:model="notes" rows="3" 
-                                          placeholder="Add any relevant notes about this team..."
-                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                                @error('notes') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <x-atomic.molecules.forms.form-field-group 
+                                    label="Notes" 
+                                    name="notes"
+                                >
+                                    <x-atomic.atoms.forms.form-textarea 
+                                        wire:model="notes" 
+                                        rows="3" 
+                                        placeholder="Add any relevant notes about this team..."
+                                    />
+                                </x-atomic.molecules.forms.form-field-group>
                             </div>
                         </div>
 
                         <!-- Modal Footer -->
                         <div class="flex justify-end space-x-3 pt-4 border-t">
-                            <button type="button" wire:click="closeModal" 
-                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                            <x-atomic.atoms.buttons.secondary-button type="button" wire:click="closeModal">
                                 Cancel
-                            </button>
-                            <button type="submit" 
-                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
+                            </x-atomic.atoms.buttons.secondary-button>
+                            <x-atomic.atoms.buttons.primary-button type="submit">
                                 {{ $modalMode === 'create' ? 'Create' : 'Update' }} Team
-                            </button>
+                            </x-atomic.atoms.buttons.primary-button>
                         </div>
                     </form>
                 </div>

@@ -26,6 +26,17 @@ return new class extends Migration
             $table->decimal('potential_value', 15, 2)->nullable()->comment('Potential value in currency');
             $table->string('status')->default('draft');
             
+            // Aircraft seat configuration fields
+            $table->decimal('price_per_linear_yard', 10, 2)->nullable()->comment('Price per linear yard of material');
+            $table->decimal('linear_yards_per_seat', 8, 2)->nullable()->comment('Linear yards required per seat');
+            $table->integer('seats_in_opportunity')->nullable()->comment('Number of seats in this opportunity');
+            $table->foreignId('aircraft_seat_config_id')->nullable()->constrained('aircraft_seat_configurations')->nullOnDelete();
+            
+            // Opportunity-specific forecasting fields (timeline data is now at project level)
+            $table->json('revenue_distribution')->nullable()->comment('Year-by-year revenue distribution as JSON');
+            $table->json('volume_by_year')->nullable()->comment('Year-by-year volume projections');
+            $table->text('forecasting_notes')->nullable()->comment('Additional forecasting notes and assumptions');
+            
             // Relationships - using nullOnDelete for soft delete compatibility
             $table->foreignId('certification_status_id')->nullable()->constrained('statuses')->nullOnDelete();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
@@ -46,6 +57,8 @@ return new class extends Migration
             $table->index(['type', 'cabin_class']);
             $table->index(['status', 'probability']);
             $table->index(['assigned_to', 'status']);
+            
+            // Forecasting indexes (removed project-level forecasting indexes)
         });
     }
 

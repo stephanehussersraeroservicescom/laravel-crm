@@ -68,7 +68,7 @@ class OpportunityManagement extends Component
     #[Validate('required|integer|min:0|max:100')]
     public $probability = 50;
     
-    #[Validate('required|numeric|min:0')]
+    #[Validate('nullable|numeric|min:0')]
     public $potential_value = 0;
     
     #[Validate('nullable|string|max:255')]
@@ -88,6 +88,16 @@ class OpportunityManagement extends Component
     
     #[Validate('nullable|exists:users,id')]
     public $created_by = '';
+    
+    // Seat configuration fields
+    #[Validate('nullable|numeric|min:100|max:300')]
+    public $price_per_linear_yard = '';
+    
+    #[Validate('nullable|numeric|min:0.5|max:5.0')]
+    public $linear_yards_per_seat = '';
+    
+    #[Validate('nullable|integer|min:1')]
+    public $seats_in_opportunity = '';
 
     public function mount()
     {
@@ -393,6 +403,11 @@ class OpportunityManagement extends Component
         $this->attachments = [];
         $this->existingAttachments = [];
         $this->attachmentToDelete = null;
+        
+        // Reset seat configuration fields
+        $this->price_per_linear_yard = '';
+        $this->linear_yards_per_seat = '';
+        $this->seats_in_opportunity = '';
     }
 
     private function fillForm($opportunity)
@@ -417,6 +432,11 @@ class OpportunityManagement extends Component
         // Load existing attachments
         $this->existingAttachments = $opportunity->attachments;
         $this->attachments = [];
+        
+        // Fill seat configuration fields
+        $this->price_per_linear_yard = $opportunity->price_per_linear_yard;
+        $this->linear_yards_per_seat = $opportunity->linear_yards_per_seat;
+        $this->seats_in_opportunity = $opportunity->seats_in_opportunity;
     }
 
     private function getFormData()
@@ -434,6 +454,10 @@ class OpportunityManagement extends Component
             'certification_status_id' => $this->certification_status_id ?: null,
             'assigned_to' => $this->assigned_to,
             'created_by' => $this->created_by,
+            'price_per_linear_yard' => $this->price_per_linear_yard ?: null,
+            'linear_yards_per_seat' => $this->linear_yards_per_seat ?: null,
+            'seats_in_opportunity' => $this->seats_in_opportunity ?: null,
+            'potential_value' => $this->calculatePotentialValue(),
         ];
     }
 
@@ -657,5 +681,45 @@ class OpportunityManagement extends Component
                 ]);
             }
         }
+    }
+    
+    // Seat configuration calculation methods
+    public function calculatePotentialValue(): float
+    {
+        if (!$this->price_per_linear_yard || !$this->linear_yards_per_seat || !$this->seats_in_opportunity || !$this->project_id) {
+            return $this->potential_value ?: 0;
+        }
+        
+        $project = \App\Models\Project::find($this->project_id);
+        if (!$project || !$project->number_of_aircraft) {
+            return $this->potential_value ?: 0;
+        }
+        
+        $perAircraftValue = $this->seats_in_opportunity * $this->price_per_linear_yard * $this->linear_yards_per_seat;
+        return $perAircraftValue * $project->number_of_aircraft;
+    }
+    
+    public function calculatePerAircraftValue(): float
+    {
+        if (!$this->price_per_linear_yard || !$this->linear_yards_per_seat || !$this->seats_in_opportunity) {
+            return 0;
+        }
+        
+        return $this->seats_in_opportunity * $this->price_per_linear_yard * $this->linear_yards_per_seat;
+    }
+    
+    public function updatedPricePerLinearYard()
+    {
+        $this->potential_value = $this->calculatePotentialValue();
+    }
+    
+    public function updatedLinearYardsPerSeat()
+    {
+        $this->potential_value = $this->calculatePotentialValue();
+    }
+    
+    public function updatedSeatsInOpportunity()
+    {
+        $this->potential_value = $this->calculatePotentialValue();
     }
 }

@@ -43,4 +43,16 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/manage/contacts', \App\Livewire\ContactManagement::class)
         ->name('manage.contacts');
+    
+    Route::get('/manage/aircraft-seat-configurations', \App\Livewire\AircraftSeatConfiguration::class)
+        ->name('manage.aircraft-seat-configurations');
+});
+
+// Forecasting Routes (separate section)
+Route::middleware(['auth'])->prefix('forecasting')->name('forecasting.')->group(function () {
+    Route::get('/', \App\Livewire\Forecasting\Dashboard::class)
+        ->name('dashboard');
+    
+    Route::get('/analytics', \App\Livewire\Forecasting\Analytics::class)
+        ->name('analytics');
 });

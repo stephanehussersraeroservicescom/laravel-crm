@@ -377,20 +377,6 @@
                                 />
                             </x-atomic.molecules.forms.form-field-group>
 
-                            <!-- Potential Value -->
-                            <x-atomic.molecules.forms.form-field-group 
-                                label="Potential Value ($)" 
-                                name="potential_value" 
-                                :required="true"
-                            >
-                                <x-atomic.atoms.forms.form-input 
-                                    type="number" 
-                                    wire:model="potential_value" 
-                                    min="0" 
-                                    step="0.01" 
-                                    required
-                                />
-                            </x-atomic.molecules.forms.form-field-group>
 
                             <!-- Status -->
                             <x-atomic.molecules.forms.form-field-group 
@@ -404,6 +390,98 @@
                                     @endforeach
                                 </x-atomic.atoms.forms.form-select>
                             </x-atomic.molecules.forms.form-field-group>
+
+                            <!-- Seat Configuration Section -->
+                            <div class="md:col-span-2">
+                                <div class="border-t pt-6">
+                                    <h4 class="text-lg font-medium text-gray-900 mb-4">Seat Configuration</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <!-- Price per Linear Yard -->
+                                        <x-atomic.molecules.forms.form-field-group 
+                                            label="Price per Linear Yard ($)" 
+                                            name="price_per_linear_yard"
+                                        >
+                                            <x-atomic.atoms.forms.form-input 
+                                                type="number" 
+                                                wire:model="price_per_linear_yard" 
+                                                min="100" 
+                                                max="300" 
+                                                step="0.01" 
+                                                placeholder="e.g., 175.50"
+                                            />
+                                        </x-atomic.molecules.forms.form-field-group>
+
+                                        <!-- Linear Yards per Seat -->
+                                        <x-atomic.molecules.forms.form-field-group 
+                                            label="Linear Yards per Seat" 
+                                            name="linear_yards_per_seat"
+                                        >
+                                            <x-atomic.atoms.forms.form-input 
+                                                type="number" 
+                                                wire:model="linear_yards_per_seat" 
+                                                min="0.5" 
+                                                max="5.0" 
+                                                step="0.1" 
+                                                placeholder="e.g., 2.5"
+                                            />
+                                        </x-atomic.molecules.forms.form-field-group>
+
+                                        <!-- Seats in Opportunity -->
+                                        <x-atomic.molecules.forms.form-field-group 
+                                            label="Seats in Opportunity" 
+                                            name="seats_in_opportunity"
+                                        >
+                                            <x-atomic.atoms.forms.form-input 
+                                                type="number" 
+                                                wire:model="seats_in_opportunity" 
+                                                min="1" 
+                                                placeholder="e.g., 150"
+                                            />
+                                        </x-atomic.molecules.forms.form-field-group>
+                                    </div>
+
+                                    <!-- Calculated Values -->
+                                    @if($price_per_linear_yard && $linear_yards_per_seat && $seats_in_opportunity)
+                                        @php
+                                            $perAircraftValue = $price_per_linear_yard * $linear_yards_per_seat * $seats_in_opportunity;
+                                            $project = $project_id ? \App\Models\Project::find($project_id) : null;
+                                            $numberOfAircraft = $project?->number_of_aircraft ?? 0;
+                                            $totalValue = $perAircraftValue * $numberOfAircraft;
+                                        @endphp
+                                        <div class="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                                            <h5 class="text-sm font-medium text-green-900 mb-2">Calculated Values</h5>
+                                            <div class="grid grid-cols-2 gap-4 text-sm mb-3">
+                                                <div>
+                                                    <span class="text-green-700">Total Linear Yards per Aircraft:</span>
+                                                    <span class="font-medium ml-2">{{ number_format($linear_yards_per_seat * $seats_in_opportunity, 1) }}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="text-green-700">Value per Aircraft:</span>
+                                                    <span class="font-medium ml-2">${{ number_format($perAircraftValue, 2) }}</span>
+                                                </div>
+                                            </div>
+                                            @if($numberOfAircraft > 0)
+                                                <div class="border-t border-green-200 pt-3">
+                                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                                        <div>
+                                                            <span class="text-green-700">Number of Aircraft:</span>
+                                                            <span class="font-medium ml-2">{{ number_format($numberOfAircraft) }}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-green-700 font-semibold">Total Opportunity Value:</span>
+                                                            <span class="font-bold ml-2 text-green-800">${{ number_format($totalValue, 2) }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="text-xs text-orange-600 mt-2">
+                                                    Select a project to see total opportunity value
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
 
                             <!-- Assigned To -->
                             <div class="md:col-span-2">

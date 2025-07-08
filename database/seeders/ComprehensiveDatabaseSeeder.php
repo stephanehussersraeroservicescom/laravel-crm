@@ -190,8 +190,26 @@ class ComprehensiveDatabaseSeeder extends Seeder
             $designStatus = $designStatuses->random();
             $commercialStatus = $commercialStatuses->random();
             
+            // Forecasting fields for project level
+            $linefitRetrofit = ['linefit', 'retrofit'][array_rand(['linefit', 'retrofit'])];
+            $projectLifecycleDuration = rand(2, 8);
+            $expectedStartYear = rand(2024, 2026);
+            $expectedCloseYear = $expectedStartYear + ($projectLifecycleDuration - 1);
+            
+            // Generate realistic distribution pattern based on duration
+            $distributionPatterns = [
+                2 => [0.3, 0.7],
+                3 => [0.2, 0.6, 0.2],
+                4 => [0.15, 0.25, 0.35, 0.25],
+                5 => [0.1, 0.2, 0.4, 0.2, 0.1],
+                6 => [0.08, 0.15, 0.25, 0.27, 0.15, 0.1],
+                7 => [0.07, 0.12, 0.18, 0.26, 0.18, 0.12, 0.07],
+                8 => [0.06, 0.1, 0.15, 0.19, 0.25, 0.15, 0.1, 0.06],
+            ];
+            $distributionPattern = $distributionPatterns[$projectLifecycleDuration] ?? [0.2, 0.6, 0.2];
+            
             $projects[] = [
-                'name' => "Project {$i} - {$airline->name} {$aircraft->name}",
+                'name' => "{$airline->name} - {$aircraft->name}",
                 'airline_id' => $airline->id,
                 'aircraft_type_id' => $aircraft->id,
                 'design_status_id' => $designStatus->id,
@@ -199,6 +217,11 @@ class ComprehensiveDatabaseSeeder extends Seeder
                 'owner_id' => $users->random()->id, // Assign random user as project owner
                 'comment' => "Interior design project for {$airline->name} {$aircraft->name} fleet - Project {$i} notes and requirements",
                 'number_of_aircraft' => rand(5, 50),
+                'linefit_retrofit' => $linefitRetrofit,
+                'project_lifecycle_duration' => $projectLifecycleDuration,
+                'distribution_pattern' => json_encode($distributionPattern),
+                'expected_start_year' => $expectedStartYear,
+                'expected_close_year' => $expectedCloseYear,
                 'created_by' => $users->random()->id,
                 'updated_by' => $users->random()->id,
                 'deleted_by' => null,
@@ -285,7 +308,11 @@ class ComprehensiveDatabaseSeeder extends Seeder
     private function seedOpportunities(): void
     {
         $opportunities = [];
-        $projects = DB::table('projects')->get();
+        $projects = DB::table('projects')
+            ->join('airlines', 'projects.airline_id', '=', 'airlines.id')
+            ->join('aircraft_types', 'projects.aircraft_type_id', '=', 'aircraft_types.id')
+            ->select('projects.*', 'airlines.name as airline_name', 'aircraft_types.name as aircraft_name')
+            ->get();
         $users = DB::table('users')->get();
         $types = ['vertical', 'panels', 'covers', 'others'];
         $cabinClasses = ['first_class', 'business_class', 'premium_economy', 'economy'];
@@ -297,17 +324,53 @@ class ComprehensiveDatabaseSeeder extends Seeder
             
             $cabinClass = $cabinClasses[array_rand($cabinClasses)];
             $type = $types[array_rand($types)];
+            $probability = rand(10, 95);
+            
+            // Aircraft seat configuration fields
+            $pricePerLinearYard = rand(15000, 20000) / 100; // 150-200 range
+            $linearYardsPerSeat = rand(15, 30) / 10; // 1.5-3.0 range
+            $seatsInOpportunity = $this->calculateSeatsInOpportunity($project, $cabinClass, $type);
+            
+            // Calculate potential value: per-aircraft value * number of aircraft
+            $perAircraftValue = $seatsInOpportunity * $pricePerLinearYard * $linearYardsPerSeat;
+            $totalPotentialValue = $perAircraftValue * $project->number_of_aircraft;
+            
+            // Calculate revenue distribution using project forecasting data and total potential value
+            $expectedTotalValue = $totalPotentialValue * ($probability / 100);
+            $revenueDistribution = [];
+            $years = range($project->expected_start_year, $project->expected_close_year);
+            $distributionPattern = json_decode($project->distribution_pattern, true);
+            foreach ($years as $index => $year) {
+                $percentage = $distributionPattern[$index] ?? 0;
+                $revenueDistribution[$year] = round($expectedTotalValue * $percentage, 2);
+            }
+            
+            // Generate volume by year (for demonstration)
+            $volumeByYear = [];
+            foreach ($years as $year) {
+                $volumeByYear[$year] = rand(100, 1000);
+            }
+            
+            // Format cabin class for display (replace underscores with spaces and capitalize)
+            $cabinClassDisplay = str_replace('_', ' ', ucwords($cabinClass, '_'));
             
             $opportunities[] = [
-                'name' => "Opportunity {$i} - {$type}",
+                'name' => "{$project->airline_name} - {$project->aircraft_name} - " . ucfirst($type) . " - {$cabinClassDisplay}",
                 'project_id' => $project->id,
                 'type' => $type,
+                'revenue_distribution' => json_encode($revenueDistribution),
+                'volume_by_year' => json_encode($volumeByYear),
+                'forecasting_notes' => "Forecasting data for {$project->airline_name} {$project->linefit_retrofit} {$type} opportunity spanning {$project->project_lifecycle_duration} years with expected revenue of $" . number_format(array_sum($revenueDistribution)),
                 'cabin_class' => $cabinClass,
                 'status' => $statuses[array_rand($statuses)],
-                'probability' => rand(10, 95),
-                'potential_value' => rand(50000, 2000000),
-                'comments' => "Business opportunity for {$cabinClass} cabin enhancement - {$type} implementation",
-                'description' => "Detailed description for {$type} opportunity in {$cabinClass} class",
+                'probability' => $probability,
+                'potential_value' => $totalPotentialValue,
+                'price_per_linear_yard' => $pricePerLinearYard,
+                'linear_yards_per_seat' => $linearYardsPerSeat,
+                'seats_in_opportunity' => $seatsInOpportunity,
+                'aircraft_seat_config_id' => null, // Will be populated later with AI
+                'comments' => "Business opportunity for {$project->airline_name} {$cabinClassDisplay} cabin {$type} - {$project->linefit_retrofit} implementation",
+                'description' => "Comprehensive {$type} solution for {$project->airline_name} {$project->aircraft_name} {$cabinClassDisplay} cabin. This {$project->linefit_retrofit} project covers {$project->project_lifecycle_duration} years with {$probability}% probability of success.",
                 'created_by' => $user->id,
                 'assigned_to' => $users->random()->id,
                 'updated_by' => $users->random()->id,
@@ -318,6 +381,61 @@ class ComprehensiveDatabaseSeeder extends Seeder
         }
         
         DB::table('opportunities')->insert($opportunities);
+    }
+    
+    private function calculateSeatsInOpportunity($project, $cabinClass, $type): int
+    {
+        // Base seat counts by aircraft type and cabin class
+        $baseSeatCounts = [
+            'B737-800' => [
+                'first_class' => 12,
+                'business_class' => 20,
+                'premium_economy' => 30,
+                'economy' => 150,
+            ],
+            'B787-9' => [
+                'first_class' => 8,
+                'business_class' => 28,
+                'premium_economy' => 35,
+                'economy' => 180,
+            ],
+            'A350' => [
+                'first_class' => 12,
+                'business_class' => 42,
+                'premium_economy' => 24,
+                'economy' => 200,
+            ],
+            'B777' => [
+                'first_class' => 14,
+                'business_class' => 52,
+                'premium_economy' => 40,
+                'economy' => 220,
+            ],
+            'A380' => [
+                'first_class' => 14,
+                'business_class' => 76,
+                'premium_economy' => 44,
+                'economy' => 350,
+            ],
+        ];
+        
+        // Get base seat count for this aircraft/cabin combination
+        $aircraftName = $project->aircraft_name ?? 'B737-800';
+        $baseSeats = $baseSeatCounts[$aircraftName][$cabinClass] ?? 100;
+        
+        // Opportunity type affects the percentage of seats involved
+        $typeMultipliers = [
+            'vertical' => 1.0,     // All seats (vertical surfaces)
+            'panels' => 0.3,      // ~30% of seats (specific panels)
+            'covers' => 0.5,      // ~50% of seats (seat covers)
+            'others' => 0.2,      // ~20% of seats (other components)
+        ];
+        
+        $multiplier = $typeMultipliers[$type] ?? 0.5;
+        $seatsInOpportunity = round($baseSeats * $multiplier);
+        
+        // Ensure minimum of 1 seat
+        return max(1, $seatsInOpportunity);
     }
     
     private function seedProjectSubcontractorTeams(): void

@@ -259,13 +259,17 @@ class AircraftSeatConfiguration extends Component
             }
 
             // Run the AI population command
-            $airlineName = strtolower(str_replace(' ', '', $airline->name));
-            $aircraftName = strtolower(str_replace([' ', '-'], '', $aircraft->name));
+            // Use partial names that will match with LIKE queries
+            $airlineName = strtolower(explode(' ', $airline->name)[0]); // First word only
+            $aircraftName = strtolower($aircraft->name); // Keep original format
 
+            // Capture output to show any errors
             $exitCode = Artisan::call('aircraft:populate-seats', [
                 '--airline' => $airlineName,
                 '--aircraft' => $aircraftName,
             ]);
+            
+            $output = Artisan::output();
 
             if ($exitCode === 0) {
                 $this->aiLookupResult = "Successfully populated seat configurations for {$airline->name} {$aircraft->name}!";
@@ -275,7 +279,12 @@ class AircraftSeatConfiguration extends Component
                 $this->closeAiLookup();
                 session()->flash('message', "AI successfully populated seat configurations for {$airline->name} {$aircraft->name}");
             } else {
-                $this->aiLookupResult = "Failed to populate seat configurations. Please try again or enter manually.";
+                // Show the actual error message from the command
+                $errorMessage = "Failed to populate seat configurations.";
+                if (strpos($output, 'not found') !== false) {
+                    $errorMessage .= " The airline or aircraft was not found. Try using partial names.";
+                }
+                $this->aiLookupResult = $errorMessage;
             }
         } catch (\Exception $e) {
             $this->aiLookupResult = "Error: " . $e->getMessage();

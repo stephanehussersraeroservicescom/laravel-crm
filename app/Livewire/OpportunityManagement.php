@@ -98,6 +98,9 @@ class OpportunityManagement extends Component
     
     #[Validate('nullable|integer|min:1')]
     public $seats_in_opportunity = '';
+    
+    #[Validate('nullable|exists:aircraft_seat_configurations,id')]
+    public $aircraft_seat_config_id = '';
 
     public function mount()
     {
@@ -408,6 +411,7 @@ class OpportunityManagement extends Component
         $this->price_per_linear_yard = '';
         $this->linear_yards_per_seat = '';
         $this->seats_in_opportunity = '';
+        $this->aircraft_seat_config_id = '';
     }
 
     private function fillForm($opportunity)
@@ -437,6 +441,7 @@ class OpportunityManagement extends Component
         $this->price_per_linear_yard = $opportunity->price_per_linear_yard;
         $this->linear_yards_per_seat = $opportunity->linear_yards_per_seat;
         $this->seats_in_opportunity = $opportunity->seats_in_opportunity;
+        $this->aircraft_seat_config_id = $opportunity->aircraft_seat_config_id;
     }
 
     private function getFormData()
@@ -457,6 +462,7 @@ class OpportunityManagement extends Component
             'price_per_linear_yard' => $this->price_per_linear_yard ?: null,
             'linear_yards_per_seat' => $this->linear_yards_per_seat ?: null,
             'seats_in_opportunity' => $this->seats_in_opportunity ?: null,
+            'aircraft_seat_config_id' => $this->aircraft_seat_config_id ?: null,
             'potential_value' => $this->calculatePotentialValue(),
         ];
     }
@@ -517,6 +523,7 @@ class OpportunityManagement extends Component
     public function updatedProjectId()
     {
         $this->generateOpportunityName();
+        $this->lookupSeatConfiguration();
     }
     
     public function updatedType()
@@ -527,6 +534,7 @@ class OpportunityManagement extends Component
     public function updatedCabinClass()
     {
         $this->generateOpportunityName();
+        $this->lookupSeatConfiguration();
     }
     
     public function updatedName()
@@ -721,5 +729,46 @@ class OpportunityManagement extends Component
     public function updatedSeatsInOpportunity()
     {
         $this->potential_value = $this->calculatePotentialValue();
+    }
+    
+    private function lookupSeatConfiguration()
+    {
+        // Only lookup if we have project and cabin class
+        if (!$this->project_id || !$this->cabin_class) {
+            return;
+        }
+        
+        // Get project with airline and aircraft type
+        $project = \App\Models\Project::with(['airline', 'aircraftType'])->find($this->project_id);
+        if (!$project || !$project->airline || !$project->aircraftType) {
+            return;
+        }
+        
+        // Try to find airline-specific configuration first
+        $seatConfig = \App\Models\AircraftSeatConfiguration::where('airline_id', $project->airline_id)
+            ->where('aircraft_type_id', $project->aircraft_type_id)
+            ->where('cabin_class', $this->cabin_class)
+            ->first();
+            
+        // If not found, try default airline configuration
+        if (!$seatConfig) {
+            $defaultAirline = \App\Models\Airline::where('name', 'Default')->first();
+            if ($defaultAirline) {
+                $seatConfig = \App\Models\AircraftSeatConfiguration::where('airline_id', $defaultAirline->id)
+                    ->where('aircraft_type_id', $project->aircraft_type_id)
+                    ->where('cabin_class', $this->cabin_class)
+                    ->first();
+            }
+        }
+        
+        // If we found a configuration, populate the seats
+        if ($seatConfig) {
+            $this->seats_in_opportunity = $seatConfig->total_seats;
+            // Also populate the aircraft seat config reference
+            $this->aircraft_seat_config_id = $seatConfig->id;
+            
+            // Recalculate potential value
+            $this->potential_value = $this->calculatePotentialValue();
+        }
     }
 }

@@ -437,6 +437,11 @@
                                                 min="1" 
                                                 placeholder="e.g., 150"
                                             />
+                                            @if($aircraft_seat_config_id)
+                                                <div class="text-xs text-blue-600 mt-1">
+                                                    Auto-populated from seat configuration
+                                                </div>
+                                            @endif
                                         </x-atomic.molecules.forms.form-field-group>
                                     </div>
 

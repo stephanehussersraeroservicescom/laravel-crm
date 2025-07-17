@@ -32,10 +32,10 @@
             </div>
             <div>
                 <label class="block font-semibold mb-1">Account Executive</label>
-                <select wire:model.live="account_executive" class="rounded border-gray-300">
+                <select wire:model.live="account_executive_id" class="rounded border-gray-300">
                     <option value="">Select Account Executive...</option>
                     @foreach($salesUsers as $user)
-                        <option value="{{ $user->name }}">{{ $user->name }}</option>
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -73,7 +73,7 @@
                         @endif
                     </td>
                     <td class="px-3 py-2 border">{{ $airline->region }}</td>
-                    <td class="px-3 py-2 border">{{ $airline->account_executive }}</td>
+                    <td class="px-3 py-2 border">{{ $airline->accountExecutive?->name ?? 'Not assigned' }}</td>
                     @if($showDeleted)
                         <td class="px-3 py-2 border">
                             @if($airline->trashed())

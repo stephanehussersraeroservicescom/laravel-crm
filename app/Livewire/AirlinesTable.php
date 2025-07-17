@@ -12,7 +12,7 @@ class AirlinesTable extends Component
 {
     public $name = '';
     public $region = '';
-    public $account_executive = '';
+    public $account_executive_id = '';
     public $editing = false;
     public $editId = null;
     public $showDeleted = false; // Add option to show deleted records
@@ -31,7 +31,7 @@ class AirlinesTable extends Component
     {
         // Pre-select current user if they have sales role
         if (Auth::check() && Auth::user()->role === 'sales') {
-            $this->account_executive = Auth::user()->name;
+            $this->account_executive_id = Auth::user()->id;
         }
     }
 
@@ -40,7 +40,7 @@ class AirlinesTable extends Component
         $this->validate([
             'name' => 'required|string|max:255',
             'region' => 'required|in:' . implode(',', $this->availableRegions),
-            'account_executive' => 'nullable|string|max:255',
+            'account_executive_id' => 'nullable|exists:users,id',
         ]);
 
         if ($this->editing && $this->editId) {
@@ -49,14 +49,14 @@ class AirlinesTable extends Component
                 $airline->update([
                     'name' => $this->name,
                     'region' => $this->region,
-                    'account_executive' => $this->account_executive,
+                    'account_executive_id' => $this->account_executive_id,
                 ]);
             }
         } else {
             Airline::create([
                 'name' => $this->name,
                 'region' => $this->region,
-                'account_executive' => $this->account_executive,
+                'account_executive_id' => $this->account_executive_id,
             ]);
         }
 
@@ -68,7 +68,7 @@ class AirlinesTable extends Component
         $airline = Airline::findOrFail($id);
         $this->name = $airline->name;
         $this->region = $airline->region;
-        $this->account_executive = $airline->account_executive;
+        $this->account_executive_id = $airline->account_executive_id;
         $this->editId = $id;
         $this->editing = true;
     }
@@ -108,13 +108,13 @@ class AirlinesTable extends Component
     {
         $this->name = '';
         $this->region = '';
-        $this->account_executive = '';
+        $this->account_executive_id = '';
         $this->editing = false;
         $this->editId = null;
         
         // Re-select current user if they have sales role
         if (Auth::check() && Auth::user()->role === 'sales') {
-            $this->account_executive = Auth::user()->name;
+            $this->account_executive_id = Auth::user()->id;
         }
     }
 
@@ -123,7 +123,7 @@ class AirlinesTable extends Component
         $airlinesQuery = $this->showDeleted ? Airline::withTrashed() : Airline::query();
         
         return view('livewire.airlines-table', [
-            'airlines' => $airlinesQuery->orderBy('name')->get(),
+            'airlines' => $airlinesQuery->with('accountExecutive')->orderBy('name')->get(),
             'availableRegions' => $this->availableRegions,
             'salesUsers' => User::where('role', 'sales')->orderBy('name')->get()
         ])->layout('layouts.app');

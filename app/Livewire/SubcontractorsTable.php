@@ -5,7 +5,6 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Subcontractor;
 
-#[Title('Subcontractors')]
 class SubcontractorsTable extends Component
 {
     public $name = '';
@@ -79,7 +78,6 @@ class SubcontractorsTable extends Component
         $subcontractor->restore();
         $this->resetFields();
     }
-
 
     private function resetFields()
     {

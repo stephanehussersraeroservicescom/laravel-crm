@@ -1,0 +1,2 @@
+Test file created on 2025-07-17 to verify git push functionality.
+This file can be safely deleted after verification.

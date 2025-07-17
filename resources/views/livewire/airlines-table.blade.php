@@ -51,6 +51,41 @@
         </div>
         <!-- End Management Panel -->
         
+        <!-- Filter Panel -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Filter Airlines</h3>
+            <div class="flex gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Name</label>
+                    <input type="text" wire:model.live="filterName" 
+                           class="rounded border-gray-300" 
+                           placeholder="Search airlines...">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Region</label>
+                    <select wire:model.live="filterRegion" class="rounded border-gray-300">
+                        <option value="">All Regions</option>
+                        @foreach($availableRegions as $regionOption)
+                            <option value="{{ $regionOption }}">{{ $regionOption }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Account Executive</label>
+                    <input type="text" wire:model.live="filterAccountExecutive" 
+                           class="rounded border-gray-300" 
+                           placeholder="Search by name...">
+                </div>
+                <div>
+                    <button wire:click="clearFilters" 
+                            class="bg-gray-500 text-white rounded px-4 py-2">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- End Filter Panel -->
+        
         <table class="min-w-full border rounded shadow bg-white">
             <thead class="bg-gray-100">
                 <tr>
@@ -85,12 +120,7 @@
                     @endif
                     <td class="px-3 py-2 border">
                         @if($airline->trashed())
-                            <button wire:click="restore({{ $airline->id }})" class="text-green-600 underline mr-2">Restore</button>
-                            <button wire:click="forceDelete({{ $airline->id }})" 
-                                    class="text-red-600 underline"
-                                    onclick="return confirm('This will permanently delete this airline. Are you sure?')">
-                                Delete Forever
-                            </button>
+                            <button wire:click="restore({{ $airline->id }})" class="text-green-600 underline">Restore</button>
                         @else
                             <button wire:click="edit({{ $airline->id }})" class="text-blue-600 underline mr-2">Edit</button>
                             <button wire:click="delete({{ $airline->id }})" 
@@ -99,7 +129,6 @@
                                 Delete
                             </button>
                         @endif
-                        <button wire:click="delete({{ $airline->id }})" class="text-red-600 underline">Delete</button>
                     </td>
                 </tr>
             @endforeach

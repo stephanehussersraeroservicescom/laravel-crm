@@ -16,6 +16,11 @@ class AirlinesTable extends Component
     public $editing = false;
     public $editId = null;
     public $showDeleted = false; // Add option to show deleted records
+    
+    // Filter properties
+    public $filterName = '';
+    public $filterRegion = '';
+    public $filterAccountExecutive = '';
 
     public $availableRegions = [
         'North America',
@@ -97,12 +102,13 @@ class AirlinesTable extends Component
         $this->resetFields();
     }
 
-    public function forceDelete($id)
+    public function clearFilters()
     {
-        $airline = Airline::withTrashed()->findOrFail($id);
-        $airline->forceDelete();
-        $this->resetFields();
+        $this->filterName = '';
+        $this->filterRegion = '';
+        $this->filterAccountExecutive = '';
     }
+
 
     private function resetFields()
     {
@@ -121,6 +127,21 @@ class AirlinesTable extends Component
     public function render()
     {
         $airlinesQuery = $this->showDeleted ? Airline::withTrashed() : Airline::query();
+        
+        // Apply filters
+        if (!empty($this->filterName)) {
+            $airlinesQuery->where('name', 'like', '%' . $this->filterName . '%');
+        }
+        
+        if (!empty($this->filterRegion)) {
+            $airlinesQuery->where('region', $this->filterRegion);
+        }
+        
+        if (!empty($this->filterAccountExecutive)) {
+            $airlinesQuery->whereHas('accountExecutive', function($query) {
+                $query->where('name', 'like', '%' . $this->filterAccountExecutive . '%');
+            });
+        }
         
         return view('livewire.airlines-table', [
             'airlines' => $airlinesQuery->with('accountExecutive')->orderBy('name')->get(),

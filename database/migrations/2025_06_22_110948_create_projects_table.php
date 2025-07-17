@@ -40,6 +40,11 @@ return new class extends Migration
             $table->index('expected_start_year');
             $table->index('expected_close_year');
             $table->index(['expected_start_year', 'expected_close_year']);
+            $table->index(['airline_id', 'aircraft_type_id']);
+            $table->index(['design_status_id']);
+            $table->index(['commercial_status_id']);
+            $table->index(['owner_id']);
+            $table->index('deleted_at');
         });
     }
 

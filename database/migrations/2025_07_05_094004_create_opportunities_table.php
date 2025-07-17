@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -57,9 +58,26 @@ return new class extends Migration
             $table->index(['type', 'cabin_class']);
             $table->index(['status', 'probability']);
             $table->index(['assigned_to', 'status']);
-            
-            // Forecasting indexes (removed project-level forecasting indexes)
+            $table->index(['project_id', 'type']);
+            $table->index(['project_id', 'status']);
+            $table->index(['project_id', 'cabin_class']);
+            $table->index(['probability']);
+            $table->index(['status', 'type']);
+            $table->index('deleted_at');
         });
+        
+        // Add database-level constraints for business rules
+        try {
+            DB::statement('ALTER TABLE opportunities ADD CONSTRAINT check_probability_range CHECK (probability >= 0 AND probability <= 100)');
+        } catch (\Exception $e) {
+            // Constraint may already exist
+        }
+        
+        try {
+            DB::statement('ALTER TABLE opportunities ADD CONSTRAINT check_potential_value_positive CHECK (potential_value >= 0)');
+        } catch (\Exception $e) {
+            // Constraint may already exist
+        }
     }
 
     /**
@@ -67,6 +85,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Remove constraints
+        DB::statement('ALTER TABLE opportunities DROP CONSTRAINT IF EXISTS check_probability_range');
+        DB::statement('ALTER TABLE opportunities DROP CONSTRAINT IF EXISTS check_potential_value_positive');
+        
         Schema::dropIfExists('opportunities');
     }
 };

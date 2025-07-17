@@ -20,6 +20,11 @@ return new class extends Migration
             $table->foreignId('account_executive_id')->nullable()->constrained('users')->nullOnDelete();
             $table->softDeletes();
             $table->timestamps();
+            
+            // Indexes for performance
+            $table->index(['account_executive_id']);
+            $table->index(['region']);
+            $table->index('deleted_at');
         });
     }
 

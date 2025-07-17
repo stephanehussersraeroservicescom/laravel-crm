@@ -29,6 +29,9 @@ return new class extends Migration
             
             // Performance indexes
             $table->index(['opportunity_id']);
+            $table->index(['opportunity_id', 'main_subcontractor_id'], 'pst_opp_main_idx');
+            $table->index(['main_subcontractor_id'], 'pst_main_sub_idx');
+            $table->index('deleted_at');
         });
         
         // Create pivot table for supporting subcontractors

@@ -33,6 +33,7 @@ class ComprehensiveDatabaseSeeder extends Seeder
         $this->seedOpportunities();
         $this->seedProjectSubcontractorTeams();
         $this->seedBaselineAircraftSeatConfigurations();
+        $this->seedRolesAndPermissions();
         
         // Re-enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
@@ -41,6 +42,14 @@ class ComprehensiveDatabaseSeeder extends Seeder
     private function truncateTables(): void
     {
         $tables = [
+            'model_has_permissions',
+            'model_has_roles',
+            'role_has_permissions',
+            'permissions',
+            'roles',
+            'audit_logs',
+            'actions',
+            'attachments',
             'aircraft_seat_configurations',
             'project_team_supporters',
             'project_subcontractor_teams',
@@ -348,10 +357,12 @@ class ComprehensiveDatabaseSeeder extends Seeder
                 $revenueDistribution[$year] = round($expectedTotalValue * $percentage, 2);
             }
             
-            // Generate volume by year (for demonstration)
+            // Generate volume by year based on project aircraft distribution
             $volumeByYear = [];
-            foreach ($years as $year) {
-                $volumeByYear[$year] = rand(100, 1000);
+            foreach ($years as $index => $year) {
+                $percentage = $distributionPattern[$index] ?? 0;
+                $aircraftForYear = round($project->number_of_aircraft * $percentage);
+                $volumeByYear[$year] = $aircraftForYear;
             }
             
             // Format cabin class for display (replace underscores with spaces and capitalize)
@@ -577,5 +588,113 @@ class ComprehensiveDatabaseSeeder extends Seeder
             'premium_economy' => '19 inches',
             'economy' => '17 inches',
         ][$cabinClass] ?? '17 inches';
+    }
+    
+    private function seedRolesAndPermissions(): void
+    {
+        // Create permissions
+        $permissions = [
+            'view_projects',
+            'create_projects',
+            'edit_projects',
+            'delete_projects',
+            'view_opportunities',
+            'create_opportunities',
+            'edit_opportunities',
+            'delete_opportunities',
+            'view_contacts',
+            'create_contacts',
+            'edit_contacts',
+            'delete_contacts',
+            'view_subcontractors',
+            'create_subcontractors',
+            'edit_subcontractors',
+            'delete_subcontractors',
+            'view_airlines',
+            'create_airlines',
+            'edit_airlines',
+            'delete_airlines',
+            'view_reports',
+            'admin_access',
+        ];
+        
+        foreach ($permissions as $permission) {
+            DB::table('permissions')->insert([
+                'name' => $permission,
+                'guard_name' => 'web',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        
+        // Create roles
+        $roles = [
+            'admin' => $permissions, // Admin has all permissions
+            'manager' => [
+                'view_projects', 'create_projects', 'edit_projects',
+                'view_opportunities', 'create_opportunities', 'edit_opportunities',
+                'view_contacts', 'create_contacts', 'edit_contacts',
+                'view_subcontractors', 'create_subcontractors', 'edit_subcontractors',
+                'view_airlines', 'create_airlines', 'edit_airlines',
+                'view_reports',
+            ],
+            'sales' => [
+                'view_projects', 'create_projects', 'edit_projects',
+                'view_opportunities', 'create_opportunities', 'edit_opportunities',
+                'view_contacts', 'create_contacts', 'edit_contacts',
+                'view_subcontractors', 'view_airlines',
+            ],
+            'read_only' => [
+                'view_projects', 'view_opportunities', 'view_contacts',
+                'view_subcontractors', 'view_airlines',
+            ],
+        ];
+        
+        foreach ($roles as $roleName => $rolePermissions) {
+            // Create role
+            $roleId = DB::table('roles')->insertGetId([
+                'name' => $roleName,
+                'guard_name' => 'web',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
+            // Assign permissions to role
+            foreach ($rolePermissions as $permission) {
+                $permissionId = DB::table('permissions')->where('name', $permission)->first()->id;
+                DB::table('role_has_permissions')->insert([
+                    'role_id' => $roleId,
+                    'permission_id' => $permissionId,
+                ]);
+            }
+        }
+        
+        // Assign roles to users
+        $users = DB::table('users')->get();
+        foreach ($users as $user) {
+            $roleId = null;
+            switch ($user->role) {
+                case 'managers':
+                    $roleId = DB::table('roles')->where('name', 'manager')->first()->id;
+                    break;
+                case 'sales':
+                    $roleId = DB::table('roles')->where('name', 'sales')->first()->id;
+                    break;
+                case 'database manager':
+                    $roleId = DB::table('roles')->where('name', 'admin')->first()->id;
+                    break;
+                default:
+                    $roleId = DB::table('roles')->where('name', 'read_only')->first()->id;
+                    break;
+            }
+            
+            if ($roleId) {
+                DB::table('model_has_roles')->insert([
+                    'role_id' => $roleId,
+                    'model_type' => 'App\\Models\\User',
+                    'model_id' => $user->id,
+                ]);
+            }
+        }
     }
 }

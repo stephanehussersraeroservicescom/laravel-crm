@@ -27,6 +27,11 @@ return new class extends Migration
             
             // Business logic constraints
             $table->unique(['subcontractor_id', 'email'], 'unique_contact_email_per_subcontractor');
+            
+            // Indexes for performance
+            $table->index(['subcontractor_id', 'role'], 'contacts_sub_role_idx');
+            $table->index(['email'], 'contacts_email_idx');
+            $table->index('deleted_at');
         });
     }
 

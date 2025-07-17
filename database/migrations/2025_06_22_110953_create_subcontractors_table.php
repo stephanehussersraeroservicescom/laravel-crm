@@ -17,6 +17,9 @@ return new class extends Migration
             $table->text('comment')->nullable();
             $table->softDeletes();
             $table->timestamps();
+            
+            // Indexes for performance
+            $table->index('deleted_at');
         });
 
     }

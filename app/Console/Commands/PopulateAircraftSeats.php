@@ -60,79 +60,75 @@ class PopulateAircraftSeats extends Command
         
         $this->info("✅ Found: {$airline->name} - {$aircraft->name}");
         
-        // Collect seat data for each cabin class
-        $cabinClasses = ['first_class', 'business_class', 'premium_economy', 'economy'];
-        $configurations = [];
+        // Collect seat configuration data for all cabin classes in one go
+        $this->info("📊 Collecting seat configuration data...");
         
-        foreach ($cabinClasses as $cabinClass) {
-            $this->info("📊 Collecting data for {$cabinClass}...");
-            
-            $seatData = $this->collectSeatData($airline, $aircraft, $cabinClass);
-            
-            if ($seatData) {
-                $configurations[] = $seatData;
-                $this->info("✅ {$cabinClass}: {$seatData['total_seats']} seats (confidence: {$seatData['confidence_score']})");
-            } else {
-                $this->warn("⚠️ No data found for {$cabinClass}");
-            }
-            
-            // Respectful delay between requests
-            sleep(5);
-        }
+        $configurationData = $this->collectSeatConfigurationData($airline, $aircraft);
         
-        if (empty($configurations)) {
-            $this->error('No seat configurations found');
+        if (!$configurationData) {
+            $this->error('No seat configuration data found');
             return 1;
         }
+        
+        $totalSeats = $configurationData['first_class_seats'] + $configurationData['business_class_seats'] + 
+                     $configurationData['premium_economy_seats'] + $configurationData['economy_seats'];
+        
+        $this->info("✅ Found configuration: Total {$totalSeats} seats");
+        $this->info("   F: {$configurationData['first_class_seats']}, J: {$configurationData['business_class_seats']}, W: {$configurationData['premium_economy_seats']}, Y: {$configurationData['economy_seats']}");
+        $this->info("   Confidence: {$configurationData['confidence_score']}, Source: {$configurationData['data_source']}");
         
         // Manual verification if requested
         if ($verifyMode) {
             $this->info("\n🔍 Manual Verification Mode:");
-            foreach ($configurations as $config) {
-                $this->table(['Cabin Class', 'Seats', 'Source', 'Confidence'], [
-                    [$config['cabin_class'], $config['total_seats'], $config['data_source'], $config['confidence_score']]
-                ]);
-                
-                if (!$this->confirm("Accept this configuration?")) {
-                    $newSeats = $this->ask("Enter correct seat count (or 'skip'):");
-                    if ($newSeats !== 'skip' && is_numeric($newSeats)) {
-                        $config['total_seats'] = (int)$newSeats;
-                        $config['data_source'] = 'manual_verification';
-                        $config['confidence_score'] = 1.0;
-                    }
-                }
+            $this->table(['Class', 'Seats', 'Source', 'Confidence'], [
+                ['First Class', $configurationData['first_class_seats'], $configurationData['data_source'], $configurationData['confidence_score']],
+                ['Business Class', $configurationData['business_class_seats'], $configurationData['data_source'], $configurationData['confidence_score']],
+                ['Premium Economy', $configurationData['premium_economy_seats'], $configurationData['data_source'], $configurationData['confidence_score']],
+                ['Economy', $configurationData['economy_seats'], $configurationData['data_source'], $configurationData['confidence_score']]
+            ]);
+            
+            if (!$this->confirm("Accept this configuration?")) {
+                $configurationData['first_class_seats'] = (int)$this->ask("First Class seats:", $configurationData['first_class_seats']);
+                $configurationData['business_class_seats'] = (int)$this->ask("Business Class seats:", $configurationData['business_class_seats']);
+                $configurationData['premium_economy_seats'] = (int)$this->ask("Premium Economy seats:", $configurationData['premium_economy_seats']);
+                $configurationData['economy_seats'] = (int)$this->ask("Economy seats:", $configurationData['economy_seats']);
+                $configurationData['data_source'] = 'manual_verification';
+                $configurationData['confidence_score'] = 1.0;
             }
         }
         
         // Save to database
-        $this->info("\n💾 Saving configurations to database...");
-        $saved = 0;
+        $this->info("\n💾 Saving configuration to database...");
         
-        foreach ($configurations as $config) {
-            AircraftSeatConfiguration::updateOrCreate(
-                [
-                    'airline_id' => $airline->id,
-                    'aircraft_type_id' => $aircraft->id,
-                    'cabin_class' => $config['cabin_class'],
-                ],
-                [
-                    'total_seats' => $config['total_seats'],
-                    'seat_map_data' => $config['seat_map_data'] ?? null,
-                    'data_source' => $config['data_source'],
-                    'confidence_score' => $config['confidence_score'],
-                    'last_verified_at' => now(),
-                ]
-            );
-            $saved++;
-        }
+        $totalSeats = $configurationData['first_class_seats'] + $configurationData['business_class_seats'] + 
+                     $configurationData['premium_economy_seats'] + $configurationData['economy_seats'];
         
-        $this->info("✅ Successfully saved {$saved} seat configurations");
+        AircraftSeatConfiguration::updateOrCreate(
+            [
+                'airline_id' => $airline->id,
+                'aircraft_type_id' => $aircraft->id,
+                'version' => 'Standard', // Default version
+            ],
+            [
+                'first_class_seats' => $configurationData['first_class_seats'],
+                'business_class_seats' => $configurationData['business_class_seats'],
+                'premium_economy_seats' => $configurationData['premium_economy_seats'],
+                'economy_seats' => $configurationData['economy_seats'],
+                'total_seats' => $totalSeats,
+                'seat_map_data' => $configurationData['seat_map_data'] ?? null,
+                'data_source' => $configurationData['data_source'],
+                'confidence_score' => $configurationData['confidence_score'],
+                'last_verified_at' => now(),
+            ]
+        );
+        
+        $this->info("✅ Successfully saved seat configuration");
         $this->info("🎉 AI population completed for {$airline->name} {$aircraft->name}");
         
         return 0;
     }
     
-    private function collectSeatData($airline, $aircraft, $cabinClass)
+    private function collectSeatConfigurationData($airline, $aircraft)
     {
         // Try multiple data sources
         $sources = [
@@ -145,7 +141,7 @@ class PopulateAircraftSeats extends Command
             $this->info("  📡 Trying {$sourceName}...");
             
             try {
-                $data = call_user_func($method, $airline, $aircraft, $cabinClass);
+                $data = call_user_func($method, $airline, $aircraft);
                 if ($data) {
                     return $data;
                 }
@@ -160,7 +156,7 @@ class PopulateAircraftSeats extends Command
         return null;
     }
     
-    private function fetchFromSeatGuru($airline, $aircraft, $cabinClass)
+    private function fetchFromSeatGuru($airline, $aircraft)
     {
         // Simplified SeatGuru-style data fetching
         // In production, this would use actual web scraping with proper rate limiting
@@ -169,32 +165,40 @@ class PopulateAircraftSeats extends Command
         
         // Simulate realistic seat configurations for Emirates B777
         if (strtolower($airline->name) === 'emirates' && strpos(strtolower($aircraft->name), '777') !== false) {
-            $seatConfigs = [
-                'first_class' => 8,
-                'business_class' => 42,
-                'premium_economy' => 24,
-                'economy' => 304,
-            ];
-            
-            if (isset($seatConfigs[$cabinClass])) {
-                return [
-                    'cabin_class' => $cabinClass,
-                    'total_seats' => $seatConfigs[$cabinClass],
-                    'data_source' => 'seatguru_simulation',
-                    'confidence_score' => 0.85,
-                    'seat_map_data' => [
-                        'layout' => $this->generateSeatLayout($cabinClass, $seatConfigs[$cabinClass]),
-                        'pitch' => $this->getSeatPitch($cabinClass),
-                        'width' => $this->getSeatWidth($cabinClass),
+            return [
+                'first_class_seats' => 8,
+                'business_class_seats' => 42,
+                'premium_economy_seats' => 24,
+                'economy_seats' => 304,
+                'data_source' => 'seatguru_simulation',
+                'confidence_score' => 0.85,
+                'seat_map_data' => [
+                    'layouts' => [
+                        'first_class' => '1-2-1',
+                        'business_class' => '2-2-2',
+                        'premium_economy' => '2-4-2',
+                        'economy' => '3-3-3',
                     ],
-                ];
-            }
+                    'pitch' => [
+                        'first_class' => '78-82 inches',
+                        'business_class' => '60-78 inches',
+                        'premium_economy' => '38-42 inches',
+                        'economy' => '30-34 inches',
+                    ],
+                    'width' => [
+                        'first_class' => '20-23 inches',
+                        'business_class' => '20-22 inches',
+                        'premium_economy' => '18-19 inches',
+                        'economy' => '17-18 inches',
+                    ],
+                ],
+            ];
         }
         
         return null;
     }
     
-    private function fetchFromAirlineWebsite($airline, $aircraft, $cabinClass)
+    private function fetchFromAirlineWebsite($airline, $aircraft)
     {
         // Simulate airline website data fetching
         $this->info("    🌐 Checking airline website...");
@@ -204,29 +208,41 @@ class PopulateAircraftSeats extends Command
         return null;
     }
     
-    private function getFallbackData($airline, $aircraft, $cabinClass)
+    private function getFallbackData($airline, $aircraft)
     {
         // Industry standard fallback data
         $this->info("    📚 Using industry standard data...");
         
         $fallbackConfigs = [
             'B777' => [
-                'first_class' => 8,
-                'business_class' => 42,
-                'premium_economy' => 24,
-                'economy' => 304,
+                'first_class_seats' => 8,
+                'business_class_seats' => 42,
+                'premium_economy_seats' => 24,
+                'economy_seats' => 304,
             ],
             'B787' => [
-                'first_class' => 8,
-                'business_class' => 28,
-                'premium_economy' => 35,
-                'economy' => 180,
+                'first_class_seats' => 8,
+                'business_class_seats' => 28,
+                'premium_economy_seats' => 35,
+                'economy_seats' => 180,
             ],
             'A350' => [
-                'first_class' => 12,
-                'business_class' => 42,
-                'premium_economy' => 24,
-                'economy' => 200,
+                'first_class_seats' => 12,
+                'business_class_seats' => 42,
+                'premium_economy_seats' => 24,
+                'economy_seats' => 200,
+            ],
+            'B737' => [
+                'first_class_seats' => 0,
+                'business_class_seats' => 16,
+                'premium_economy_seats' => 0,
+                'economy_seats' => 146,
+            ],
+            'A330' => [
+                'first_class_seats' => 0,
+                'business_class_seats' => 28,
+                'premium_economy_seats' => 21,
+                'economy_seats' => 238,
             ],
         ];
         
@@ -238,16 +254,34 @@ class PopulateAircraftSeats extends Command
             }
         }
         
-        if ($aircraftKey && isset($fallbackConfigs[$aircraftKey][$cabinClass])) {
+        if ($aircraftKey) {
+            $config = $fallbackConfigs[$aircraftKey];
             return [
-                'cabin_class' => $cabinClass,
-                'total_seats' => $fallbackConfigs[$aircraftKey][$cabinClass],
+                'first_class_seats' => $config['first_class_seats'],
+                'business_class_seats' => $config['business_class_seats'],
+                'premium_economy_seats' => $config['premium_economy_seats'],
+                'economy_seats' => $config['economy_seats'],
                 'data_source' => 'industry_standard',
                 'confidence_score' => 0.7,
                 'seat_map_data' => [
-                    'layout' => $this->generateSeatLayout($cabinClass, $fallbackConfigs[$aircraftKey][$cabinClass]),
-                    'pitch' => $this->getSeatPitch($cabinClass),
-                    'width' => $this->getSeatWidth($cabinClass),
+                    'layouts' => [
+                        'first_class' => $config['first_class_seats'] > 0 ? '1-2-1' : null,
+                        'business_class' => $config['business_class_seats'] > 0 ? '2-2-2' : null,
+                        'premium_economy' => $config['premium_economy_seats'] > 0 ? '2-4-2' : null,
+                        'economy' => $config['economy_seats'] > 0 ? '3-3-3' : null,
+                    ],
+                    'pitch' => [
+                        'first_class' => '78-82 inches',
+                        'business_class' => '60-78 inches',
+                        'premium_economy' => '38-42 inches',
+                        'economy' => '30-34 inches',
+                    ],
+                    'width' => [
+                        'first_class' => '20-23 inches',
+                        'business_class' => '20-22 inches',
+                        'premium_economy' => '18-19 inches',
+                        'economy' => '17-18 inches',
+                    ],
                 ],
             ];
         }
@@ -255,49 +289,4 @@ class PopulateAircraftSeats extends Command
         return null;
     }
     
-    private function generateSeatLayout($cabinClass, $totalSeats)
-    {
-        $layouts = [
-            'first_class' => '1-2-1',
-            'business_class' => '2-2-2',
-            'premium_economy' => '2-4-2',
-            'economy' => '3-3-3',
-        ];
-        
-        return [
-            'configuration' => $layouts[$cabinClass] ?? '3-3-3',
-            'total_seats' => $totalSeats,
-            'rows' => ceil($totalSeats / $this->getSeatsPerRow($cabinClass)),
-        ];
-    }
-    
-    private function getSeatsPerRow($cabinClass)
-    {
-        return [
-            'first_class' => 4,
-            'business_class' => 6,
-            'premium_economy' => 8,
-            'economy' => 9,
-        ][$cabinClass] ?? 9;
-    }
-    
-    private function getSeatPitch($cabinClass)
-    {
-        return [
-            'first_class' => '78-82 inches',
-            'business_class' => '60-78 inches',
-            'premium_economy' => '38-42 inches',
-            'economy' => '30-34 inches',
-        ][$cabinClass] ?? '32 inches';
-    }
-    
-    private function getSeatWidth($cabinClass)
-    {
-        return [
-            'first_class' => '20-23 inches',
-            'business_class' => '20-22 inches',
-            'premium_economy' => '18-19 inches',
-            'economy' => '17-18 inches',
-        ][$cabinClass] ?? '17 inches';
-    }
 }

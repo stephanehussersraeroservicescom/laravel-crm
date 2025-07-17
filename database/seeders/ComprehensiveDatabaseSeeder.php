@@ -504,59 +504,109 @@ class ComprehensiveDatabaseSeeder extends Seeder
         $baselineConfigs = [
             // Boeing B737-800 - Single class high density: 189, Two class typical: 162
             'B737-800' => [
-                'first_class' => 0,
-                'business_class' => 16,  // Typical 2-class config
-                'premium_economy' => 0,
-                'economy' => 146,
+                'Standard' => [
+                    'first_class_seats' => 0,
+                    'business_class_seats' => 16,  // Typical 2-class config
+                    'premium_economy_seats' => 0,
+                    'economy_seats' => 146,
+                ],
+                'High-Density' => [
+                    'first_class_seats' => 0,
+                    'business_class_seats' => 0,
+                    'premium_economy_seats' => 0,
+                    'economy_seats' => 189,
+                ],
             ],
             // Boeing B787-9 - Typical two class: 296, Three class: 290
             'B787-9' => [
-                'first_class' => 0,
-                'business_class' => 30,  // Typical 3-class config
-                'premium_economy' => 21,
-                'economy' => 239,
+                'Standard' => [
+                    'first_class_seats' => 0,
+                    'business_class_seats' => 30,  // Typical 3-class config
+                    'premium_economy_seats' => 21,
+                    'economy_seats' => 239,
+                ],
+                'Long-Range' => [
+                    'first_class_seats' => 8,
+                    'business_class_seats' => 28,
+                    'premium_economy_seats' => 35,
+                    'economy_seats' => 227,
+                ],
             ],
             // Boeing B777-300ER - Typical two class: 396, Three class: 365
             'B777-300ER' => [
-                'first_class' => 8,      // Typical 3-class config
-                'business_class' => 52,
-                'premium_economy' => 24,
-                'economy' => 281,
+                'Standard' => [
+                    'first_class_seats' => 8,      // Typical 3-class config
+                    'business_class_seats' => 52,
+                    'premium_economy_seats' => 24,
+                    'economy_seats' => 281,
+                ],
+                'High-Density' => [
+                    'first_class_seats' => 0,
+                    'business_class_seats' => 42,
+                    'premium_economy_seats' => 0,
+                    'economy_seats' => 354,
+                ],
             ],
             // Airbus A330-900 - Typical two class: 287, Three class: 260-300
             'A330-900' => [
-                'first_class' => 0,
-                'business_class' => 28,  // Typical 3-class config
-                'premium_economy' => 21,
-                'economy' => 238,
+                'Standard' => [
+                    'first_class_seats' => 0,
+                    'business_class_seats' => 28,  // Typical 3-class config
+                    'premium_economy_seats' => 21,
+                    'economy_seats' => 238,
+                ],
             ],
             // Airbus A350-900 - Typical three class: 300-350
             'A350-900' => [
-                'first_class' => 0,
-                'business_class' => 42,  // Typical 3-class config
-                'premium_economy' => 24,
-                'economy' => 259,
+                'Standard' => [
+                    'first_class_seats' => 0,
+                    'business_class_seats' => 42,  // Typical 3-class config
+                    'premium_economy_seats' => 24,
+                    'economy_seats' => 259,
+                ],
+                'Ultra-Long-Range' => [
+                    'first_class_seats' => 12,
+                    'business_class_seats' => 36,
+                    'premium_economy_seats' => 30,
+                    'economy_seats' => 187,
+                ],
             ],
         ];
         
         $aircraftTypes = DB::table('aircraft_types')->get();
-        $cabinClasses = ['first_class', 'business_class', 'premium_economy', 'economy'];
+        $airlines = DB::table('airlines')->get();
         
         foreach ($aircraftTypes as $aircraft) {
             if (isset($baselineConfigs[$aircraft->name])) {
-                $config = $baselineConfigs[$aircraft->name];
+                $versions = $baselineConfigs[$aircraft->name];
                 
-                foreach ($cabinClasses as $cabinClass) {
-                    if ($config[$cabinClass] > 0) {
+                foreach ($airlines as $airline) {
+                    foreach ($versions as $version => $config) {
+                        $totalSeats = $config['first_class_seats'] + $config['business_class_seats'] + 
+                                     $config['premium_economy_seats'] + $config['economy_seats'];
+                        
                         DB::table('aircraft_seat_configurations')->insert([
-                            'airline_id' => $defaultAirline->id,
+                            'airline_id' => $airline->id,
                             'aircraft_type_id' => $aircraft->id,
-                            'cabin_class' => $cabinClass,
-                            'total_seats' => $config[$cabinClass],
+                            'version' => $version,
+                            'first_class_seats' => $config['first_class_seats'],
+                            'business_class_seats' => $config['business_class_seats'],
+                            'premium_economy_seats' => $config['premium_economy_seats'],
+                            'economy_seats' => $config['economy_seats'],
+                            'total_seats' => $totalSeats,
                             'seat_map_data' => json_encode([
-                                'layout' => $this->getBaselineLayout($cabinClass),
-                                'pitch' => $this->getBaselinePitch($cabinClass),
-                                'width' => $this->getBaselineWidth($cabinClass),
+                                'layouts' => [
+                                    'first_class' => $config['first_class_seats'] > 0 ? '1-2-1' : null,
+                                    'business_class' => $config['business_class_seats'] > 0 ? '2-2-2' : null,
+                                    'premium_economy' => $config['premium_economy_seats'] > 0 ? '2-4-2' : null,
+                                    'economy' => $config['economy_seats'] > 0 ? '3-3-3' : null,
+                                ],
+                                'pitch' => [
+                                    'first_class' => '80 inches',
+                                    'business_class' => '60 inches',
+                                    'premium_economy' => '38 inches',
+                                    'economy' => '31 inches',
+                                ],
                                 'manufacturer_baseline' => true,
                             ]),
                             'data_source' => 'manufacturer_baseline',

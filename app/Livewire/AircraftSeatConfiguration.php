@@ -16,10 +16,9 @@ class AircraftSeatConfiguration extends Component
     use WithPagination;
 
     // Search and Filter Properties
-    public $search = '';
     public $filterAirline = '';
     public $filterAircraftType = '';
-    public $filterCabinClass = '';
+    public $filterVersion = '';
     public $sortBy = 'created_at';
     public $sortDirection = 'desc';
     public $perPage = 10;
@@ -36,11 +35,20 @@ class AircraftSeatConfiguration extends Component
     #[Validate('required|exists:aircraft_types,id')]
     public $aircraft_type_id = '';
     
-    #[Validate('required|string')]
-    public $cabin_class = '';
+    #[Validate('required|string|max:50')]
+    public $version = 'Standard';
     
     #[Validate('required|integer|min:0')]
-    public $total_seats = 0;
+    public $first_class_seats = 0;
+    
+    #[Validate('required|integer|min:0')]
+    public $business_class_seats = 0;
+    
+    #[Validate('required|integer|min:0')]
+    public $premium_economy_seats = 0;
+    
+    #[Validate('required|integer|min:0')]
+    public $economy_seats = 0;
     
     #[Validate('nullable|string|max:100')]
     public $data_source = 'manual';
@@ -48,12 +56,6 @@ class AircraftSeatConfiguration extends Component
     #[Validate('required|numeric|min:0|max:1')]
     public $confidence_score = 1.0;
     
-    // AI Lookup Properties
-    public $showAiLookup = false;
-    public $aiAirlineId = '';
-    public $aiAircraftTypeId = '';
-    public $aiLookupInProgress = false;
-    public $aiLookupResult = '';
 
     public function mount()
     {
@@ -65,31 +67,19 @@ class AircraftSeatConfiguration extends Component
         $configurations = $this->getConfigurations();
         $airlines = Airline::orderBy('name')->get();
         $aircraftTypes = AircraftType::orderBy('name')->get();
+        $versions = $this->getAvailableVersions();
 
         return view('livewire.aircraft-seat-configuration', [
             'configurations' => $configurations,
             'airlines' => $airlines,
             'aircraftTypes' => $aircraftTypes,
-            'cabinClasses' => CabinClass::cases(),
+            'versions' => $versions,
         ])->layout('layouts.app');
     }
 
     public function getConfigurations()
     {
-        $query = SeatConfig::with(['airline', 'aircraftType']);
-
-        // Search
-        if ($this->search) {
-            $query->where(function ($q) {
-                $q->whereHas('airline', function ($aq) {
-                    $aq->where('name', 'like', '%' . $this->search . '%');
-                })
-                ->orWhereHas('aircraftType', function ($atq) {
-                    $atq->where('name', 'like', '%' . $this->search . '%');
-                })
-                ->orWhere('cabin_class', 'like', '%' . $this->search . '%');
-            });
-        }
+        $query = SeatConfig::with(['airline', 'aircraftType', 'updatedBy']);
 
         // Filters
         if ($this->filterAirline) {
@@ -100,14 +90,22 @@ class AircraftSeatConfiguration extends Component
             $query->where('aircraft_type_id', $this->filterAircraftType);
         }
 
-        if ($this->filterCabinClass) {
-            $query->where('cabin_class', $this->filterCabinClass);
+        if ($this->filterVersion) {
+            $query->where('version', $this->filterVersion);
         }
 
         // Sorting
         $query->orderBy($this->sortBy, $this->sortDirection);
 
         return $query->paginate($this->perPage);
+    }
+
+    public function getAvailableVersions()
+    {
+        return SeatConfig::select('version')
+            ->distinct()
+            ->orderBy('version')
+            ->pluck('version');
     }
 
     public function sortBy($field)
@@ -123,10 +121,9 @@ class AircraftSeatConfiguration extends Component
 
     public function clearFilters()
     {
-        $this->search = '';
         $this->filterAirline = '';
         $this->filterAircraftType = '';
-        $this->filterCabinClass = '';
+        $this->filterVersion = '';
         $this->resetPage();
     }
 
@@ -156,23 +153,23 @@ class AircraftSeatConfiguration extends Component
     {
         $this->validate();
 
-        // Additional enum validation
-        $cabinValues = array_column(CabinClass::cases(), 'value');
-        
-        if (!in_array($this->cabin_class, $cabinValues)) {
-            $this->addError('cabin_class', 'Invalid cabin class.');
-            return;
-        }
-
         try {
+            $totalSeats = $this->first_class_seats + $this->business_class_seats + 
+                         $this->premium_economy_seats + $this->economy_seats;
+            
             $data = [
                 'airline_id' => $this->airline_id,
                 'aircraft_type_id' => $this->aircraft_type_id,
-                'cabin_class' => $this->cabin_class,
-                'total_seats' => $this->total_seats,
+                'version' => $this->version,
+                'first_class_seats' => $this->first_class_seats,
+                'business_class_seats' => $this->business_class_seats,
+                'premium_economy_seats' => $this->premium_economy_seats,
+                'economy_seats' => $this->economy_seats,
+                'total_seats' => $totalSeats,
                 'data_source' => $this->data_source,
                 'confidence_score' => $this->confidence_score,
                 'last_verified_at' => now(),
+                'updated_by' => auth()->id(),
             ];
 
             if ($this->modalMode === 'create') {
@@ -204,8 +201,11 @@ class AircraftSeatConfiguration extends Component
     {
         $this->airline_id = '';
         $this->aircraft_type_id = '';
-        $this->cabin_class = '';
-        $this->total_seats = 0;
+        $this->version = 'Standard';
+        $this->first_class_seats = 0;
+        $this->business_class_seats = 0;
+        $this->premium_economy_seats = 0;
+        $this->economy_seats = 0;
         $this->data_source = 'manual';
         $this->confidence_score = 1.0;
     }
@@ -214,49 +214,23 @@ class AircraftSeatConfiguration extends Component
     {
         $this->airline_id = $configuration->airline_id;
         $this->aircraft_type_id = $configuration->aircraft_type_id;
-        $this->cabin_class = $configuration->cabin_class;
-        $this->total_seats = $configuration->total_seats;
+        $this->version = $configuration->version;
+        $this->first_class_seats = $configuration->first_class_seats;
+        $this->business_class_seats = $configuration->business_class_seats;
+        $this->premium_economy_seats = $configuration->premium_economy_seats;
+        $this->economy_seats = $configuration->economy_seats;
         $this->data_source = $configuration->data_source;
         $this->confidence_score = $configuration->confidence_score;
     }
 
-    // AI Lookup Methods
-    public function openAiLookup()
+
+    public function performAiLookup($configurationId)
     {
-        $this->showAiLookup = true;
-        $this->aiAirlineId = '';
-        $this->aiAircraftTypeId = '';
-        $this->aiLookupResult = '';
-    }
-
-    public function closeAiLookup()
-    {
-        $this->showAiLookup = false;
-        $this->aiAirlineId = '';
-        $this->aiAircraftTypeId = '';
-        $this->aiLookupResult = '';
-        $this->aiLookupInProgress = false;
-    }
-
-    public function performAiLookup()
-    {
-        if (!$this->aiAirlineId || !$this->aiAircraftTypeId) {
-            $this->aiLookupResult = 'Please select both airline and aircraft type.';
-            return;
-        }
-
-        $this->aiLookupInProgress = true;
-        $this->aiLookupResult = 'Looking up seat configurations...';
-
         try {
-            $airline = Airline::find($this->aiAirlineId);
-            $aircraft = AircraftType::find($this->aiAircraftTypeId);
-
-            if (!$airline || !$aircraft) {
-                $this->aiLookupResult = 'Invalid airline or aircraft selection.';
-                $this->aiLookupInProgress = false;
-                return;
-            }
+            $configuration = SeatConfig::with(['airline', 'aircraftType'])->findOrFail($configurationId);
+            
+            $airline = $configuration->airline;
+            $aircraft = $configuration->aircraftType;
 
             // Run the AI population command
             // Use partial names that will match with LIKE queries
@@ -272,25 +246,20 @@ class AircraftSeatConfiguration extends Component
             $output = Artisan::output();
 
             if ($exitCode === 0) {
-                $this->aiLookupResult = "Successfully populated seat configurations for {$airline->name} {$aircraft->name}!";
-                $this->dispatch('$refresh'); // Refresh the component to show new data
-                
-                // Close AI lookup modal after success
-                $this->closeAiLookup();
-                session()->flash('message', "AI successfully populated seat configurations for {$airline->name} {$aircraft->name}");
+                // Refresh the specific configuration from database
+                $configuration->refresh();
+                session()->flash('message', "AI successfully updated seat configurations for {$airline->name} {$aircraft->name}!");
             } else {
                 // Show the actual error message from the command
                 $errorMessage = "Failed to populate seat configurations.";
                 if (strpos($output, 'not found') !== false) {
                     $errorMessage .= " The airline or aircraft was not found. Try using partial names.";
                 }
-                $this->aiLookupResult = $errorMessage;
+                session()->flash('error', $errorMessage);
             }
         } catch (\Exception $e) {
-            $this->aiLookupResult = "Error: " . $e->getMessage();
+            session()->flash('error', "Error: " . $e->getMessage());
         }
-
-        $this->aiLookupInProgress = false;
     }
 
     public function updatedSearch()

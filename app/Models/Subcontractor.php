@@ -40,12 +40,12 @@ class Subcontractor extends Model
     // Project-specific relationships
     public function projectTeams()
     {
-        return $this->hasMany(ProjectSubcontractor::class, 'main_subcontractor_id');
+        return $this->hasMany(ProjectSubcontractorTeam::class, 'main_subcontractor_id');
     }
 
     public function supportingProjects()
     {
-        return $this->hasMany(ProjectSubcontractor::class, 'supporting_subcontractor_id');
+        return $this->hasMany(ProjectSubcontractorTeam::class, 'supporting_subcontractor_id');
     }
 
     public function projects()

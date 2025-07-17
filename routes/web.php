@@ -44,6 +44,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/manage/contacts', \App\Livewire\ContactManagement::class)
         ->name('manage.contacts');
     
+    Route::get('/manage/subcontractors', \App\Livewire\SubcontractorsTable::class)
+        ->name('manage.subcontractors');
+    
     Route::get('/manage/aircraft-seat-configurations', \App\Livewire\AircraftSeatConfiguration::class)
         ->name('manage.aircraft-seat-configurations');
 });

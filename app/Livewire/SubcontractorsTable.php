@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Subcontractor;
 
+#[Title('Subcontractors')]
 class SubcontractorsTable extends Component
 {
     public $name = '';
@@ -79,12 +80,6 @@ class SubcontractorsTable extends Component
         $this->resetFields();
     }
 
-    public function forceDelete($id)
-    {
-        $subcontractor = Subcontractor::withTrashed()->findOrFail($id);
-        $subcontractor->forceDelete();
-        $this->resetFields();
-    }
 
     private function resetFields()
     {

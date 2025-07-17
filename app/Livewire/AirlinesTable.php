@@ -10,17 +10,13 @@ use Illuminate\Support\Facades\Auth;
 
 class AirlinesTable extends Component
 {
+    // Unified search/create properties
     public $name = '';
     public $region = '';
     public $account_executive_id = '';
     public $editing = false;
     public $editId = null;
-    public $showDeleted = false; // Add option to show deleted records
-    
-    // Filter properties
-    public $filterName = '';
-    public $filterRegion = '';
-    public $filterAccountExecutive = '';
+    public $showDeleted = false;
 
     public $availableRegions = [
         'North America',
@@ -104,9 +100,30 @@ class AirlinesTable extends Component
 
     public function clearFilters()
     {
-        $this->filterName = '';
-        $this->filterRegion = '';
-        $this->filterAccountExecutive = '';
+        $this->name = '';
+        $this->region = '';
+        $this->account_executive_id = '';
+    }
+
+    public function createFromSearch()
+    {
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'region' => 'required|in:' . implode(',', $this->availableRegions),
+            'account_executive_id' => 'nullable|exists:users,id',
+        ]);
+
+        Airline::create([
+            'name' => $this->name,
+            'region' => $this->region,
+            'account_executive_id' => $this->account_executive_id,
+        ]);
+
+        // Clear the search fields after creating
+        $this->clearFilters();
+        
+        // Show success message
+        session()->flash('message', 'Airline created successfully!');
     }
 
 
@@ -128,25 +145,29 @@ class AirlinesTable extends Component
     {
         $airlinesQuery = $this->showDeleted ? Airline::withTrashed() : Airline::query();
         
-        // Apply filters
-        if (!empty($this->filterName)) {
-            $airlinesQuery->where('name', 'like', '%' . $this->filterName . '%');
+        // Apply filters based on search/create fields
+        if (!empty($this->name)) {
+            $airlinesQuery->where('name', 'like', '%' . $this->name . '%');
         }
         
-        if (!empty($this->filterRegion)) {
-            $airlinesQuery->where('region', $this->filterRegion);
+        if (!empty($this->region)) {
+            $airlinesQuery->where('region', $this->region);
         }
         
-        if (!empty($this->filterAccountExecutive)) {
-            $airlinesQuery->whereHas('accountExecutive', function($query) {
-                $query->where('name', 'like', '%' . $this->filterAccountExecutive . '%');
-            });
+        if (!empty($this->account_executive_id)) {
+            $airlinesQuery->where('account_executive_id', $this->account_executive_id);
         }
+        
+        $airlines = $airlinesQuery->with('accountExecutive')->orderBy('name')->get();
+        
+        // Check if we should show create option
+        $showCreateOption = !empty($this->name) && !empty($this->region) && $airlines->isEmpty() && !$this->editing;
         
         return view('livewire.airlines-table', [
-            'airlines' => $airlinesQuery->with('accountExecutive')->orderBy('name')->get(),
+            'airlines' => $airlines,
             'availableRegions' => $this->availableRegions,
-            'salesUsers' => User::where('role', 'sales')->orderBy('name')->get()
+            'salesUsers' => User::where('role', 'sales')->orderBy('name')->get(),
+            'showCreateOption' => $showCreateOption
         ])->layout('layouts.app');
     }
 }

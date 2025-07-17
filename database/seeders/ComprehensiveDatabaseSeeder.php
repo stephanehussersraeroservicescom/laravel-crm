@@ -359,10 +359,21 @@ class ComprehensiveDatabaseSeeder extends Seeder
             
             // Generate volume by year based on project aircraft distribution
             $volumeByYear = [];
+            $totalDistributed = 0;
+            $yearCount = count($years);
+            
             foreach ($years as $index => $year) {
                 $percentage = $distributionPattern[$index] ?? 0;
-                $aircraftForYear = round($project->number_of_aircraft * $percentage);
-                $volumeByYear[$year] = $aircraftForYear;
+                
+                // For the last year, use remaining aircraft to ensure total matches
+                if ($index === $yearCount - 1) {
+                    $aircraftForYear = $project->number_of_aircraft - $totalDistributed;
+                } else {
+                    $aircraftForYear = round($project->number_of_aircraft * $percentage);
+                    $totalDistributed += $aircraftForYear;
+                }
+                
+                $volumeByYear[$year] = max(0, $aircraftForYear); // Ensure non-negative
             }
             
             // Format cabin class for display (replace underscores with spaces and capitalize)

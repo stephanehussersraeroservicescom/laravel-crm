@@ -139,10 +139,10 @@
                     @forelse($configurations as $config)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ $config->airline->name }}</div>
+                                <div class="font-medium text-gray-900">{{ $config->airline ? $config->airline->name : 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ $config->aircraftType->name }}</div>
+                                <div class="font-medium text-gray-900">{{ $config->aircraftType ? $config->aircraftType->name : 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">

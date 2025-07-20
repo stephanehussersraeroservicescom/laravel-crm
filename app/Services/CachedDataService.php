@@ -20,7 +20,7 @@ class CachedDataService
     public static function getAirlines(): Collection
     {
         return Cache::remember('airlines_dropdown', self::CACHE_TTL, function () {
-            return Airline::select('id', 'name', 'region', 'account_executive')
+            return Airline::select('id', 'name', 'region', 'account_executive_id')
                 ->orderBy('name')
                 ->get();
         });
@@ -32,7 +32,7 @@ class CachedDataService
     public static function getAircraftTypes(): Collection
     {
         return Cache::remember('aircraft_types_dropdown', self::CACHE_TTL, function () {
-            return AircraftType::select('id', 'name')
+            return AircraftType::select('id', 'name', 'manufacturer', 'code')
                 ->orderBy('name')
                 ->get();
         });
@@ -44,7 +44,7 @@ class CachedDataService
     public static function getStatuses(): Collection
     {
         return Cache::remember('statuses_dropdown', self::CACHE_TTL, function () {
-            return Status::select('id', 'status')
+            return Status::select('id', 'status', 'type')
                 ->orderBy('status')
                 ->get();
         });
@@ -82,7 +82,7 @@ class CachedDataService
     public static function getSubcontractors(): Collection
     {
         return Cache::remember('subcontractors_dropdown', self::CACHE_TTL, function () {
-            return Subcontractor::select('id', 'name', 'is_oem')
+            return Subcontractor::select('id', 'name', 'comment')
                 ->orderBy('name')
                 ->get();
         });

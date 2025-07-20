@@ -14,6 +14,7 @@ use App\Models\Attachment;
 use App\Models\Opportunity;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Storage;
+use App\Services\CachedDataService;
 
 class ProjectManagement extends Component
 {
@@ -117,10 +118,11 @@ class ProjectManagement extends Component
     public function render()
     {
         $projects = $this->getProjects();
-        $airlines = Airline::orderBy('name')->get();
-        $aircraftTypes = AircraftType::orderBy('name')->get();
-        $statuses = Status::orderBy('status')->get();
-        $users = User::whereIn('role', ['sales', 'manager'])->orderBy('name')->get();
+        // Use cached data for dropdowns
+        $airlines = CachedDataService::getAirlines();
+        $aircraftTypes = CachedDataService::getAircraftTypes();
+        $statuses = CachedDataService::getStatuses();
+        $users = CachedDataService::getSalesAndManagerUsers();
 
         return view('livewire.project-management', [
             'projects' => $projects,

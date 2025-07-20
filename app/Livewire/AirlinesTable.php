@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Airline;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Services\CachedDataService;
 #[Title('Airlines')]
 
 class AirlinesTable extends Component
@@ -166,7 +167,7 @@ class AirlinesTable extends Component
         return view('livewire.airlines-table', [
             'airlines' => $airlines,
             'availableRegions' => $this->availableRegions,
-            'salesUsers' => User::where('role', 'sales')->orderBy('name')->get(),
+            'salesUsers' => CachedDataService::getSalesUsers(),
             'showCreateOption' => $showCreateOption
         ])->layout('layouts.app');
     }

@@ -8,6 +8,7 @@ use App\Models\Contact;
 use App\Models\Subcontractor;
 use App\Enums\ContactRole;
 use Livewire\Attributes\Validate;
+use App\Services\CachedDataService;
 
 class ContactManagement extends Component
 {
@@ -49,7 +50,7 @@ class ContactManagement extends Component
     public function render()
     {
         $contacts = $this->getContacts();
-        $subcontractors = Subcontractor::orderBy('name')->get();
+        $subcontractors = CachedDataService::getSubcontractors();
 
         return view('livewire.contact-management', [
             'contacts' => $contacts,

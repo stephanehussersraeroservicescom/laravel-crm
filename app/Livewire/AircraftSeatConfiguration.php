@@ -10,6 +10,7 @@ use App\Models\AircraftType;
 use App\Enums\CabinClass;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Attributes\Validate;
+use App\Services\CachedDataService;
 
 class AircraftSeatConfiguration extends Component
 {
@@ -65,8 +66,8 @@ class AircraftSeatConfiguration extends Component
     public function render()
     {
         $configurations = $this->getConfigurations();
-        $airlines = Airline::orderBy('name')->get();
-        $aircraftTypes = AircraftType::orderBy('name')->get();
+        $airlines = CachedDataService::getAirlines();
+        $aircraftTypes = CachedDataService::getAircraftTypes();
         $versions = $this->getAvailableVersions();
 
         return view('livewire.aircraft-seat-configuration', [

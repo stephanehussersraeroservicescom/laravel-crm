@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Subcontractor;
+use App\Services\CachedDataService;
 
 class SubcontractorsTable extends Component
 {
@@ -92,9 +93,17 @@ class SubcontractorsTable extends Component
     {
         $subcontractorsQuery = $this->showDeleted ? Subcontractor::withTrashed() : Subcontractor::query();
         
+        // Get all subcontractors from cache
+        $cachedSubcontractors = CachedDataService::getSubcontractors();
+        
+        // Filter out the current edit ID if editing
+        $availableParents = $this->editId 
+            ? $cachedSubcontractors->where('id', '!=', $this->editId) 
+            : $cachedSubcontractors;
+        
         return view('livewire.subcontractors-table', [
             'subcontractors' => $subcontractorsQuery->with('parents', 'contacts')->orderBy('name')->get(),
-            'availableParents' => Subcontractor::where('id', '!=', $this->editId ?? 0)->orderBy('name')->get()
+            'availableParents' => $availableParents
         ])->layout('layouts.app');
     }
 }

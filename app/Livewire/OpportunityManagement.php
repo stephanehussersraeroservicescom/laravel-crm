@@ -15,6 +15,7 @@ use App\Enums\CabinClass;
 use App\Enums\OpportunityStatus;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Storage;
+use App\Services\CachedDataService;
 
 class OpportunityManagement extends Component
 {
@@ -158,16 +159,18 @@ class OpportunityManagement extends Component
     public function render()
     {
         $opportunities = $this->getOpportunities();
-        // Get unique projects
-        $projects = Project::with('airline')
+        // Get unique projects with eager loaded relationships
+        $projects = Project::with(['airline', 'aircraftType'])
             ->select('projects.*')
             ->distinct()
             ->orderBy('name')
             ->get();
-        $airlines = \App\Models\Airline::orderBy('name')->get();
-        $aircraftTypes = \App\Models\AircraftType::orderBy('name')->get();
+        
+        // Use cached data for dropdowns
+        $airlines = CachedDataService::getAirlines();
+        $aircraftTypes = CachedDataService::getAircraftTypes();
         $statuses = Status::where('type', 'certification')->get();
-        $users = User::orderBy('name')->get();
+        $users = User::select('id', 'name', 'email')->orderBy('name')->get();
         
         // Update filtered projects based on modal airline filter
         $this->updateFilteredProjects();

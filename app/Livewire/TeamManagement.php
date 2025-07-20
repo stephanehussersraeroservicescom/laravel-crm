@@ -13,6 +13,7 @@ use App\Enums\TeamRole;
 use App\Enums\OpportunityType;
 use App\Enums\CabinClass;
 use Livewire\Attributes\Validate;
+use App\Services\CachedDataService;
 
 class TeamManagement extends Component
 {
@@ -79,12 +80,13 @@ class TeamManagement extends Component
     public function render()
     {
         $teams = $this->getTeams();
-        $airlines = Airline::orderBy('name')->get();
-        $projects = Project::with('airline')
+        // Use cached data for dropdowns
+        $airlines = CachedDataService::getAirlines();
+        $projects = Project::with(['airline', 'aircraftType'])
             ->when($this->filterAirline, fn($q) => $q->where('airline_id', $this->filterAirline))
             ->orderBy('name')->get();
         // Always get fresh list of subcontractors to include newly created ones
-        $subcontractors = Subcontractor::orderBy('name')->get();
+        $subcontractors = CachedDataService::getSubcontractors();
         
         $this->updateFilteredProjects();
         $this->updateFilteredOpportunities();

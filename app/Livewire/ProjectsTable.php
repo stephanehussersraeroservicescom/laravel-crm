@@ -14,6 +14,7 @@ use App\Models\VerticalSurface;
 use App\Models\Panel;
 use App\Models\Cover;
 use Illuminate\Support\Facades\Auth;
+use App\Services\CachedDataService;
 
 class ProjectsTable extends Component
 {
@@ -348,10 +349,10 @@ class ProjectsTable extends Component
             'projects' => $projects,
             'regions' => $regions,
             'executives' => $executives,
-            'airlines' => Airline::orderBy('name')->get(),
-            'aircraftTypes' => AircraftType::orderBy('name')->get(),
-            'statuses' => Status::orderBy('status')->get(),
-            'salesUsers' => User::where('role', 'sales')->orderBy('name')->get(),
+            'airlines' => CachedDataService::getAirlines(),
+            'aircraftTypes' => CachedDataService::getAircraftTypes(),
+            'statuses' => CachedDataService::getStatuses(),
+            'salesUsers' => CachedDataService::getSalesUsers(),
             'availableRegions' => $this->availableRegions,
             'opportunities' => $this->opportunities,
         ]);

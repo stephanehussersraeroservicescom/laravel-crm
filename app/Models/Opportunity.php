@@ -81,7 +81,7 @@ class Opportunity extends Model
         return [
             'project_id' => 'required|exists:projects,id',
             'type' => 'required|in:vertical,panels,covers,others',
-            'cabin_class' => 'required|in:first_class,business_class,premium_economy,economy',
+            'cabin_class' => 'nullable|in:first_class,business_class,premium_economy,economy',
             'name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'probability' => 'nullable|integer|min:0|max:100',

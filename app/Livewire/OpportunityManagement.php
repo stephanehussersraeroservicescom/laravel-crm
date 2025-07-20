@@ -57,10 +57,10 @@ class OpportunityManagement extends Component
     public $project_id = '';
     
     #[Validate('required|string')]
-    public $type = '';
+    public $type = 'vertical';
     
-    #[Validate('nullable|string')]
-    public $cabin_class = '';
+    #[Validate('required|string')]
+    public $cabin_class = 'economy';
     
     #[Validate('required|string')]
     public $status = 'active';
@@ -80,8 +80,8 @@ class OpportunityManagement extends Component
     #[Validate('nullable|string|max:1000')]
     public $comments = '';
     
-    #[Validate('nullable|exists:statuses,id')]
-    public $certification_status_id = '';
+    #[Validate('required|exists:statuses,id')]
+    public $certification_status_id = 11;
     
     #[Validate('required|exists:users,id')]
     public $assigned_to = '';
@@ -388,15 +388,15 @@ class OpportunityManagement extends Component
     private function resetForm()
     {
         $this->project_id = '';
-        $this->type = '';
-        $this->cabin_class = '';
+        $this->type = 'vertical';
+        $this->cabin_class = 'economy';
         $this->status = 'active';
         $this->probability = 50;
         $this->potential_value = 0;
         $this->name = '';
         $this->description = '';
         $this->comments = '';
-        $this->certification_status_id = '';
+        $this->certification_status_id = 11;
         $this->assigned_to = auth()->id();
         $this->created_by = auth()->id();
         $this->nameManuallyEdited = false;
@@ -452,18 +452,17 @@ class OpportunityManagement extends Component
             'cabin_class' => $this->cabin_class,
             'status' => $this->status,
             'probability' => $this->probability,
-            'potential_value' => $this->potential_value,
+            'potential_value' => $this->calculatePotentialValue(),
             'name' => $this->name,
             'description' => $this->description,
             'comments' => $this->comments,
-            'certification_status_id' => $this->certification_status_id ?: null,
+            'certification_status_id' => $this->certification_status_id,
             'assigned_to' => $this->assigned_to,
             'created_by' => $this->created_by,
             'price_per_linear_yard' => $this->price_per_linear_yard ?: null,
             'linear_yards_per_seat' => $this->linear_yards_per_seat ?: null,
             'seats_in_opportunity' => $this->seats_in_opportunity ?: null,
             'aircraft_seat_config_id' => $this->aircraft_seat_config_id ?: null,
-            'potential_value' => $this->calculatePotentialValue(),
         ];
     }
 
@@ -514,10 +513,13 @@ class OpportunityManagement extends Component
     
     public function updatedModalAirlineFilter()
     {
-        // Reset project selection when airline filter changes
-        $this->project_id = '';
-        $this->updateFilteredProjects();
-        $this->generateOpportunityName();
+        // Only process airline filter changes in create mode
+        if ($this->modalMode === 'create') {
+            // Reset project selection when airline filter changes
+            $this->project_id = '';
+            $this->updateFilteredProjects();
+            $this->generateOpportunityName();
+        }
     }
     
     public function updatedProjectId()
@@ -747,7 +749,6 @@ class OpportunityManagement extends Component
         // Try to find airline-specific configuration first
         $seatConfig = \App\Models\AircraftSeatConfiguration::where('airline_id', $project->airline_id)
             ->where('aircraft_type_id', $project->aircraft_type_id)
-            ->where('cabin_class', $this->cabin_class)
             ->first();
             
         // If not found, try default airline configuration
@@ -756,14 +757,22 @@ class OpportunityManagement extends Component
             if ($defaultAirline) {
                 $seatConfig = \App\Models\AircraftSeatConfiguration::where('airline_id', $defaultAirline->id)
                     ->where('aircraft_type_id', $project->aircraft_type_id)
-                    ->where('cabin_class', $this->cabin_class)
                     ->first();
             }
         }
         
-        // If we found a configuration, populate the seats
+        // If we found a configuration, populate the seats based on cabin class
         if ($seatConfig) {
-            $this->seats_in_opportunity = $seatConfig->total_seats;
+            // Get the seat count for the specific cabin class
+            $seatCount = match($this->cabin_class) {
+                'first_class' => $seatConfig->first_class_seats,
+                'business_class' => $seatConfig->business_class_seats,
+                'premium_economy' => $seatConfig->premium_economy_seats,
+                'economy' => $seatConfig->economy_seats,
+                default => 0
+            };
+            
+            $this->seats_in_opportunity = $seatCount;
             // Also populate the aircraft seat config reference
             $this->aircraft_seat_config_id = $seatConfig->id;
             

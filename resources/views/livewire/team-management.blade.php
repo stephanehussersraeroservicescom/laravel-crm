@@ -311,17 +311,47 @@
                         @endif
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Airline Selection -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Airline *</label>
-                                <select wire:model.live="selected_airline_id" required 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Select Airline</option>
-                                    @foreach($airlines as $airline)
-                                        <option value="{{ $airline->id }}">{{ $airline->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('selected_airline_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            @if($modalMode === 'edit' && $selectedTeam)
+                                <!-- Show read-only fields in edit mode -->
+                                <div class="md:col-span-2">
+                                    <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Team Assignment Details</h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600">Airline</label>
+                                                <div class="text-sm text-gray-900">{{ $selectedTeam->opportunity?->project?->airline?->name ?? 'Not Set' }}</div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600">Project</label>
+                                                <div class="text-sm text-gray-900">{{ $selectedTeam->opportunity?->project?->name ?? 'Not Set' }}</div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600">Opportunity Type</label>
+                                                <div class="text-sm text-gray-900">{{ $selectedTeam->opportunity?->type?->label() ?? 'Not Set' }}</div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600">Cabin Class</label>
+                                                <div class="text-sm text-gray-900">{{ $selectedTeam->opportunity?->cabin_class?->label() ?? 'All Classes' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <label class="block text-xs font-medium text-gray-600">Opportunity</label>
+                                            <div class="text-sm text-gray-900">{{ $selectedTeam->opportunity?->name ?? 'Not Set' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <!-- Airline Selection (Create mode only) -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Airline *</label>
+                                    <select wire:model.live="selected_airline_id" required 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Select Airline</option>
+                                        @foreach($airlines as $airline)
+                                            <option value="{{ $airline->id }}">{{ $airline->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('selected_airline_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 
                                 <!-- Project Creation Dialog (only when airline has NO projects at all) -->
                                 @if($selected_airline_id && $totalProjectsForAirline === 0)
@@ -498,6 +528,7 @@
                                         </div>
                                     @endif
                                 </div>
+                            @endif
                             @endif
 
                             <!-- Main Subcontractor -->

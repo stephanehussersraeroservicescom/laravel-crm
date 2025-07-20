@@ -268,44 +268,59 @@
                     <!-- Modal Content -->
                     <form wire:submit.prevent="save" class="mt-4 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Airline Filter (for filtering projects) -->
-                            <div class="md:col-span-2">
-                                <x-atomic.molecules.forms.form-field-group name="modalAirlineFilter">
-                                    <x-slot name="label">
-                                        Filter by Airline 
-                                        <span class="text-xs text-gray-500">(optional - helps narrow down project list)</span>
-                                    </x-slot>
-                                    <x-atomic.atoms.forms.form-select wire:model.live="modalAirlineFilter" class="bg-gray-50">
-                                        <option value="">All Airlines</option>
-                                        @foreach($airlines as $airline)
-                                            <option value="{{ $airline->id }}">{{ $airline->name }}</option>
-                                        @endforeach
-                                    </x-atomic.atoms.forms.form-select>
-                                </x-atomic.molecules.forms.form-field-group>
-                            </div>
+                            @if($modalMode === 'create')
+                                <!-- Airline Filter (for filtering projects) -->
+                                <div class="md:col-span-2">
+                                    <x-atomic.molecules.forms.form-field-group name="modalAirlineFilter">
+                                        <x-slot name="label">
+                                            Filter by Airline 
+                                            <span class="text-xs text-gray-500">(optional - helps narrow down project list)</span>
+                                        </x-slot>
+                                        <x-atomic.atoms.forms.form-select wire:model.live="modalAirlineFilter" class="bg-gray-50">
+                                            <option value="">All Airlines</option>
+                                            @foreach($airlines as $airline)
+                                                <option value="{{ $airline->id }}">{{ $airline->name }}</option>
+                                            @endforeach
+                                        </x-atomic.atoms.forms.form-select>
+                                    </x-atomic.molecules.forms.form-field-group>
+                                </div>
 
-                            <!-- Project -->
-                            <div class="md:col-span-2">
-                                <x-atomic.molecules.forms.form-field-group 
-                                    label="Project" 
-                                    name="project_id" 
-                                    :required="true"
-                                >
-                                    <x-atomic.atoms.forms.form-select wire:model.live="project_id" required>
-                                        <option value="">Select Project</option>
-                                        @foreach($filteredProjects as $project)
-                                            <option value="{{ $project->id }}">
-                                                {{ $project->name }} ({{ $project->airline?->name ?? 'No Airline' }})
-                                            </option>
-                                        @endforeach
-                                    </x-atomic.atoms.forms.form-select>
-                                    @if($modalAirlineFilter && $filteredProjects->count() === 0)
-                                        <div class="text-xs text-gray-500 mt-1">No projects found for selected airline</div>
-                                    @elseif($modalAirlineFilter)
-                                        <div class="text-xs text-gray-500 mt-1">Showing {{ $filteredProjects->count() }} project(s) for selected airline</div>
-                                    @endif
-                                </x-atomic.molecules.forms.form-field-group>
-                            </div>
+                                <!-- Project -->
+                                <div class="md:col-span-2">
+                                    <x-atomic.molecules.forms.form-field-group 
+                                        label="Project" 
+                                        name="project_id" 
+                                        :required="true"
+                                    >
+                                        <x-atomic.atoms.forms.form-select wire:model.live="project_id" required>
+                                            <option value="">Select Project</option>
+                                            @foreach($filteredProjects as $project)
+                                                <option value="{{ $project->id }}">
+                                                    {{ $project->name }} ({{ $project->airline?->name ?? 'No Airline' }})
+                                                </option>
+                                            @endforeach
+                                        </x-atomic.atoms.forms.form-select>
+                                        @if($modalAirlineFilter && $filteredProjects->count() === 0)
+                                            <div class="text-xs text-gray-500 mt-1">No projects found for selected airline</div>
+                                        @elseif($modalAirlineFilter)
+                                            <div class="text-xs text-gray-500 mt-1">Showing {{ $filteredProjects->count() }} project(s) for selected airline</div>
+                                        @endif
+                                    </x-atomic.molecules.forms.form-field-group>
+                                </div>
+                            @else
+                                <!-- Show project info in edit mode (read-only) -->
+                                <div class="md:col-span-2">
+                                    <x-atomic.molecules.forms.form-field-group label="Project">
+                                        <div class="px-3 py-2 bg-gray-100 rounded-md text-gray-700">
+                                            @if($selectedOpportunity && $selectedOpportunity->project)
+                                                {{ $selectedOpportunity->project->name }} ({{ $selectedOpportunity->project->airline?->name ?? 'No Airline' }})
+                                            @else
+                                                Not Set
+                                            @endif
+                                        </div>
+                                    </x-atomic.molecules.forms.form-field-group>
+                                </div>
+                            @endif
 
                             <!-- Type -->
                             <x-atomic.molecules.forms.form-field-group 
@@ -314,7 +329,6 @@
                                 :required="true"
                             >
                                 <x-atomic.atoms.forms.form-select wire:model.live="type" required>
-                                    <option value="">Select Type</option>
                                     @foreach($opportunityTypes as $type)
                                         <option value="{{ $type->value }}">{{ ucfirst($type->value) }}</option>
                                     @endforeach
@@ -325,9 +339,9 @@
                             <x-atomic.molecules.forms.form-field-group 
                                 label="Cabin Class" 
                                 name="cabin_class"
+                                :required="true"
                             >
-                                <x-atomic.atoms.forms.form-select wire:model.live="cabin_class">
-                                    <option value="">Select Cabin Class</option>
+                                <x-atomic.atoms.forms.form-select wire:model.live="cabin_class" required>
                                     @foreach($cabinClasses as $class)
                                         <option value="{{ $class->value }}">
                                             {{ str_replace('_', ' ', ucwords($class->value, '_')) }}
@@ -508,9 +522,9 @@
                             <x-atomic.molecules.forms.form-field-group 
                                 label="Certification Status" 
                                 name="certification_status_id"
+                                :required="true"
                             >
-                                <x-atomic.atoms.forms.form-select wire:model="certification_status_id">
-                                    <option value="">Select Status</option>
+                                <x-atomic.atoms.forms.form-select wire:model="certification_status_id" required>
                                     @foreach($statuses as $status)
                                         <option value="{{ $status->id }}">{{ $status->status }}</option>
                                     @endforeach

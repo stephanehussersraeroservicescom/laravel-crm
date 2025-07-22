@@ -27,6 +27,8 @@ class ComprehensiveDatabaseSeeder extends Seeder
         $this->seedAircraftTypes();
         $this->seedStatuses();
         $this->seedMaterials();
+        $this->seedProductRoots();
+        $this->seedPriceLists();
         $this->seedProjects();
         $this->seedSubcontractors();
         $this->seedContacts();
@@ -651,6 +653,90 @@ class ComprehensiveDatabaseSeeder extends Seeder
         ][$cabinClass] ?? '17 inches';
     }
     
+    private function seedProductRoots(): void
+    {
+        $productRoots = [
+            [
+                'root_code' => 'ULFRB',
+                'root_name' => 'Upper Level Fabric',
+                'part_number_prefix' => 'ULFRB',
+                'moq_ly' => 1,
+                'lead_time_weeks' => '4-6',
+                'has_ink_resist' => false,
+                'is_bio' => false,
+                'description' => 'Upper level fabric for aircraft interiors'
+            ],
+            [
+                'root_code' => 'LLFRB', 
+                'root_name' => 'Lower Level Fabric',
+                'part_number_prefix' => 'LLFRB',
+                'moq_ly' => 1,
+                'lead_time_weeks' => '4-6',
+                'has_ink_resist' => false,
+                'is_bio' => false,
+                'description' => 'Lower level fabric for aircraft interiors'
+            ],
+            [
+                'root_code' => 'VINYL',
+                'root_name' => 'Vinyl Materials',
+                'part_number_prefix' => 'VNL',
+                'moq_ly' => 2,
+                'lead_time_weeks' => '6-8',
+                'has_ink_resist' => true,
+                'is_bio' => false,
+                'description' => 'Vinyl materials for seating and surfaces'
+            ],
+            [
+                'root_code' => 'LTHR',
+                'root_name' => 'Leather Products',
+                'part_number_prefix' => 'LTHR',
+                'moq_ly' => 5,
+                'lead_time_weeks' => '8-12',
+                'has_ink_resist' => false,
+                'is_bio' => true,
+                'description' => 'Premium leather for aircraft seating'
+            ],
+            [
+                'root_code' => 'SYNTH',
+                'root_name' => 'Synthetic Materials',
+                'part_number_prefix' => 'SYN',
+                'moq_ly' => 1,
+                'lead_time_weeks' => '3-5',
+                'has_ink_resist' => true,
+                'is_bio' => false,
+                'description' => 'Synthetic fabric alternatives'
+            ]
+        ];
+
+        foreach ($productRoots as $root) {
+            DB::table('product_roots')->insert(array_merge($root, [
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]));
+        }
+    }
+    
+    private function seedPriceLists(): void
+    {
+        $productRoots = DB::table('product_roots')->get();
+        
+        foreach ($productRoots as $root) {
+            // Add standard pricing for each root
+            DB::table('price_lists')->insert([
+                'list_type' => 'standard',
+                'root_code' => $root->root_code,
+                'price_ly' => rand(15000, 35000) / 100, // $150-350 per LY
+                'moq_ly' => $root->moq_ly,
+                'effective_date' => now()->subMonths(6)->format('Y-m-d'),
+                'expiry_date' => null,
+                'is_active' => true,
+                'imported_from' => 'seeder',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+    }
+
     private function seedRolesAndPermissions(): void
     {
         // Create permissions

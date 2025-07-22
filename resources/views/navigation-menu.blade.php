@@ -53,6 +53,32 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Quotes -->
+                    <x-nav-link href="{{ route('quotes.index') }}" :active="request()->routeIs('quotes.*')">
+                        {{ __('Quotes') }}
+                    </x-nav-link>
+                    
+                    <!-- Database Manager -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = ! open" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('database-manager.*') ? 'border-indigo-400 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} text-sm font-medium leading-5 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out h-16">
+                            Database Manager
+                            <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                            <div class="py-1">
+                                <a href="{{ route('database-manager.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.index') ? 'bg-gray-100' : '' }}">Overview</a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="{{ route('database-manager.customers') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.customers') ? 'bg-gray-100' : '' }}">Customers</a>
+                                <a href="{{ route('database-manager.product-roots') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.product-roots') ? 'bg-gray-100' : '' }}">Products & Pricing</a>
+                                <a href="{{ route('database-manager.stocked-products') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.stocked-products') ? 'bg-gray-100' : '' }}">Stocked Products</a>
+                                <a href="{{ route('database-manager.contract-prices') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.contract-prices') ? 'bg-gray-100' : '' }}">Contract Prices</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

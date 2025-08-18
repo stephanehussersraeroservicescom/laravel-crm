@@ -10,9 +10,7 @@ class ProductRoot extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $primaryKey = 'root_code';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    protected $table = 'product_classes';
 
     protected $fillable = [
         'root_code',
@@ -23,6 +21,7 @@ class ProductRoot extends Model
         'is_bio',
         'moq_ly',
         'lead_time_weeks',
+        'price',
     ];
 
     protected $casts = [

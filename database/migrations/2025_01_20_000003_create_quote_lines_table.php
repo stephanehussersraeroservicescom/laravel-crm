@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('quote_lines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('quote_id')->constrained()->onDelete('cascade');
+            $table->foreignId('part_number_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('product_class_id')->nullable()->constrained()->onDelete('set null');
             $table->string('part_number');
-            $table->string('root_code', 10)->nullable();
+            $table->string('root_code', 20)->nullable();
             $table->string('series_code', 10)->nullable();
             $table->string('color_code', 20)->nullable();
             $table->string('treatment_suffix', 10)->nullable();
@@ -27,6 +29,13 @@ return new class extends Migration
             $table->integer('standard_price'); // in cents
             $table->integer('final_price'); // in cents
             $table->enum('pricing_source', ['standard', 'contract', 'manual'])->default('standard');
+            
+            // Override columns for all key fields
+            $table->decimal('override_price', 10, 2)->nullable();
+            $table->string('override_description')->nullable();
+            $table->string('override_lead_time')->nullable();
+            $table->boolean('is_custom_item')->default(false);
+            
             $table->integer('moq')->default(1); // Minimum Order Quantity
             $table->string('lead_time')->nullable();
             $table->text('notes')->nullable();
@@ -37,6 +46,8 @@ return new class extends Migration
             $table->index(['quote_id', 'sort_order']);
             $table->index('root_code');
             $table->index('part_number');
+            $table->index('part_number_id');
+            $table->index('product_class_id');
         });
     }
 

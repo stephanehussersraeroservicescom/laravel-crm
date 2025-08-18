@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            $table->unsignedBigInteger('airline_id')->nullable();
+            $table->foreignId('airline_id')->nullable()->constrained()->onDelete('set null');
             $table->string('quote_number')->nullable()->unique();
             $table->date('date_entry');
             $table->date('date_valid');

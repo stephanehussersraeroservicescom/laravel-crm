@@ -22,8 +22,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
             
-            // Foreign key (nullable for exotic products)
-            $table->foreign('root_code')->references('root_code')->on('product_roots')->onDelete('set null');
+            // Index only, no foreign key since root_code is not unique in product_classes
             
             // Indexes
             $table->index('full_part_number');

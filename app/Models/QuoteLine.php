@@ -82,6 +82,8 @@ class QuoteLine extends Model
 
     public function productRoot()
     {
+        // Since we can have multiple products with same root_code, just get the first one
+        // This maintains backward compatibility
         return $this->belongsTo(ProductRoot::class, 'root_code', 'root_code');
     }
 

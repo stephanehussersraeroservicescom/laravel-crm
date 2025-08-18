@@ -20,7 +20,7 @@ return new class extends Migration
             
             // Required classifications as per requirements
             $table->enum('type', ['vertical', 'panels', 'covers', 'others'])->default('others');
-            $table->enum('cabin_class', ['first_class', 'business_class', 'premium_economy', 'economy']);
+            $table->enum('cabin_class', ['first_class', 'business_class', 'premium_economy', 'economy'])->nullable();
             
             // Core opportunity fields
             $table->integer('probability')->unsigned()->nullable()->comment('Percentage 0-100');

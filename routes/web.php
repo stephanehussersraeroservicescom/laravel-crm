@@ -57,6 +57,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{quote}', \App\Http\Controllers\QuoteController::class . '@show')->name('show');
         Route::get('/{quote}/edit', \App\Http\Controllers\QuoteController::class . '@edit')->name('edit');
         Route::get('/{quote}/preview', \App\Http\Controllers\QuoteController::class . '@preview')->name('preview');
+        Route::get('/{quote}/download', \App\Http\Controllers\QuoteController::class . '@download')->name('download');
         Route::delete('/{quote}', \App\Http\Controllers\QuoteController::class . '@destroy')->name('destroy');
     });
     

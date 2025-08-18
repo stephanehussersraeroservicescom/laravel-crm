@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Airline;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -11,13 +12,25 @@ use App\Services\CachedDataService;
 
 class AirlinesTable extends Component
 {
-    // Unified search/create properties
+    use WithPagination;
+    // Modal Properties
+    public $showModal = false;
+    public $modalMode = 'create'; // 'create' or 'edit'
+    public $selectedAirline = null;
+    
+    // Form Properties
     public $name = '';
     public $region = '';
     public $account_executive_id = '';
-    public $editing = false;
-    public $editId = null;
+    
+    // Search and Filter Properties
+    public $search = '';
+    public $filterRegion = '';
+    public $filterAccountExecutive = '';
     public $showDeleted = false;
+    public $sortBy = 'name';
+    public $sortDirection = 'asc';
+    public $perPage = 10;
 
     public $availableRegions = [
         'North America',
@@ -31,12 +44,36 @@ class AirlinesTable extends Component
 
     public function mount()
     {
+        // Initialize default values if needed
+    }
+
+    public function openCreateModal()
+    {
+        $this->resetForm();
+        $this->modalMode = 'create';
+        $this->showModal = true;
+        
         // Pre-select current user if they have sales role
         if (Auth::check() && Auth::user()->role === 'sales') {
             $this->account_executive_id = Auth::user()->id;
         }
     }
-
+    
+    public function openEditModal($airlineId)
+    {
+        $this->selectedAirline = Airline::withTrashed()->findOrFail($airlineId);
+        $this->fillForm($this->selectedAirline);
+        $this->modalMode = 'edit';
+        $this->showModal = true;
+    }
+    
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->resetForm();
+        $this->selectedAirline = null;
+    }
+    
     public function save()
     {
         $this->validate([
@@ -45,130 +82,124 @@ class AirlinesTable extends Component
             'account_executive_id' => 'nullable|exists:users,id',
         ]);
 
-        if ($this->editing && $this->editId) {
-            $airline = Airline::find($this->editId);
-            if ($airline) {
-                $airline->update([
-                    'name' => $this->name,
-                    'region' => $this->region,
-                    'account_executive_id' => $this->account_executive_id,
-                ]);
-            }
+        if ($this->modalMode === 'create') {
+            Airline::create($this->getFormData());
+            session()->flash('message', 'Airline created successfully.');
         } else {
-            Airline::create([
-                'name' => $this->name,
-                'region' => $this->region,
-                'account_executive_id' => $this->account_executive_id,
-            ]);
+            $this->selectedAirline->update($this->getFormData());
+            session()->flash('message', 'Airline updated successfully.');
         }
 
-        $this->resetFields();
+        $this->closeModal();
     }
 
-    public function edit($id)
+    private function fillForm($airline)
     {
-        $airline = Airline::findOrFail($id);
         $this->name = $airline->name;
         $this->region = $airline->region;
         $this->account_executive_id = $airline->account_executive_id;
-        $this->editId = $id;
-        $this->editing = true;
+    }
+    
+    private function getFormData()
+    {
+        return [
+            'name' => $this->name,
+            'region' => $this->region,
+            'account_executive_id' => $this->account_executive_id ?: null,
+        ];
     }
 
-    public function cancelEdit()
+    public function delete($airlineId)
     {
-        $this->resetFields();
+        $airline = Airline::withTrashed()->findOrFail($airlineId);
+        if ($airline->trashed()) {
+            $airline->restore();
+            session()->flash('message', 'Airline restored successfully.');
+        } else {
+            $airline->delete();
+            session()->flash('message', 'Airline deleted successfully.');
+        }
     }
-
-    public function delete($id)
+    
+    public function sortBy($field)
     {
-        Airline::findOrFail($id)->delete();
-        $this->resetFields();
-    }
-
-    public function toggleShowDeleted()
-    {
-        $this->showDeleted = !$this->showDeleted;
-        $this->resetFields();
-    }
-
-    public function restore($id)
-    {
-        $airline = Airline::withTrashed()->findOrFail($id);
-        $airline->restore();
-        $this->resetFields();
+        if ($this->sortBy === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $field;
+            $this->sortDirection = 'asc';
+        }
     }
 
     public function clearFilters()
     {
-        $this->name = '';
-        $this->region = '';
-        $this->account_executive_id = '';
-    }
-
-    public function createFromSearch()
-    {
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'region' => 'required|in:' . implode(',', $this->availableRegions),
-            'account_executive_id' => 'nullable|exists:users,id',
-        ]);
-
-        Airline::create([
-            'name' => $this->name,
-            'region' => $this->region,
-            'account_executive_id' => $this->account_executive_id,
-        ]);
-
-        // Clear the search fields after creating
-        $this->clearFilters();
-        
-        // Show success message
-        session()->flash('message', 'Airline created successfully!');
+        $this->search = '';
+        $this->filterRegion = '';
+        $this->filterAccountExecutive = '';
+        $this->showDeleted = false;
     }
 
 
-    private function resetFields()
+    private function resetForm()
     {
         $this->name = '';
         $this->region = '';
         $this->account_executive_id = '';
-        $this->editing = false;
-        $this->editId = null;
-        
-        // Re-select current user if they have sales role
-        if (Auth::check() && Auth::user()->role === 'sales') {
-            $this->account_executive_id = Auth::user()->id;
-        }
+    }
+    
+    public function updatedSearch()
+    {
+        // Reset to first page when searching
+    }
+    
+    public function updatedFilterRegion()
+    {
+        // Reset to first page when filtering
+    }
+    
+    public function updatedFilterAccountExecutive()
+    {
+        // Reset to first page when filtering
+    }
+    
+    public function updatedShowDeleted()
+    {
+        // Reset to first page when toggling deleted
     }
 
     public function render()
     {
-        $airlinesQuery = $this->showDeleted ? Airline::withTrashed() : Airline::query();
-        
-        // Apply filters based on search/create fields
-        if (!empty($this->name)) {
-            $airlinesQuery->where('name', 'like', '%' . $this->name . '%');
-        }
-        
-        if (!empty($this->region)) {
-            $airlinesQuery->where('region', $this->region);
-        }
-        
-        if (!empty($this->account_executive_id)) {
-            $airlinesQuery->where('account_executive_id', $this->account_executive_id);
-        }
-        
-        $airlines = $airlinesQuery->with('accountExecutive')->orderBy('name')->get();
-        
-        // Check if we should show create option
-        $showCreateOption = !empty($this->name) && !empty($this->region) && $airlines->isEmpty() && !$this->editing;
+        $airlines = $this->getAirlines();
         
         return view('livewire.airlines-table', [
             'airlines' => $airlines,
             'availableRegions' => $this->availableRegions,
-            'salesUsers' => CachedDataService::getSalesUsers(),
-            'showCreateOption' => $showCreateOption
-        ])->layout('layouts.app');
+            'salesUsers' => CachedDataService::getSalesUsers()
+        ]);
+    }
+    
+    private function getAirlines()
+    {
+        $query = $this->showDeleted ? Airline::withTrashed() : Airline::query();
+        
+        // Apply search filter
+        if ($this->search) {
+            $query->where('name', 'like', '%' . $this->search . '%');
+        }
+        
+        // Apply region filter
+        if ($this->filterRegion) {
+            $query->where('region', $this->filterRegion);
+        }
+        
+        // Apply account executive filter
+        if ($this->filterAccountExecutive) {
+            $query->where('account_executive_id', $this->filterAccountExecutive);
+        }
+        
+        // Apply sorting
+        $query->orderBy($this->sortBy, $this->sortDirection);
+        
+        return $query->with('accountExecutive')->paginate($this->perPage);
     }
 }

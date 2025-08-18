@@ -14,9 +14,9 @@
     <!-- Flash Messages -->
     <x-atomic.atoms.feedback.flash-message type="success" :message="session('message')" />
 
-    <!-- Search and Filter Panel -->
-    <div class="w-full mx-auto bg-white p-8 rounded-lg shadow-sm border-2 border-gray-400 md:max-w-[90%]">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <!-- Filter Panel -->
+    <x-atomic.organisms.filters.filter-panel>
+        <x-slot name="search">
             <!-- Search -->
             <x-atomic.molecules.forms.search-field 
                 span="wide"
@@ -33,9 +33,9 @@
                     <option value="50">50 per page</option>
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
-        </div>
+        </x-slot>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <x-slot name="filters">
             <!-- Airline Filter -->
             <x-atomic.molecules.forms.form-field-group label="Airline">
                 <x-atomic.atoms.forms.form-select wire:model.live="filterAirline">
@@ -75,9 +75,9 @@
                     @endforeach
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
-        </div>
+        </x-slot>
 
-        <div class="flex justify-between items-center mt-6">
+        <x-slot name="actions">
             <!-- Show Deleted Checkbox -->
             <x-atomic.atoms.forms.form-checkbox 
                 wire:model.live="showDeleted"
@@ -87,163 +87,139 @@
             <x-atomic.atoms.buttons.secondary-button variant="gray" wire:click="clearFilters">
                 Clear Filters
             </x-atomic.atoms.buttons.secondary-button>
-        </div>
-    </div>
+        </x-slot>
+    </x-atomic.organisms.filters.filter-panel>
 
     <!-- Projects Table -->
-    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            wire:click="sortBy('name')">
-                            Project Name
-                            @if($sortBy === 'name')
-                                <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
-                            @endif
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="leading-tight">
-                                Number of<br>Aircraft
-                            </div>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Owner
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Comment
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($projects as $project)
-                        <tr class="hover:bg-gray-50 {{ $project->trashed() ? 'bg-red-50 opacity-75' : '' }}">
-                            <!-- Project Name -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div>
-                                        <div class="text-sm font-medium text-gray-900">{{ $project->name }}</div>
-                                        @if($project->attachments && $project->attachments->count() > 0)
-                                            <div class="text-xs text-gray-500 mt-1 flex items-center">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                                                </svg>
-                                                {{ $project->attachments->count() }} file{{ $project->attachments->count() > 1 ? 's' : '' }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-                            
-                            <!-- Number of Aircraft -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
-                                    {{ $project->number_of_aircraft ?? 'Not specified' }}
-                                </div>
-                            </td>
-                            
-                            <!-- Status -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="space-y-1">
-                                    @if($project->designStatus)
-                                        <div class="text-xs">
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                Design: {{ $project->designStatus->status }}
-                                            </span>
-                                        </div>
-                                    @endif
-                                    @if($project->commercialStatus)
-                                        <div class="text-xs">
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                Commercial: {{ $project->commercialStatus->status }}
-                                            </span>
-                                        </div>
-                                    @endif
-                                    @if(!$project->designStatus && !$project->commercialStatus)
-                                        <div class="text-xs text-gray-500">No status set</div>
-                                    @endif
-                                </div>
-                            </td>
-                            
-                            <!-- Owner -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $project->owner?->name ?? 'No Owner' }}</div>
-                            </td>
-                            
-                            <!-- Comment -->
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900 max-w-xs">
-                                    {{ $project->comment ? Str::limit($project->comment, 100) : 'No comment' }}
-                                </div>
-                            </td>
-                            
-                            <!-- Actions -->
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <x-atomic.molecules.actions.action-group>
-                                    <x-atomic.molecules.actions.action-group direction="horizontal">
-                                        <x-atomic.atoms.buttons.action-link 
-                                            variant="primary" 
-                                            wire:click="openEditModal({{ $project->id }})"
-                                        >
-                                            Edit
-                                        </x-atomic.atoms.buttons.action-link>
-                                        @if($project->trashed())
-                                            <x-atomic.atoms.buttons.action-link 
-                                                variant="success" 
-                                                wire:click="delete({{ $project->id }})" 
-                                                onclick="return confirm('Are you sure you want to restore this project?')"
-                                            >
-                                                Restore
-                                            </x-atomic.atoms.buttons.action-link>
-                                        @else
-                                            <x-atomic.atoms.buttons.action-link 
-                                                variant="danger" 
-                                                wire:click="delete({{ $project->id }})" 
-                                                onclick="return confirm('Are you sure you want to delete this project?')"
-                                            >
-                                                Delete
-                                            </x-atomic.atoms.buttons.action-link>
-                                        @endif
-                                    </x-atomic.molecules.actions.action-group>
-                                    @if(!$project->trashed() && $project->opportunities && $project->opportunities->count() > 0)
-                                        <x-atomic.atoms.buttons.action-link 
-                                            variant="secondary" 
-                                            wire:click="updateOpportunityNames({{ $project->id }})" 
-                                            class="text-xs"
-                                            title="Update related opportunity names to match current project details"
-                                        >
-                                            Sync Names
-                                        </x-atomic.atoms.buttons.action-link>
-                                    @endif
-                                </x-atomic.molecules.actions.action-group>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                                No projects found. 
-                                <x-atomic.atoms.buttons.action-link variant="primary" wire:click="openCreateModal">
-                                    Create your first project
-                                </x-atomic.atoms.buttons.action-link>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <x-atomic.molecules.tables.data-table>
+        <x-slot name="head">
+            <tr>
+                <x-atomic.atoms.tables.table-header 
+                    sortable 
+                    field="name" 
+                    :currentSort="$sortBy" 
+                    :currentDirection="$sortDirection">
+                    Project Name
+                </x-atomic.atoms.tables.table-header>
+                
+                <x-atomic.atoms.tables.table-header>
+                    <div class="leading-tight">
+                        Number of<br>Aircraft
+                    </div>
+                </x-atomic.atoms.tables.table-header>
+                
+                <x-atomic.atoms.tables.table-header>
+                    Status
+                </x-atomic.atoms.tables.table-header>
+                
+                <x-atomic.atoms.tables.table-header>
+                    Owner
+                </x-atomic.atoms.tables.table-header>
+                
+                <x-atomic.atoms.tables.table-header>
+                    Comment
+                </x-atomic.atoms.tables.table-header>
+                
+                <x-atomic.atoms.tables.table-header class="text-right">
+                    Actions
+                </x-atomic.atoms.tables.table-header>
+            </tr>
+        </x-slot>
 
-        <!-- Pagination -->
-        <div class="px-6 py-3 border-t border-gray-200">
+        @forelse($projects as $project)
+            <x-atomic.molecules.tables.table-row :deleted="$project->trashed()">
+                <!-- Project Name -->
+                <x-atomic.atoms.tables.table-cell variant="primary">
+                    <div class="flex items-center">
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">{{ $project->name }}</div>
+                            @if($project->attachments && $project->attachments->count() > 0)
+                                <div class="text-xs text-gray-500 mt-1 flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                    </svg>
+                                    {{ $project->attachments->count() }} file{{ $project->attachments->count() > 1 ? 's' : '' }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </x-atomic.atoms.tables.table-cell>
+                
+                <x-atomic.atoms.tables.table-cell variant="secondary">
+                    {{ $project->number_of_aircraft ?? 'Not specified' }}
+                </x-atomic.atoms.tables.table-cell>
+                
+                <x-atomic.atoms.tables.table-cell>
+                    <div class="space-y-1">
+                        @if($project->designStatus)
+                            <x-atomic.atoms.feedback.status-badge status="info">
+                                Design: {{ $project->designStatus->status }}
+                            </x-atomic.atoms.feedback.status-badge>
+                        @endif
+                        @if($project->commercialStatus)
+                            <x-atomic.atoms.feedback.status-badge status="success">
+                                Commercial: {{ $project->commercialStatus->status }}
+                            </x-atomic.atoms.feedback.status-badge>
+                        @endif
+                        @if(!$project->designStatus && !$project->commercialStatus)
+                            <div class="text-xs text-gray-500">No status set</div>
+                        @endif
+                    </div>
+                </x-atomic.atoms.tables.table-cell>
+                
+                <x-atomic.atoms.tables.table-cell variant="secondary">
+                    {{ $project->owner?->name ?? 'No Owner' }}
+                </x-atomic.atoms.tables.table-cell>
+                
+                <x-atomic.atoms.tables.table-cell>
+                    <div class="text-sm text-gray-900 max-w-xs">
+                        {{ $project->comment ? Str::limit($project->comment, 100) : 'No comment' }}
+                    </div>
+                </x-atomic.atoms.tables.table-cell>
+                
+                <x-atomic.atoms.tables.table-cell variant="action">
+                    @if($project->trashed())
+                        <button wire:click="delete({{ $project->id }})" 
+                                class="text-indigo-600 hover:text-indigo-900">
+                            Restore
+                        </button>
+                    @else
+                        <button wire:click="openEditModal({{ $project->id }})" 
+                                class="text-indigo-600 hover:text-indigo-900 mr-3">
+                            Edit
+                        </button>
+                        <button wire:click="delete({{ $project->id }})" 
+                                onclick="return confirm('Are you sure you want to delete this project?')"
+                                class="text-red-600 hover:text-red-900">
+                            Delete
+                        </button>
+                    @endif
+                    @if(!$project->trashed() && $project->opportunities && $project->opportunities->count() > 0)
+                        <div class="mt-2">
+                            <button wire:click="updateOpportunityNames({{ $project->id }})" 
+                                    class="text-xs text-blue-600 hover:text-blue-900"
+                                    title="Update related opportunity names to match current project details">
+                                Sync Names
+                            </button>
+                        </div>
+                    @endif
+                </x-atomic.atoms.tables.table-cell>
+            </x-atomic.molecules.tables.table-row>
+        @empty
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                    No projects found matching your criteria.
+                    <button wire:click="openCreateModal" class="text-blue-600 hover:text-blue-900">
+                        Create your first project
+                    </button>
+                </td>
+            </tr>
+        @endforelse
+
+        <x-slot name="pagination">
             {{ $projects->links() }}
-        </div>
-    </div>
+        </x-slot>
+    </x-atomic.molecules.tables.data-table>
 
     <!-- Create/Edit Modal -->
     @if($showModal)

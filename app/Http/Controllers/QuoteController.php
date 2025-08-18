@@ -6,6 +6,7 @@ use App\Models\Quote;
 use App\Models\Customer;
 use App\Models\Airline;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class QuoteController extends Controller
 {
@@ -39,8 +40,22 @@ class QuoteController extends Controller
 
     public function preview(Quote $quote)
     {
-        $quote->load(['quoteLines', 'customer', 'airline', 'user']);
-        return view('quotes.pdf', compact('quote'));
+        $quote->load(['quoteLines.productRoot', 'customer', 'airline', 'user']);
+        
+        $pdf = Pdf::loadView('quotes.pdf', compact('quote'));
+        $pdf->setPaper('A4', 'portrait');
+        
+        return $pdf->stream('quotation-' . $quote->id . '.pdf');
+    }
+    
+    public function download(Quote $quote)
+    {
+        $quote->load(['quoteLines.productRoot', 'customer', 'airline', 'user']);
+        
+        $pdf = Pdf::loadView('quotes.pdf', compact('quote'));
+        $pdf->setPaper('A4', 'portrait');
+        
+        return $pdf->download('quotation-' . $quote->id . '.pdf');
     }
 
     public function destroy(Quote $quote)

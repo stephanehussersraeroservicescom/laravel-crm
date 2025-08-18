@@ -15,9 +15,9 @@
     <x-atomic.atoms.feedback.flash-message type="success" :message="session('message')" />
     <x-atomic.atoms.feedback.flash-message type="error" :message="session('error')" />
 
-    <!-- Search and Filter Panel -->
-    <div class="w-full mx-auto bg-white p-8 rounded-lg shadow-sm border-2 border-gray-400 md:max-w-[90%]">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <!-- Filter Panel -->
+    <x-atomic.organisms.filters.filter-panel>
+        <x-slot name="search">
             <!-- Search -->
             <x-atomic.molecules.forms.search-field 
                 span="wide"
@@ -34,10 +34,10 @@
                     <option value="50">50 per page</option>
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
-        </div>
+        </x-slot>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Assigned User Filter -->
+        <x-slot name="filters">
+            <!-- First row -->
             <x-atomic.molecules.forms.form-field-group label="Assigned To">
                 <x-atomic.atoms.forms.form-select wire:model.live="filterAssignedTo">
                     <option value="">All Assigned Users</option>
@@ -47,7 +47,6 @@
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
 
-            <!-- Airline Filter -->
             <x-atomic.molecules.forms.form-field-group label="Airline">
                 <x-atomic.atoms.forms.form-select wire:model.live="filterAirline">
                     <option value="">All Airlines</option>
@@ -57,7 +56,6 @@
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
 
-            <!-- Aircraft Type Filter -->
             <x-atomic.molecules.forms.form-field-group label="Aircraft Type">
                 <x-atomic.atoms.forms.form-select wire:model.live="filterAircraftType">
                     <option value="">All Aircraft Types</option>
@@ -66,10 +64,8 @@
                     @endforeach
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-            <!-- Project Filter -->
+            
+            <!-- Second row -->
             <x-atomic.molecules.forms.form-field-group label="Project">
                 <x-atomic.atoms.forms.form-select wire:model.live="filterProject">
                     <option value="">All Projects</option>
@@ -79,7 +75,6 @@
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
 
-            <!-- Type Filter -->
             <x-atomic.molecules.forms.form-field-group label="Type">
                 <x-atomic.atoms.forms.form-select wire:model.live="filterType">
                     <option value="">All Types</option>
@@ -89,7 +84,6 @@
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
 
-            <!-- Status Filter -->
             <x-atomic.molecules.forms.form-field-group label="Status">
                 <x-atomic.atoms.forms.form-select wire:model.live="filterStatus">
                     <option value="">All Statuses</option>
@@ -99,7 +93,6 @@
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
 
-            <!-- Cabin Class Filter -->
             <x-atomic.molecules.forms.form-field-group label="Cabin Class">
                 <x-atomic.atoms.forms.form-select wire:model.live="filterCabinClass">
                     <option value="">All Classes</option>
@@ -108,9 +101,9 @@
                     @endforeach
                 </x-atomic.atoms.forms.form-select>
             </x-atomic.molecules.forms.form-field-group>
-        </div>
+        </x-slot>
 
-        <div class="flex justify-between items-center mt-6">
+        <x-slot name="actions">
             <!-- Show Deleted Checkbox -->
             <x-atomic.atoms.forms.form-checkbox 
                 wire:model.live="showDeleted"
@@ -120,8 +113,8 @@
             <x-atomic.atoms.buttons.secondary-button variant="gray" wire:click="clearFilters">
                 Clear Filters
             </x-atomic.atoms.buttons.secondary-button>
-        </div>
-    </div>
+        </x-slot>
+    </x-atomic.organisms.filters.filter-panel>
 
     <!-- Opportunities Table -->
     <div class="bg-white rounded-lg shadow-sm border overflow-hidden">

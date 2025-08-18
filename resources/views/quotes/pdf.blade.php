@@ -3,172 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quote #{{ $quote->id }}</title>
+    <title>Quotation {{ $quote->id }}</title>
     <style>
+        @page {
+            margin: 20mm;
+        }
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #000;
+            margin: 0;
+            padding: 0;
         }
         .header {
-            border-bottom: 2px solid #333;
             margin-bottom: 30px;
-            padding-bottom: 20px;
         }
-        .company-info {
+        .header-top {
+            display: table;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .company-section {
+            display: table-cell;
+            vertical-align: top;
+            width: 50%;
+        }
+        .logo-section {
+            display: table-cell;
+            vertical-align: top;
+            width: 50%;
             text-align: right;
-            margin-bottom: 30px;
         }
-        .quote-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
+        .company-name {
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
-        .customer-info, .quote-info {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
+        .company-details {
+            font-size: 10pt;
+            line-height: 1.3;
         }
-        .quote-lines {
+        .logo-text {
+            color: #E91E63;
+            font-size: 36pt;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .tagline {
+            font-size: 9pt;
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+        }
+        .quotation-title {
+            font-size: 16pt;
+            text-align: center;
+            text-decoration: underline;
+            margin: 30px 0 20px 0;
+        }
+        .quote-info {
+            margin-bottom: 25px;
+            font-size: 10pt;
+            line-height: 1.6;
+        }
+        .quote-info strong {
+            display: inline-block;
+            min-width: 100px;
+        }
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
-        .quote-lines th, .quote-lines td {
-            border: 1px solid #ddd;
-            padding: 12px;
+        table th {
+            background-color: #e8f4f8;
+            border: 1px solid #333;
+            padding: 8px;
             text-align: left;
-        }
-        .quote-lines th {
-            background-color: #f2f2f2;
+            font-size: 10pt;
             font-weight: bold;
         }
-        .total-row {
-            font-weight: bold;
-            background-color: #f9f9f9;
+        table td {
+            border: 1px solid #333;
+            padding: 8px;
+            font-size: 10pt;
         }
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            font-size: 0.9em;
-            color: #666;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
+        .text-center {
+            text-align: center;
         }
         .text-right {
             text-align: right;
+        }
+        .product-family-header {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            font-style: italic;
+        }
+        .product-descriptions {
+            margin-top: 30px;
+            font-size: 10pt;
+            line-height: 1.5;
+        }
+        .product-descriptions h3 {
+            font-size: 12pt;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .product-descriptions p {
+            margin: 5px 0;
+            text-align: justify;
+        }
+        .terms-section {
+            margin-top: 30px;
+            font-size: 10pt;
+            line-height: 1.5;
+        }
+        .terms-section p {
+            margin: 5px 0;
+        }
+        .note-section {
+            margin-top: 30px;
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        @media print {
+            .page-break {
+                page-break-after: always;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>QUOTATION</h1>
-        <div class="company-info">
-            <h2>Tapis Corporation</h2>
-            <p>
-                [Company Address]<br>
-                [City, State ZIP]<br>
-                [Phone] | [Email]<br>
-                [Website]
-            </p>
+        <div class="header-top">
+            <div class="company-section">
+                <div class="company-name">Tapis Corporation</div>
+                <div class="company-details">
+                    53 Old Route 22<br>
+                    Armonk, NY, 10504<br>
+                    Phone: +1 9142732737
+                </div>
+            </div>
+            <div class="logo-section">
+                <div class="logo-text">TAPIS</div>
+                <div class="tagline">Elevating the Passenger Experience</div>
+            </div>
         </div>
     </div>
 
-    <div class="quote-details">
-        <div class="customer-info">
-            <h3>Bill To:</h3>
-            <p>
-                <strong>{{ $quote->customer->company_name }}</strong><br>
-                {{ $quote->customer->contact_name }}<br>
-                @if($quote->customer->email)
-                    {{ $quote->customer->email }}<br>
-                @endif
-                @if($quote->customer->phone)
-                    {{ $quote->customer->phone }}<br>
-                @endif
-                @if($quote->customer->address)
-                    {{ $quote->customer->address }}
-                @endif
-            </p>
-        </div>
+    <div class="quotation-title">Quotation {{ $quote->id }}</div>
 
-        <div class="quote-info">
-            <h3>Quote Information:</h3>
-            <p>
-                <strong>Quote #:</strong> {{ $quote->id }}<br>
-                <strong>Date:</strong> {{ \Carbon\Carbon::parse($quote->date_entry)->format('M d, Y') }}<br>
-                <strong>Valid Until:</strong> {{ \Carbon\Carbon::parse($quote->date_valid)->format('M d, Y') }}<br>
-                <strong>Prepared by:</strong> {{ $quote->user->name ?? 'N/A' }}<br>
-                @if($quote->airline)
-                    <strong>Project:</strong> {{ $quote->airline->name }}<br>
-                @endif
-            </p>
-        </div>
+    <div class="quote-info">
+        <p><strong>Date issued:</strong> {{ \Carbon\Carbon::parse($quote->date_entry)->format('F jS, Y') }}</p>
+        <p><strong>Quoted to:</strong> {{ $quote->customer->contact_name }} - {{ $quote->customer->company_name }}</p>
+        <p><strong>Quote validity:</strong> {{ $quote->validity_days ?? 30 }} days</p>
     </div>
 
-    <table class="quote-lines">
+    <table>
         <thead>
             <tr>
-                <th style="width: 20%;">Part Number</th>
-                <th style="width: 35%;">Description</th>
-                <th style="width: 10%;">Qty</th>
-                <th style="width: 10%;">Unit</th>
-                <th style="width: 12%;">Unit Price</th>
-                <th style="width: 13%;">Total</th>
+                <th style="width: 25%;">Product</th>
+                <th style="width: 30%;">Product Reference</th>
+                <th style="width: 10%;" class="text-center">Qty</th>
+                <th style="width: 20%;" class="text-center">Lead-time</th>
+                <th style="width: 15%;" class="text-right">Price per {{ $quote->quoteLines->first()->unit ?? 'LY' }}</th>
             </tr>
         </thead>
         <tbody>
-            @php $grandTotal = 0; @endphp
-            @foreach($quote->quoteLines as $line)
-                @php 
-                    $unitPrice = $line->final_price / 100;
-                    $lineTotal = ($line->final_price * $line->quantity) / 100;
-                    $grandTotal += $lineTotal;
+            @php
+                // Group products by root_code (product family)
+                $groupedLines = $quote->quoteLines->groupBy('root_code');
+            @endphp
+            
+            @foreach($groupedLines as $rootCode => $lines)
+                @php
+                    $productRoot = $lines->first()->productRoot;
+                    $familyName = $productRoot ? $productRoot->root_name : 'Standard Products';
                 @endphp
-                <tr>
-                    <td>{{ $line->part_number }}</td>
-                    <td>{{ $line->description }}</td>
-                    <td class="text-right">{{ number_format($line->quantity) }}</td>
-                    <td>{{ $line->unit }}</td>
-                    <td class="text-right">${{ number_format($unitPrice, 2) }}</td>
-                    <td class="text-right">${{ number_format($lineTotal, 2) }}</td>
+                
+                {{-- Product Family Header Row --}}
+                @if(count($groupedLines) > 1)
+                <tr class="product-family-header">
+                    <td colspan="5">{{ $familyName }}</td>
                 </tr>
+                @endif
+                
+                {{-- Product Lines --}}
+                @foreach($lines as $line)
+                    @php 
+                        $unitPrice = $line->final_price / 100;
+                    @endphp
+                    <tr>
+                        <td>{{ $line->description ?: $line->part_number }}</td>
+                        <td>{{ $line->part_number }}</td>
+                        <td class="text-center">{{ number_format($line->quantity) }} {{ $line->unit }}</td>
+                        <td class="text-center">{{ $line->lead_time ?: $quote->lead_time_weeks ?: '12 to 14 weeks' }}</td>
+                        <td class="text-right">${{ number_format($unitPrice, 2) }}</td>
+                    </tr>
+                @endforeach
             @endforeach
-            <tr class="total-row">
-                <td colspan="5" class="text-right"><strong>Total:</strong></td>
-                <td class="text-right"><strong>${{ number_format($grandTotal, 2) }}</strong></td>
-            </tr>
         </tbody>
     </table>
 
-    <div style="margin-bottom: 30px;">
-        <h3>Terms & Conditions:</h3>
-        <p><strong>Shipping Terms:</strong> {{ $quote->shipping_terms }}</p>
-        <p><strong>Payment Terms:</strong> {{ $quote->payment_terms }}</p>
-        @if($quote->lead_time_weeks)
-            <p><strong>Lead Time:</strong> {{ $quote->lead_time_weeks }}</p>
+    {{-- Product Descriptions Section --}}
+    <div class="product-descriptions">
+        @foreach($groupedLines as $rootCode => $lines)
+            @php
+                $productRoot = $lines->first()->productRoot;
+                if (!$productRoot || !$productRoot->description) continue;
+            @endphp
+            
+            <h3>{{ $productRoot->root_name }}</h3>
+            <p>{!! nl2br(e($productRoot->description)) !!}</p>
+            
+            {{-- Add technical specifications if available --}}
+            @if($productRoot->has_ink_resist || $productRoot->is_bio)
+                <p><strong>Features:</strong> 
+                    @if($productRoot->is_bio) Bio-based material @endif
+                    @if($productRoot->has_ink_resist) @if($productRoot->is_bio), @endif Ink resistant treatment @endif
+                </p>
+            @endif
+            
+            {{-- Add certification info if not already shown --}}
+            @if($loop->first && !$quote->certifications)
+                <p><strong>Passes:</strong> Heat Release and Smoke Density: FAR25.853, Appendix F, Part IV and Part V, as well as 12 and 60 Second Vertical Flammability: FAR25.853, Appendix F, Part I (ii) and (i).</p>
+            @endif
+        @endforeach
+    </div>
+
+    {{-- Terms and Specifications Section --}}
+    <div class="terms-section">
+        @if($quote->roll_width || $quote->roll_length)
+            <p><strong>Material Specifications:</strong></p>
+            @if($quote->roll_width)
+                <p>Roll Width: {{ $quote->roll_width }}</p>
+            @else
+                <p>Roll Width: 54"</p>
+            @endif
+            @if($quote->roll_length)
+                <p>Average Roll Length: {{ $quote->roll_length }}</p>
+            @else
+                <p>Average Roll Length: 33 LY</p>
+            @endif
         @endif
+        
+        <p><strong>Shipping Terms:</strong> {{ $quote->shipping_terms ?? 'ExWorks Dallas Texas' }}</p>
+        @if($quote->quantity_variance)
+            <p><strong>Quantity varies with:</strong> {{ $quote->quantity_variance }}</p>
+        @else
+            <p><strong>Quantity varies with:</strong> +/- 10%</p>
+        @endif
+        <p><strong>Payment terms:</strong> {{ $quote->payment_terms ?? 'Net 30' }}</p>
     </div>
 
     @if($quote->comments)
-        <div style="margin-bottom: 30px;">
-            <h3>Comments:</h3>
-            <p>{{ $quote->comments }}</p>
+        <div class="note-section">
+            <p><strong>Note:</strong> {{ $quote->comments }}</p>
         </div>
     @endif
 
     <div class="footer">
-        <p>This quotation is valid until {{ \Carbon\Carbon::parse($quote->date_valid)->format('M d, Y') }}. 
-           Prices and availability subject to change without notice.</p>
-        <p style="margin-top: 20px;">
-            <em>Thank you for considering Tapis Corporation for your aerospace textile needs.</em>
-        </p>
+        <p>Tapis Terms and Conditions apply to all orders unless otherwise specified in writing.</p>
     </div>
 </body>
 </html>

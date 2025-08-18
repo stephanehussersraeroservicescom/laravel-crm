@@ -1,141 +1,119 @@
 <div class="space-y-6">
     <!-- Header -->
-    <div class="w-full mx-auto md:max-w-[90%] pt-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-900">Subcontractor Management</h1>
-            <button wire:click="openCreateModal" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+    <x-atomic.molecules.navigation.page-header title="Subcontractor Management">
+        <x-slot name="actions">
+            <x-atomic.atoms.buttons.primary-button wire:click="openCreateModal">
                 <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Add Team
-            </button>
-        </div>
-    </div>
+            </x-atomic.atoms.buttons.primary-button>
+        </x-slot>
+    </x-atomic.molecules.navigation.page-header>
 
     <!-- Flash Messages -->
-    @if (session()->has('message'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('message') }}
-        </div>
-    @endif
+    <x-atomic.atoms.feedback.flash-message type="success" :message="session('message')" />
 
-    <!-- Search and Filter Panel -->
-    <div class="w-full mx-auto bg-white p-8 rounded-lg shadow-sm border-2 border-gray-400 md:max-w-[90%]">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Filter Panel -->
+    <x-atomic.organisms.filters.filter-panel>
+        <x-slot name="search">
             <!-- Search Opportunity Type -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search Opportunity Type</label>
-                <input type="text" 
-                       wire:model.live.debounce.300ms="searchOpportunityType" 
-                       placeholder="panels, vertical, etc."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
+            <x-atomic.molecules.forms.form-field-group label="Search Opportunity Type">
+                <x-atomic.atoms.forms.form-input 
+                    wire:model.live.debounce.300ms="searchOpportunityType" 
+                    placeholder="panels, vertical, etc." />
+            </x-atomic.molecules.forms.form-field-group>
             
             <!-- Search Cabin Area -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search Cabin Area</label>
-                <input type="text" 
-                       wire:model.live.debounce.300ms="searchCabinArea" 
-                       placeholder="first class, economy, etc."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
+            <x-atomic.molecules.forms.form-field-group label="Search Cabin Area">
+                <x-atomic.atoms.forms.form-input 
+                    wire:model.live.debounce.300ms="searchCabinArea" 
+                    placeholder="first class, economy, etc." />
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Role Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select wire:model.live="filterRole" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Role">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterRole">
                     <option value="">All Roles</option>
                     @foreach($teamRoles as $role)
                         <option value="{{ $role->value }}">{{ $role->label() }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
             
             <!-- Per Page -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Show</label>
-                <select wire:model.live="perPage" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Show">
+                <x-atomic.atoms.forms.form-select wire:model.live="perPage">
                     <option value="10">10 per page</option>
                     <option value="25">25 per page</option>
                     <option value="50">50 per page</option>
-                </select>
-            </div>
-        </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
+        </x-slot>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <x-slot name="filters">
             <!-- Airline Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Airline</label>
-                <select wire:model.live="filterAirline" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Airline">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterAirline">
                     <option value="">All Airlines</option>
                     @foreach($airlines as $airline)
                         <option value="{{ $airline->id }}">{{ $airline->name }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Project Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                <select wire:model.live="filterProject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Project">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterProject">
                     <option value="">All Projects</option>
                     @foreach($projects as $project)
                         <option value="{{ $project->id }}">{{ $project->name }} ({{ $project->airline?->name ?? 'No Airline' }})</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Main Subcontractor Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Main Subcontractor</label>
-                <select wire:model.live="filterMainSubcontractor" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Main Subcontractor">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterMainSubcontractor">
                     <option value="">All Subcontractors</option>
                     @foreach($subcontractors as $subcontractor)
                         <option value="{{ $subcontractor->id }}">{{ $subcontractor->name }}</option>
                     @endforeach
-                </select>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-6">
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
             <!-- Opportunity Type Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Opportunity Type</label>
-                <select wire:model.live="filterOpportunityType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Opportunity Type">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterOpportunityType">
                     <option value="">All Types</option>
                     @foreach($opportunityTypes as $type)
                         <option value="{{ $type->value }}">{{ $type->label() }}</option>
                     @endforeach
-                </select>
-            </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
 
             <!-- Cabin Class Filter -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Cabin Class</label>
-                <select wire:model.live="filterCabinClass" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <x-atomic.molecules.forms.form-field-group label="Cabin Class">
+                <x-atomic.atoms.forms.form-select wire:model.live="filterCabinClass">
                     <option value="">All Classes</option>
                     @foreach($cabinClasses as $class)
                         <option value="{{ $class->value }}">{{ $class->label() }}</option>
                     @endforeach
-                </select>
-            </div>
-        </div>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
+        </x-slot>
 
-        <div class="flex justify-between items-center mt-6">
+        <x-slot name="actions">
             <!-- Show Deleted Checkbox -->
-            <label class="flex items-center">
-                <input type="checkbox" wire:model.live="showDeleted" 
-                       class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                <span class="ml-2 text-sm text-gray-700">Show deleted teams</span>
-            </label>
+            <x-atomic.atoms.forms.form-checkbox 
+                wire:model.live="showDeleted"
+                label="Show deleted teams"
+            />
             
-            <button wire:click="clearFilters" 
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+            <x-atomic.atoms.buttons.secondary-button variant="gray" wire:click="clearFilters">
                 Clear Filters
-            </button>
-        </div>
-    </div>
+            </x-atomic.atoms.buttons.secondary-button>
+        </x-slot>
+    </x-atomic.organisms.filters.filter-panel>
 
     <!-- Teams Table -->
     <div class="bg-white rounded-lg shadow-sm border overflow-hidden">

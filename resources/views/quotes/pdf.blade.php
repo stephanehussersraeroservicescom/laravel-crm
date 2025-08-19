@@ -60,12 +60,15 @@
             font-size: 16pt;
             text-align: center;
             text-decoration: underline;
-            margin: 30px 0 20px 0;
+            margin: 20px 0 15px 0;
         }
         .quote-info {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 10pt;
-            line-height: 1.6;
+            line-height: 1.2;
+        }
+        .quote-info p {
+            margin: 3px 0;
         }
         .quote-info strong {
             display: inline-block;
@@ -79,15 +82,15 @@
         table th {
             background-color: #e8f4f8;
             border: 1px solid #333;
-            padding: 8px;
+            padding: 6px;
             text-align: left;
-            font-size: 10pt;
+            font-size: 9pt;
             font-weight: bold;
         }
         table td {
             border: 1px solid #333;
-            padding: 8px;
-            font-size: 10pt;
+            padding: 6px;
+            font-size: 9pt;
         }
         .text-center {
             text-align: center;
@@ -101,40 +104,40 @@
             font-style: italic;
         }
         .product-descriptions {
-            margin-top: 30px;
-            font-size: 10pt;
-            line-height: 1.5;
+            margin-top: 20px;
+            font-size: 9pt;
+            line-height: 1.2;
         }
         .product-descriptions h3 {
-            font-size: 12pt;
-            margin-top: 20px;
-            margin-bottom: 10px;
+            font-size: 10pt;
+            margin-top: 10px;
+            margin-bottom: 5px;
             color: #333;
         }
         .product-descriptions p {
-            margin: 5px 0;
+            margin: 2px 0;
             text-align: justify;
         }
         .terms-section {
-            margin-top: 30px;
-            font-size: 10pt;
-            line-height: 1.5;
+            margin-top: 20px;
+            font-size: 9pt;
+            line-height: 1.2;
         }
         .terms-section p {
-            margin: 5px 0;
+            margin: 2px 0;
         }
         .note-section {
-            margin-top: 30px;
-            font-size: 10pt;
-            line-height: 1.4;
+            margin-top: 20px;
+            font-size: 9pt;
+            line-height: 1.2;
         }
         .footer {
-            margin-top: 50px;
+            margin-top: 30px;
             text-align: center;
-            font-size: 9pt;
+            font-size: 8pt;
             color: #666;
             border-top: 1px solid #ddd;
-            padding-top: 10px;
+            padding-top: 5px;
         }
         @media print {
             .page-break {
@@ -161,7 +164,7 @@
         </div>
     </div>
 
-    <div class="quotation-title">Quotation {{ $quote->id }}</div>
+    <div class="quotation-title">Quotation {{ $quote->salesperson_code ?? $quote->user->salesperson_code ?? 'SFH' }}{{ str_pad($quote->id, 4, '0', STR_PAD_LEFT) }}</div>
 
     <div class="quote-info">
         <p><strong>Date issued:</strong> {{ \Carbon\Carbon::parse($quote->date_entry)->format('F jS, Y') }}</p>
@@ -173,10 +176,11 @@
         <thead>
             <tr>
                 <th style="width: 25%;">Product</th>
-                <th style="width: 30%;">Product Reference</th>
+                <th style="width: 25%;">Product Reference</th>
                 <th style="width: 10%;" class="text-center">Qty</th>
-                <th style="width: 20%;" class="text-center">Lead-time</th>
-                <th style="width: 15%;" class="text-right">Price per {{ $quote->quoteLines->first()->unit ?? 'LY' }}</th>
+                <th style="width: 8%;" class="text-center">UOM</th>
+                <th style="width: 17%;" class="text-center">Lead-time</th>
+                <th style="width: 15%;" class="text-right">Price per unit</th>
             </tr>
         </thead>
         <tbody>
@@ -191,12 +195,6 @@
                     $familyName = $productRoot ? $productRoot->root_name : 'Standard Products';
                 @endphp
                 
-                {{-- Product Family Header Row --}}
-                @if(count($groupedLines) > 1)
-                <tr class="product-family-header">
-                    <td colspan="5">{{ $familyName }}</td>
-                </tr>
-                @endif
                 
                 {{-- Product Lines --}}
                 @foreach($lines as $line)
@@ -206,7 +204,8 @@
                     <tr>
                         <td>{{ $line->description ?: $line->part_number }}</td>
                         <td>{{ $line->part_number }}</td>
-                        <td class="text-center">{{ number_format($line->quantity) }} {{ $line->unit }}</td>
+                        <td class="text-center">{{ number_format($line->quantity) }}</td>
+                        <td class="text-center">{{ $line->unit ?: 'LY' }}</td>
                         <td class="text-center">{{ $line->lead_time ?: $quote->lead_time_weeks ?: '12 to 14 weeks' }}</td>
                         <td class="text-right">${{ number_format($unitPrice, 2) }}</td>
                     </tr>
@@ -217,26 +216,49 @@
 
     {{-- Product Descriptions Section --}}
     <div class="product-descriptions">
-        @foreach($groupedLines as $rootCode => $lines)
-            @php
+        @php
+            // Group products by their certification requirements
+            $certificationGroups = collect();
+            
+            foreach($groupedLines as $rootCode => $lines) {
                 $productRoot = $lines->first()->productRoot;
                 if (!$productRoot || !$productRoot->description) continue;
+                
+                $certKey = $productRoot->description;
+                
+                if (!$certificationGroups->has($certKey)) {
+                    $certificationGroups->put($certKey, [
+                        'certification' => $certKey,
+                        'products' => collect()
+                    ]);
+                }
+                
+                $certificationGroups->get($certKey)['products']->push($productRoot->root_name);
+            }
+        @endphp
+        
+        @foreach($certificationGroups as $group)
+            <h3>{{ $group['products']->unique()->join(', ') }}</h3>
+            <p>{{ $group['certification'] }}</p>
+            
+            {{-- Add any special features for products in this group --}}
+            @php
+                $hasInkResist = false;
+                $hasBio = false;
+                foreach($groupedLines as $rootCode => $lines) {
+                    $productRoot = $lines->first()->productRoot;
+                    if ($productRoot && $productRoot->description === $group['certification']) {
+                        if ($productRoot->has_ink_resist) $hasInkResist = true;
+                        if ($productRoot->is_bio) $hasBio = true;
+                    }
+                }
             @endphp
             
-            <h3>{{ $productRoot->root_name }}</h3>
-            <p>{!! nl2br(e($productRoot->description)) !!}</p>
-            
-            {{-- Add technical specifications if available --}}
-            @if($productRoot->has_ink_resist || $productRoot->is_bio)
-                <p><strong>Features:</strong> 
-                    @if($productRoot->is_bio) Bio-based material @endif
-                    @if($productRoot->has_ink_resist) @if($productRoot->is_bio), @endif Ink resistant treatment @endif
+            @if($hasInkResist || $hasBio)
+                <p><strong>Available Features:</strong> 
+                    @if($hasBio) Bio-based material @endif
+                    @if($hasInkResist) @if($hasBio), @endif Ink resistant treatment @endif
                 </p>
-            @endif
-            
-            {{-- Add certification info if not already shown --}}
-            @if($loop->first && !$quote->certifications)
-                <p><strong>Passes:</strong> Heat Release and Smoke Density: FAR25.853, Appendix F, Part IV and Part V, as well as 12 and 60 Second Vertical Flammability: FAR25.853, Appendix F, Part I (ii) and (i).</p>
             @endif
         @endforeach
     </div>
@@ -263,7 +285,7 @@
         @else
             <p><strong>Quantity varies with:</strong> +/- 10%</p>
         @endif
-        <p><strong>Payment terms:</strong> {{ $quote->payment_terms ?? 'Net 30' }}</p>
+        <p><strong>Payment terms:</strong> {{ $quote->customer->payment_terms ?? 'Pro Forma' }}</p>
     </div>
 
     @if($quote->comments)

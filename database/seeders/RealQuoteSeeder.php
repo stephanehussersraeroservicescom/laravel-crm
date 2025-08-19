@@ -56,11 +56,14 @@ class RealQuoteSeeder extends Seeder
             $customer = $customers->random();
             $airline = $airlines->isNotEmpty() ? $airlines->random() : null;
             
+            $assignedUser = $users->random();
+            
             $quote = Quote::create([
-                'user_id' => $users->random()->id,
+                'user_id' => $assignedUser->id,
                 'customer_id' => $customer->id,
                 'airline_id' => $airline?->id,
                 'quote_number' => 'Q-2025-' . str_pad($i, 4, '0', STR_PAD_LEFT),
+                'salesperson_code' => $assignedUser->salesperson_code,
                 'date_entry' => Carbon::now()->subDays(rand(1, 30)),
                 'date_valid' => Carbon::now()->addDays(rand(30, 90)),
                 'shipping_terms' => 'Ex Works Dallas Texas',
@@ -192,15 +195,15 @@ class RealQuoteSeeder extends Seeder
         if (Customer::count() == 0) {
             $customers = [
                 ['company_name' => 'Premier Aircraft Interiors', 'contact_name' => 'John Smith', 
-                 'email' => 'john@premierair.com', 'phone' => '+1-555-0101', 'is_subcontractor' => false],
+                 'email' => 'john@premierair.com', 'phone' => '+1-555-0101', 'is_subcontractor' => false, 'payment_terms' => 'Net 30'],
                 ['company_name' => 'Global Aviation Solutions', 'contact_name' => 'Sarah Johnson', 
-                 'email' => 'sarah@globalaviation.com', 'phone' => '+1-555-0102', 'is_subcontractor' => true],
+                 'email' => 'sarah@globalaviation.com', 'phone' => '+1-555-0102', 'is_subcontractor' => true, 'payment_terms' => 'Net 30'],
                 ['company_name' => 'Luxury Cabin Systems', 'contact_name' => 'Mike Wilson', 
-                 'email' => 'mike@luxurycabin.com', 'phone' => '+1-555-0103', 'is_subcontractor' => false],
+                 'email' => 'mike@luxurycabin.com', 'phone' => '+1-555-0103', 'is_subcontractor' => false, 'payment_terms' => 'Pro Forma'],
                 ['company_name' => 'Advanced Interior Materials', 'contact_name' => 'Lisa Davis', 
-                 'email' => 'lisa@advancedinterior.com', 'phone' => '+1-555-0104', 'is_subcontractor' => true],
+                 'email' => 'lisa@advancedinterior.com', 'phone' => '+1-555-0104', 'is_subcontractor' => true, 'payment_terms' => 'Net 30'],
                 ['company_name' => 'Executive Jets International', 'contact_name' => 'David Brown', 
-                 'email' => 'david@execjets.com', 'phone' => '+1-555-0105', 'is_subcontractor' => false],
+                 'email' => 'david@execjets.com', 'phone' => '+1-555-0105', 'is_subcontractor' => false, 'payment_terms' => 'Pro Forma'],
             ];
             
             foreach ($customers as $customer) {
@@ -211,14 +214,14 @@ class RealQuoteSeeder extends Seeder
         // Create sample airlines if none exist
         if (Airline::count() == 0) {
             $airlines = [
-                ['name' => 'American Airlines', 'code' => 'AA'],
-                ['name' => 'Delta Air Lines', 'code' => 'DL'],
-                ['name' => 'United Airlines', 'code' => 'UA'],
-                ['name' => 'Southwest Airlines', 'code' => 'WN'],
-                ['name' => 'Emirates', 'code' => 'EK'],
-                ['name' => 'Lufthansa', 'code' => 'LH'],
-                ['name' => 'Air France', 'code' => 'AF'],
-                ['name' => 'British Airways', 'code' => 'BA'],
+                ['name' => 'American Airlines', 'region' => 'North America'],
+                ['name' => 'Delta Air Lines', 'region' => 'North America'],
+                ['name' => 'United Airlines', 'region' => 'North America'],
+                ['name' => 'Southwest Airlines', 'region' => 'North America'],
+                ['name' => 'Emirates', 'region' => 'Middle East'],
+                ['name' => 'Lufthansa', 'region' => 'Europe'],
+                ['name' => 'Air France', 'region' => 'Europe'],
+                ['name' => 'British Airways', 'region' => 'Europe'],
             ];
             
             foreach ($airlines as $airline) {
@@ -226,13 +229,17 @@ class RealQuoteSeeder extends Seeder
             }
         }
         
-        // Create a test user if none exist
+        // Create test users if none exist
         if (User::count() == 0) {
-            User::create([
-                'name' => 'Admin User',
-                'email' => 'admin@example.com',
-                'password' => bcrypt('password'),
-            ]);
+            $users = [
+                ['name' => 'Stephane', 'email' => 'stephane@example.com', 'password' => bcrypt('password'), 'salesperson_code' => 'SFH'],
+                ['name' => 'Dominic', 'email' => 'dominic@example.com', 'password' => bcrypt('password'), 'salesperson_code' => 'DD'],
+                ['name' => 'Jason', 'email' => 'jason@example.com', 'password' => bcrypt('password'), 'salesperson_code' => 'JE'],
+            ];
+            
+            foreach ($users as $user) {
+                User::create($user);
+            }
         }
     }
 }

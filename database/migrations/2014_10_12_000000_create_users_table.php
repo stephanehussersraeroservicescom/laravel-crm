@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('salesperson_code', 10)->nullable();
             $table->enum('role', ['managers', 'database manager', 'sales'])->default('sales');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

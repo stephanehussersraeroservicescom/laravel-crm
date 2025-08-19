@@ -20,6 +20,7 @@ class ProductRoot extends Model
         'has_ink_resist',
         'is_bio',
         'moq_ly',
+        'uom',
         'lead_time_weeks',
         'price',
     ];

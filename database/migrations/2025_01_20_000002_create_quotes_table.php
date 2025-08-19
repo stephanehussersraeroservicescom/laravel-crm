@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('airline_id')->nullable()->constrained()->onDelete('set null');
             $table->string('quote_number')->nullable()->unique();
+            $table->string('salesperson_code', 10)->nullable();
             $table->date('date_entry');
             $table->date('date_valid');
             $table->string('shipping_terms')->default('Ex Works Dallas Texas');

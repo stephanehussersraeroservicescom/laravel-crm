@@ -15,6 +15,7 @@ class Quote extends Model
         'customer_id',
         'airline_id',
         'quote_number',
+        'salesperson_code',
         'revision_number',
         'parent_quote_id',
         'revision_reason',

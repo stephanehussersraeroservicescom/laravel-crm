@@ -87,6 +87,7 @@ class ProductCatalogSeeder extends Seeder
                 'part_number_prefix' => $root_code,
                 'description' => $description,
                 'moq_ly' => $moq,
+                'uom' => 'LY', // All products are sold by Linear Yard
                 'lead_time_weeks' => $moq >= 500 ? '12-16' : ($moq >= 66 ? '8-12' : '6-8'),
                 'has_ink_resist' => $ink_resist,
                 'is_bio' => $bio,

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('part_number_prefix')->nullable()
                 ->comment('Prefix to use when building part numbers (e.g., ULFRB for ULFRB900)');
             $table->integer('moq_ly')->default(1);
+            $table->enum('uom', ['LY', 'UNIT'])->default('LY');
             $table->string('lead_time_weeks', 20)->nullable();
             $table->boolean('has_ink_resist')->default(false);
             $table->boolean('is_bio')->default(false);

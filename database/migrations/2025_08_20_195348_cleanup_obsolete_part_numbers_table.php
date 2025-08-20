@@ -11,6 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Step 1: Drop the foreign key constraint from quote_lines
+        Schema::table('quote_lines', function (Blueprint $table) {
+            // Drop the foreign key if it exists
+            $table->dropForeign(['part_number_id']);
+        });
+        
+        // Step 2: Drop the part_number_id column from quote_lines
+        Schema::table('quote_lines', function (Blueprint $table) {
+            $table->dropColumn('part_number_id');
+        });
+        
+        // Step 3: Drop the obsolete part_numbers table
+        // This table was superseded by the products table which has active implementation
+        Schema::dropIfExists('part_numbers');
+        
+        // Also drop the product_templates table if it exists (appears unused)
+        Schema::dropIfExists('product_templates');
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        // Recreate part_numbers table
         Schema::create('part_numbers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_class_id')->constrained('product_classes');
@@ -34,13 +59,12 @@ return new class extends Migration
             $table->index('is_standard');
             $table->index('is_discontinued');
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('part_numbers');
+        
+        // Re-add part_number_id column to quote_lines
+        Schema::table('quote_lines', function (Blueprint $table) {
+            $table->foreignId('part_number_id')->nullable()->after('quote_id')
+                  ->constrained('part_numbers')->onDelete('set null');
+            $table->index('part_number_id');
+        });
     }
 };

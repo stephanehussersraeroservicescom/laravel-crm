@@ -2,7 +2,7 @@
 
 - good commit , push
 
-## August 20, 2025 - Contract Pricing Cleanup
+## August 20, 2025 - Database Cleanup (Contract Pricing & Products)
 
 ### IMPORTANT: Contract Pricing Data Structure
 - **ACTIVE TABLE:** `contract_prices` - This is the only contract pricing table in use
@@ -11,18 +11,29 @@
 - **Model:** `App\Models\ContractPrice`
 - **Component:** `Livewire\DatabaseManager\ContractPriceTable`
 
-### Why This Cleanup Was Done
-- Found two tables: `contract_prices` and `contract_pricing`
-- `contract_pricing` was created via migration but never implemented (no model, no UI, no references)
-- `contract_prices` is fully implemented with model, UI, and active usage in quotes
-- Removed confusion by dropping the unused table
+### IMPORTANT: Products Data Structure  
+- **ACTIVE TABLE:** `products` - This is the only products table in use
+- **REMOVED:** `part_numbers` table was obsolete and has been dropped
+- **REMOVED:** `product_templates` table was obsolete and has been dropped
+- **Entry Point:** Database Manager → Products (`/database-manager/products`)
+- **Model:** `App\Models\Product`
+- **Component:** `Livewire\DatabaseManager\ProductTable`
 
-### Contract Prices Structure (Active)
-- Uses `customer_identifier` (string) instead of foreign key for flexibility
-- Supports pricing by: part number, root code, airline, or combinations
-- Prices stored in cents (integer) for precision
-- Date range validation with `valid_from` and `valid_to`
-- Used by quote forms for automatic pricing lookups
+### Why These Cleanups Were Done
+1. **Contract Pricing:** Found duplicate tables (`contract_prices` vs `contract_pricing`)
+   - `contract_pricing` was created but never implemented (no model, no UI)
+   - `contract_prices` is fully implemented and actively used
+
+2. **Products:** Found duplicate tables (`products` vs `part_numbers`)
+   - `part_numbers` had no model, no UI, but had a foreign key from quote_lines
+   - `products` is fully implemented with model, UI, and active usage
+   - Removed unused `part_number_id` column from quote_lines table
+   - Quote lines use `part_number` string field instead of foreign key
+
+### Active Structure Summary
+- **Products Management:** `products` table → Product model → Database Manager UI
+- **Contract Pricing:** `contract_prices` table → ContractPrice model → Database Manager UI
+- **Quote Lines:** Use string `part_number` field, not foreign key relationships
 
 ## August 18, 2025 - PDF and Database Enhancements
 

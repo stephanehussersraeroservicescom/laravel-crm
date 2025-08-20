@@ -86,3 +86,17 @@
 - Integrated quotation title with salesperson code for professional appearance
 
 All changes tested with fresh migration and seeding. System now properly displays different salesperson codes across quotes and maintains data integrity at the quote level.
+
+## August 20, 2025 - Subcontractors Table Improvements & Product Catalog Seeder
+
+### Subcontractors Table Fixes
+- **Fixed Missing Filters:** Added search functionality for subcontractor names and comments, plus comment-specific filter
+- **Fixed Broken Edit Modal:** Corrected modal implementation to use `:show="$showModal"` instead of `wire:model.live`
+- **Improved Design Consistency:** Updated to use `x-atomic.organisms.filters.filter-panel` component like other table pages
+- **Enhanced UX:** Added proper form validation, flash messages, and clear filters functionality
+
+### Product Catalog Seeder Enhancement
+- **Complete Data Coverage:** Updated ProductCatalogSeeder with all 50 product classes and current individual products
+- **Comprehensive Structure:** Includes Standard FR, Woven, Ultrasuede, TapiSuede, ULFRB9 series, and BHC products
+- **Proper Data Relationships:** Maintains correct pricing, MOQ, lead times, and certification flags
+- **Clean Reset Capability:** Truncates both product_classes and products tables for fresh seeding

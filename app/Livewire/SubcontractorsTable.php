@@ -3,102 +3,167 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Validate;
 use App\Models\Subcontractor;
 use App\Services\CachedDataService;
+use Livewire\Form;
+
+class SubcontractorForm extends Form
+{
+    #[Validate('required|string|max:255')]
+    public $name = '';
+    
+    #[Validate('nullable|string')]
+    public $comment = '';
+    
+    #[Validate('array')]
+    public $selectedParents = [];
+
+    public function setSubcontractor(Subcontractor $subcontractor)
+    {
+        $this->name = $subcontractor->name;
+        $this->comment = $subcontractor->comment ?? '';
+        $this->selectedParents = $subcontractor->parents->pluck('id')->toArray();
+    }
+
+    public function store()
+    {
+        $this->validate();
+        
+        $subcontractor = Subcontractor::create([
+            'name' => $this->name,
+            'comment' => $this->comment,
+        ]);
+        
+        $subcontractor->parents()->sync($this->selectedParents);
+        
+        return $subcontractor;
+    }
+
+    public function update(Subcontractor $subcontractor)
+    {
+        $this->validate();
+        
+        $subcontractor->update([
+            'name' => $this->name,
+            'comment' => $this->comment,
+        ]);
+        
+        $subcontractor->parents()->sync($this->selectedParents);
+        
+        return $subcontractor;
+    }
+}
 
 class SubcontractorsTable extends Component
 {
-    public $name = '';
-    public $comment = '';
-    public $selectedParents = [];
-    public $editing = false;
-    public $editId = null;
-    public $showDeleted = false; // Add option to show deleted records
+    public SubcontractorForm $form;
+    
+    public $showModal = false;
+    public $editingSubcontractor = null;
+    public $showDeleted = false;
+    
+    // Search and filtering
+    public $search = '';
+    public $commentFilter = '';
+
+    public function openCreateModal()
+    {
+        $this->resetModal();
+        $this->showModal = true;
+    }
+
+    public function openEditModal($id)
+    {
+        logger("Edit method called with ID: $id");
+        $this->resetModal();
+        $this->editingSubcontractor = Subcontractor::findOrFail($id);
+        $this->form->setSubcontractor($this->editingSubcontractor);
+        $this->showModal = true;
+        logger("Modal should be open now: " . ($this->showModal ? 'true' : 'false'));
+        
+        // Force a refresh to ensure modal state is updated
+        $this->dispatch('modal-updated');
+    }
+
+    public function closeModal()
+    {
+        $this->resetModal();
+    }
+
+    private function resetModal()
+    {
+        $this->showModal = false;
+        $this->editingSubcontractor = null;
+        $this->form->reset();
+    }
 
     public function save()
     {
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'comment' => 'nullable|string',
-            'selectedParents' => 'array',
-            'selectedParents.*' => 'exists:subcontractors,id',
-        ]);
-
-        if ($this->editing && $this->editId) {
-            $subcontractor = Subcontractor::find($this->editId);
-            if ($subcontractor) {
-                $subcontractor->update([
-                    'name' => $this->name,
-                    'comment' => $this->comment,
-                ]);
-                // Sync parent relationships
-                $subcontractor->parents()->sync($this->selectedParents);
-            }
+        if ($this->editingSubcontractor) {
+            $this->form->update($this->editingSubcontractor);
+            session()->flash('message', 'Subcontractor updated successfully.');
         } else {
-            $subcontractor = Subcontractor::create([
-                'name' => $this->name,
-                'comment' => $this->comment,
-            ]);
-            // Attach parent relationships
-            $subcontractor->parents()->sync($this->selectedParents);
+            $this->form->store();
+            session()->flash('message', 'Subcontractor created successfully.');
         }
 
-        $this->resetFields();
-    }
-
-    public function edit($id)
-    {
-        $subcontractor = Subcontractor::findOrFail($id);
-        $this->name = $subcontractor->name;
-        $this->comment = $subcontractor->comment;
-        $this->selectedParents = $subcontractor->parents->pluck('id')->toArray();
-        $this->editId = $id;
-        $this->editing = true;
-    }
-
-    public function cancelEdit()
-    {
-        $this->resetFields();
+        $this->closeModal();
     }
 
     public function delete($id)
     {
         Subcontractor::findOrFail($id)->delete();
-        $this->resetFields();
-    }
-
-    public function toggleShowDeleted()
-    {
-        $this->showDeleted = !$this->showDeleted;
-        $this->resetFields();
+        session()->flash('message', 'Subcontractor deleted successfully.');
     }
 
     public function restore($id)
     {
         $subcontractor = Subcontractor::withTrashed()->findOrFail($id);
         $subcontractor->restore();
-        $this->resetFields();
+        session()->flash('message', 'Subcontractor restored successfully.');
     }
 
-    private function resetFields()
+    public function updatingSearch()
     {
-        $this->name = '';
-        $this->comment = '';
-        $this->selectedParents = [];
-        $this->editing = false;
-        $this->editId = null;
+        // Reset when search changes
+    }
+    
+    public function updatingCommentFilter()
+    {
+        // Reset when comment filter changes
+    }
+    
+    public function clearFilters()
+    {
+        $this->search = '';
+        $this->commentFilter = '';
+        $this->showDeleted = false;
     }
 
     public function render()
     {
         $subcontractorsQuery = $this->showDeleted ? Subcontractor::withTrashed() : Subcontractor::query();
         
+        // Apply search filter
+        if ($this->search) {
+            $subcontractorsQuery->where(function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('comment', 'like', '%' . $this->search . '%');
+            });
+        }
+        
+        // Apply comment filter
+        if ($this->commentFilter) {
+            $subcontractorsQuery->where('comment', 'like', '%' . $this->commentFilter . '%');
+        }
+        
         // Get all subcontractors from cache
         $cachedSubcontractors = CachedDataService::getSubcontractors();
         
         // Filter out the current edit ID if editing
-        $availableParents = $this->editId 
-            ? $cachedSubcontractors->where('id', '!=', $this->editId) 
+        $availableParents = $this->editingSubcontractor 
+            ? $cachedSubcontractors->where('id', '!=', $this->editingSubcontractor->id) 
             : $cachedSubcontractors;
         
         return view('livewire.subcontractors-table', [

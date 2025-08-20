@@ -1,6 +1,6 @@
 <div class="space-y-6">
     <!-- Header -->
-    <x-atomic.molecules.navigation.page-header title="Subcontractor Management">
+    <x-atomic.molecules.navigation.page-header title="Project Team Management">
         <x-slot name="actions">
             <x-atomic.atoms.buttons.primary-button wire:click="openCreateModal">
                 <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -10,6 +10,9 @@
             </x-atomic.atoms.buttons.primary-button>
         </x-slot>
     </x-atomic.molecules.navigation.page-header>
+
+    <!-- Page Description -->
+    <p class="text-gray-600 -mt-2 mb-6 text-center">Assign subcontractors to project opportunities with specific roles (Commercial, Design, Manufacturing, etc.) and configure supporting team members for each assignment.</p>
 
     <!-- Flash Messages -->
     <x-atomic.atoms.feedback.flash-message type="success" :message="session('message')" />

@@ -30,7 +30,8 @@
                                 <a href="{{ route('manage.airlines') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.airlines') ? 'bg-gray-100' : '' }}">Airlines</a>
                                 <a href="{{ route('manage.projects') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.projects') ? 'bg-gray-100' : '' }}">Projects</a>
                                 <a href="{{ route('manage.opportunities') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.opportunities') ? 'bg-gray-100' : '' }}">Opportunities</a>
-                                <a href="{{ route('manage.teams') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.teams') ? 'bg-gray-100' : '' }}">Subcontractors</a>
+                                <a href="{{ route('manage.teams') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.teams') ? 'bg-gray-100' : '' }}">Project Teams</a>
+                                <a href="{{ route('manage.subcontractors') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.subcontractors') ? 'bg-gray-100' : '' }}">Subcontractors</a>
                                 <a href="{{ route('manage.contacts') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.contacts') ? 'bg-gray-100' : '' }}">Contacts</a>
                                 <a href="{{ route('manage.aircraft-seat-configurations') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('manage.aircraft-seat-configurations') ? 'bg-gray-100' : '' }}">Seat Configurations</a>
                             </div>
@@ -226,6 +227,10 @@
                 </x-responsive-nav-link>
                 
                 <x-responsive-nav-link href="{{ route('manage.teams') }}" :active="request()->routeIs('manage.teams')">
+                    {{ __('Project Teams') }}
+                </x-responsive-nav-link>
+                
+                <x-responsive-nav-link href="{{ route('manage.subcontractors') }}" :active="request()->routeIs('manage.subcontractors')">
                     {{ __('Subcontractors') }}
                 </x-responsive-nav-link>
                 

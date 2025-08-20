@@ -17,12 +17,6 @@
     <!-- Flash Messages -->
     <x-atomic.atoms.feedback.flash-message type="success" :message="session('message')" />
     
-    <!-- Debug Modal State -->
-    @if(app()->environment('local'))
-        <div class="mb-4 p-2 bg-yellow-100 text-xs">
-            Debug: showModal = {{ $showModal ? 'true' : 'false' }}, editingSubcontractor = {{ $editingSubcontractor ? $editingSubcontractor->id : 'null' }}
-        </div>
-    @endif
 
     <!-- Filter Panel -->
     <x-atomic.organisms.filters.filter-panel>
@@ -52,6 +46,16 @@
                     <span class="ml-2 text-sm text-gray-600">Show deleted</span>
                 </label>
             </x-atomic.molecules.forms.form-field-group>
+            
+            <!-- Per Page Selection -->
+            <x-atomic.molecules.forms.form-field-group label="Per Page">
+                <x-atomic.atoms.forms.form-select wire:model.live="perPage">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </x-atomic.atoms.forms.form-select>
+            </x-atomic.molecules.forms.form-field-group>
         </x-slot>
 
         <x-slot name="actions">
@@ -69,15 +73,41 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Comment</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" wire:click="sortBy('name')">
+                            <div class="flex items-center space-x-1">
+                                <span>Name</span>
+                                @if($sortField === 'name')
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        @if($sortDirection === 'asc')
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        @else
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        @endif
+                                    </svg>
+                                @endif
+                            </div>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell cursor-pointer hover:bg-gray-100" wire:click="sortBy('comment')">
+                            <div class="flex items-center space-x-1">
+                                <span>Comment</span>
+                                @if($sortField === 'comment')
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        @if($sortDirection === 'asc')
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        @else
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        @endif
+                                    </svg>
+                                @endif
+                            </div>
+                        </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Parent Companies</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacts</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($subcontractors as $subcontractor)
+                    @forelse($subcontractors->items() as $subcontractor)
                         <tr class="{{ $subcontractor->trashed() ? 'bg-red-50' : 'hover:bg-gray-50' }} transition-colors duration-150">
                             <td class="px-6 py-4">
                                 <div class="flex flex-col">
@@ -152,6 +182,11 @@
                 </tbody>
             </table>
         </div>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="mt-6">
+        {{ $subcontractors->links() }}
     </div>
 
     <!-- Create/Edit Modal -->

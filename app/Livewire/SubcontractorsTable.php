@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
+use App\Livewire\Base\DataTable;
 use Livewire\Attributes\Validate;
 use App\Models\Subcontractor;
 use App\Services\CachedDataService;
@@ -55,16 +55,19 @@ class SubcontractorForm extends Form
     }
 }
 
-class SubcontractorsTable extends Component
+class SubcontractorsTable extends DataTable
 {
     public SubcontractorForm $form;
+    
+    // Override default sort to use name instead of id
+    public $sortField = 'name';
+    public $sortDirection = 'asc';
     
     public $showModal = false;
     public $editingSubcontractor = null;
     public $showDeleted = false;
     
-    // Search and filtering
-    public $search = '';
+    // Additional filters (search is inherited from DataTable)
     public $commentFilter = '';
 
     public function openCreateModal()
@@ -75,15 +78,10 @@ class SubcontractorsTable extends Component
 
     public function openEditModal($id)
     {
-        logger("Edit method called with ID: $id");
         $this->resetModal();
         $this->editingSubcontractor = Subcontractor::findOrFail($id);
         $this->form->setSubcontractor($this->editingSubcontractor);
         $this->showModal = true;
-        logger("Modal should be open now: " . ($this->showModal ? 'true' : 'false'));
-        
-        // Force a refresh to ensure modal state is updated
-        $this->dispatch('modal-updated');
     }
 
     public function closeModal()
@@ -136,29 +134,47 @@ class SubcontractorsTable extends Component
     
     public function clearFilters()
     {
-        $this->search = '';
+        parent::clearFilters();
         $this->commentFilter = '';
         $this->showDeleted = false;
     }
 
-    public function render()
+    protected function getQuery()
     {
-        $subcontractorsQuery = $this->showDeleted ? Subcontractor::withTrashed() : Subcontractor::query();
-        
-        // Apply search filter
-        if ($this->search) {
-            $subcontractorsQuery->where(function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('comment', 'like', '%' . $this->search . '%');
-            });
-        }
+        $query = $this->showDeleted ? Subcontractor::withTrashed() : Subcontractor::query();
         
         // Apply comment filter
         if ($this->commentFilter) {
-            $subcontractorsQuery->where('comment', 'like', '%' . $this->commentFilter . '%');
+            $query->where('comment', 'like', '%' . $this->commentFilter . '%');
         }
         
-        // Get all subcontractors from cache
+        return $query->with('parents', 'contacts');
+    }
+    
+    protected function getModelClass()
+    {
+        return Subcontractor::class;
+    }
+    
+    protected function getColumns()
+    {
+        return [
+            'name' => 'Name',
+            'comment' => 'Comment',
+            'parents' => 'Parent Companies',
+            'contacts' => 'Contacts',
+            'actions' => 'Actions'
+        ];
+    }
+    
+    protected function getSearchableColumns()
+    {
+        return ['name', 'comment'];
+    }
+
+    public function render()
+    {
+        // Get all subcontractors from cache for parent selection
         $cachedSubcontractors = CachedDataService::getSubcontractors();
         
         // Filter out the current edit ID if editing
@@ -167,7 +183,7 @@ class SubcontractorsTable extends Component
             : $cachedSubcontractors;
         
         return view('livewire.subcontractors-table', [
-            'subcontractors' => $subcontractorsQuery->with('parents', 'contacts')->orderBy('name')->get(),
+            'subcontractors' => $this->getTableData(),
             'availableParents' => $availableParents
         ])->layout('layouts.app');
     }

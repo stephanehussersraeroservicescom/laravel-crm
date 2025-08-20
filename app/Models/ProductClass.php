@@ -36,10 +36,6 @@ class ProductClass extends Model
         return $this->hasMany(PriceList::class, 'root_code', 'root_code');
     }
 
-    public function stockedProducts()
-    {
-        return $this->hasMany(StockedProduct::class, 'root_code', 'root_code');
-    }
 
     /**
      * Get all individual products for this product class

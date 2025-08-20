@@ -10,7 +10,6 @@ use App\Models\Subcontractor;
 use App\Models\QuoteLine;
 use App\Models\ProductClass;
 // ProductSeriesMapping removed - series are now handled differently
-use App\Models\StockedProduct;
 use App\Models\ContractPrice;
 use App\Services\SimplifiedImportService;
 use App\Services\ProductParserService;
@@ -280,15 +279,6 @@ class QuoteEditForm extends Component
         if (preg_match('/(\d+)\.part_number/', $property, $matches)) {
             $index = $matches[1];
             $partNumber = $value;
-            
-            // Check if this is a stocked product
-            $stockedProduct = StockedProduct::where('full_part_number', $partNumber)->first();
-            if ($stockedProduct) {
-                // Update MOQ and lead time for stocked items - all stocked items have 5 LY MOQ
-                $this->quote_lines[$index]['moq'] = 5;
-                $this->quote_lines[$index]['lead_time'] = 'Stocked';
-                $this->quote_lines[$index]['notes'] = 'Stocked item - MOQ: 5 LY';
-            }
             
             // Check for contract pricing for specific part numbers
             $customerIdentifier = $this->quote->company_name ?: $this->quote->contact_name;

@@ -10,7 +10,6 @@ use App\Models\Product;
 use App\Models\QuoteLine;
 use App\Models\ProductClass;
 // ProductSeriesMapping removed - series are now handled differently
-use App\Models\StockedProduct;
 use App\Models\ContractPrice;
 use App\Services\SimplifiedImportService;
 use App\Services\ProductParserService;
@@ -527,15 +526,6 @@ class EnhancedQuoteForm extends Component
                 } else {
                     // Try to auto-detect product class from part number prefix
                     $this->autoDetectProductClass($index, $partNumber);
-                }
-                
-                // Check if this is a stocked product
-                $stockedProduct = StockedProduct::where('full_part_number', $partNumber)->first();
-                if ($stockedProduct) {
-                    // Update MOQ and lead time for stocked items - all stocked items have 5 LY MOQ
-                    $this->quote_lines[$index]['moq'] = 5;
-                    $this->quote_lines[$index]['lead_time'] = 'Stocked';
-                    $this->quote_lines[$index]['notes'] = 'Stocked item - MOQ: 5 LY';
                 }
                 
                 // Apply contract pricing

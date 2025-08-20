@@ -2,7 +2,7 @@
 
 - good commit , push
 
-## August 20, 2025 - Database Cleanup (Contract Pricing & Products)
+## August 20, 2025 - Database Cleanup (Contract Pricing, Products & Inventory)
 
 ### IMPORTANT: Contract Pricing Data Structure
 - **ACTIVE TABLE:** `contract_prices` - This is the only contract pricing table in use
@@ -15,6 +15,7 @@
 - **ACTIVE TABLE:** `products` - This is the only products table in use
 - **REMOVED:** `part_numbers` table was obsolete and has been dropped
 - **REMOVED:** `product_templates` table was obsolete and has been dropped
+- **REMOVED:** `stocked_products` table - No inventory management needed
 - **Entry Point:** Database Manager → Products (`/database-manager/products`)
 - **Model:** `App\Models\Product`
 - **Component:** `Livewire\DatabaseManager\ProductTable`
@@ -30,10 +31,16 @@
    - Removed unused `part_number_id` column from quote_lines table
    - Quote lines use `part_number` string field instead of foreign key
 
+3. **Inventory:** Removed `stocked_products` table
+   - System doesn't manage inventory, so "stocked" concept was unnecessary
+   - Products needing shorter lead times or lower MOQ can have those set directly
+   - Removed automatic "Stocked" lead time and MOQ 5 logic from quote forms
+
 ### Active Structure Summary
 - **Products Management:** `products` table → Product model → Database Manager UI
 - **Contract Pricing:** `contract_prices` table → ContractPrice model → Database Manager UI
 - **Quote Lines:** Use string `part_number` field, not foreign key relationships
+- **Lead Times & MOQ:** Set directly on products/product classes, no special "stocked" status
 
 ## August 18, 2025 - PDF and Database Enhancements
 

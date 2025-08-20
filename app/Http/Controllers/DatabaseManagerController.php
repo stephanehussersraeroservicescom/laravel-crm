@@ -7,7 +7,6 @@ use App\Models\ProductClass;
 use App\Models\ProductSeriesMapping;
 use App\Models\PriceList;
 use App\Models\ContractPrice;
-use App\Models\StockedProduct;
 use App\Models\Airline;
 use Illuminate\Http\Request;
 
@@ -49,10 +48,6 @@ class DatabaseManagerController extends Controller
         return view('database-manager.contract-prices');
     }
 
-    public function stockedProducts()
-    {
-        return view('database-manager.stocked-products');
-    }
 
     public function airlines()
     {

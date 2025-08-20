@@ -73,6 +73,7 @@
                                 <a href="{{ route('database-manager.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.index') ? 'bg-gray-100' : '' }}">Overview</a>
                                 <div class="border-t border-gray-100 my-1"></div>
                                 <a href="{{ route('database-manager.customers') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.customers') ? 'bg-gray-100' : '' }}">Customers</a>
+                                <a href="{{ route('database-manager.products') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.products') ? 'bg-gray-100' : '' }}">Products</a>
                                 <a href="{{ route('database-manager.product-classes') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.product-classes') ? 'bg-gray-100' : '' }}">Product Classes</a>
                                 <a href="{{ route('database-manager.contract-prices') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.contract-prices') ? 'bg-gray-100' : '' }}">Contract Prices</a>
                             </div>
@@ -249,6 +250,40 @@
                 
                 <x-responsive-nav-link href="{{ route('forecasting.analytics') }}" :active="request()->routeIs('forecasting.analytics')">
                     {{ __('Analytics') }}
+                </x-responsive-nav-link>
+            </div>
+            
+            <!-- Quotes Section -->
+            <div class="border-t border-gray-200 pt-2">
+                <x-responsive-nav-link href="{{ route('quotes.index') }}" :active="request()->routeIs('quotes.*')">
+                    {{ __('Quotes') }}
+                </x-responsive-nav-link>
+            </div>
+            
+            <!-- Database Manager Section -->
+            <div class="border-t border-gray-200 pt-2">
+                <div class="block px-4 py-2 text-xs text-gray-400">
+                    {{ __('Database Manager') }}
+                </div>
+                
+                <x-responsive-nav-link href="{{ route('database-manager.index') }}" :active="request()->routeIs('database-manager.index')">
+                    {{ __('Overview') }}
+                </x-responsive-nav-link>
+                
+                <x-responsive-nav-link href="{{ route('database-manager.customers') }}" :active="request()->routeIs('database-manager.customers')">
+                    {{ __('Customers') }}
+                </x-responsive-nav-link>
+                
+                <x-responsive-nav-link href="{{ route('database-manager.products') }}" :active="request()->routeIs('database-manager.products')">
+                    {{ __('Products') }}
+                </x-responsive-nav-link>
+                
+                <x-responsive-nav-link href="{{ route('database-manager.product-classes') }}" :active="request()->routeIs('database-manager.product-classes')">
+                    {{ __('Product Classes') }}
+                </x-responsive-nav-link>
+                
+                <x-responsive-nav-link href="{{ route('database-manager.contract-prices') }}" :active="request()->routeIs('database-manager.contract-prices')">
+                    {{ __('Contract Prices') }}
                 </x-responsive-nav-link>
             </div>
         </div>

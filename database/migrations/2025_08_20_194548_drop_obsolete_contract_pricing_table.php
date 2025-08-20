@@ -11,6 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Drop the obsolete contract_pricing table
+        // This table was created but never used - contract_prices table is the active one
+        Schema::dropIfExists('contract_pricing');
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        // Recreate the table if rolling back
         Schema::create('contract_pricing', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained('customers');
@@ -32,13 +43,5 @@ return new class extends Migration
             $table->index(['product_class_id', 'is_active']);
             $table->index(['effective_date', 'expiry_date']);
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('contract_pricing');
     }
 };

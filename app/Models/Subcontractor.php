@@ -10,7 +10,15 @@ class Subcontractor extends Model
 {
     use HasFactory, SoftDeletes;
     
-    protected $fillable = ['name', 'comment'];
+    protected $fillable = [
+        'name', 
+        'contact_name',
+        'email',
+        'phone',
+        'address',
+        'payment_terms',
+        'comment'
+    ];
 
     public function children()
     {

@@ -5,6 +5,8 @@ namespace App\Livewire;
 use App\Models\Airline;
 use App\Models\Quote;
 use App\Models\Customer;
+use App\Models\ExternalCustomer;
+use App\Models\Subcontractor;
 use App\Models\QuoteLine;
 use App\Models\ProductClass;
 // ProductSeriesMapping removed - series are now handled differently
@@ -81,18 +83,48 @@ class QuoteEditForm extends Component
     
     protected function loadQuoteData()
     {
-        // Load customer information
-        $this->company_name = $this->quote->customer->company_name;
-        $this->contact_name = $this->quote->customer->contact_name;
-        $this->email = $this->quote->customer->email ?? '';
-        $this->phone = $this->quote->customer->phone ?? '';
-        $this->is_subcontractor = $this->quote->customer->is_subcontractor ?? false;
-        $this->contact_search = $this->company_name . ' - ' . $this->contact_name;
+        // Load customer information based on customer type
+        if ($this->quote->customer) {
+            $customer = $this->quote->customer;
+            
+            // Handle different customer types
+            if ($customer instanceof Customer) {
+                // Regular Customer model
+                $this->company_name = $customer->company_name ?? '';
+                $this->contact_name = $customer->contact_name ?? '';
+                $this->email = $customer->email ?? '';
+                $this->phone = $customer->phone ?? '';
+                $this->is_subcontractor = $customer->is_subcontractor ?? false;
+            } elseif ($customer instanceof ExternalCustomer) {
+                // ExternalCustomer model
+                $this->company_name = $customer->name ?? '';
+                $this->contact_name = $customer->contact_name ?? '';
+                $this->email = $customer->email ?? '';
+                $this->phone = $customer->phone ?? '';
+                $this->is_subcontractor = false;
+            } elseif ($customer instanceof Airline) {
+                // Airline as customer
+                $this->company_name = $customer->name ?? '';
+                $this->contact_name = ''; // Airlines don't have contact_name
+                $this->email = '';
+                $this->phone = '';
+                $this->is_subcontractor = false;
+            } elseif ($customer instanceof Subcontractor) {
+                // Subcontractor as customer
+                $this->company_name = $customer->name ?? '';
+                $this->contact_name = $customer->contact_name ?? '';
+                $this->email = $customer->email ?? '';
+                $this->phone = $customer->phone ?? '';
+                $this->is_subcontractor = true;
+            }
+            
+            $this->contact_search = trim($this->company_name . ' - ' . $this->contact_name, ' - ');
+        }
         
         // Load quote information
         $this->airline_id = $this->quote->airline_id ?? '';
-        $this->date_entry = $this->quote->date_entry;
-        $this->date_valid = $this->quote->date_valid;
+        $this->date_entry = $this->quote->date_entry ? $this->quote->date_entry->format('Y-m-d') : '';
+        $this->date_valid = $this->quote->date_valid ? $this->quote->date_valid->format('Y-m-d') : '';
         $this->shipping_terms = $this->quote->shipping_terms ?? '';
         $this->payment_terms = $this->quote->payment_terms ?? '';
         $this->comments = $this->quote->comments ?? '';
@@ -182,6 +214,12 @@ class QuoteEditForm extends Component
             $this->quote_lines[$index]['description'] = $root->description; // This stays fixed
             $this->quote_lines[$index]['moq'] = $root->moq_ly;
             $this->quote_lines[$index]['lead_time'] = $root->lead_time_weeks;
+            
+            // Only set quantity to MOQ for NEW lines (quantity = 1 means it's a new line)
+            // Existing lines should preserve their original quantity
+            if ($this->quote_lines[$index]['quantity'] == 1) {
+                $this->quote_lines[$index]['quantity'] = $root->moq_ly;
+            }
             
             // Get pricing information directly from root without parsing
             $pricingResult = $this->getRootPricing($root);
@@ -343,14 +381,35 @@ class QuoteEditForm extends Component
         ]);
 
         try {
-            // Update customer
-            $this->quote->customer->update([
-                'company_name' => $this->company_name,
-                'contact_name' => $this->contact_name,
-                'email' => $this->email,
-                'phone' => $this->phone,
-                'is_subcontractor' => $this->is_subcontractor,
-            ]);
+            // Update customer based on type
+            if ($this->quote->customer) {
+                $customer = $this->quote->customer;
+                
+                if ($customer instanceof Customer) {
+                    $customer->update([
+                        'company_name' => $this->company_name,
+                        'contact_name' => $this->contact_name,
+                        'email' => $this->email,
+                        'phone' => $this->phone,
+                        'is_subcontractor' => $this->is_subcontractor,
+                    ]);
+                } elseif ($customer instanceof ExternalCustomer) {
+                    $customer->update([
+                        'name' => $this->company_name,
+                        'contact_name' => $this->contact_name,
+                        'email' => $this->email,
+                        'phone' => $this->phone,
+                    ]);
+                } elseif ($customer instanceof Subcontractor) {
+                    $customer->update([
+                        'name' => $this->company_name,
+                        'contact_name' => $this->contact_name,
+                        'email' => $this->email,
+                        'phone' => $this->phone,
+                    ]);
+                }
+                // Note: Airlines typically don't get updated from quote edit
+            }
 
             // Update quote
             $this->quote->update([

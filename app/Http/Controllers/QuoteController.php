@@ -33,7 +33,7 @@ class QuoteController extends Controller
     {
         $airlines = Airline::orderBy('name')->get();
         $contacts = Customer::orderBy('company_name')->orderBy('contact_name')->get();
-        $quote->load('quoteLines');
+        $quote->load(['quoteLines', 'customer']);
         
         return view('quotes.edit', compact('quote', 'airlines', 'contacts'));
     }

@@ -2,6 +2,28 @@
 
 - good commit , push
 
+## August 20, 2025 - Contract Pricing Cleanup
+
+### IMPORTANT: Contract Pricing Data Structure
+- **ACTIVE TABLE:** `contract_prices` - This is the only contract pricing table in use
+- **REMOVED:** `contract_pricing` table was obsolete and has been dropped
+- **Entry Point:** Database Manager → Contract Prices (`/database-manager/contract-prices`)
+- **Model:** `App\Models\ContractPrice`
+- **Component:** `Livewire\DatabaseManager\ContractPriceTable`
+
+### Why This Cleanup Was Done
+- Found two tables: `contract_prices` and `contract_pricing`
+- `contract_pricing` was created via migration but never implemented (no model, no UI, no references)
+- `contract_prices` is fully implemented with model, UI, and active usage in quotes
+- Removed confusion by dropping the unused table
+
+### Contract Prices Structure (Active)
+- Uses `customer_identifier` (string) instead of foreign key for flexibility
+- Supports pricing by: part number, root code, airline, or combinations
+- Prices stored in cents (integer) for precision
+- Date range validation with `valid_from` and `valid_to`
+- Used by quote forms for automatic pricing lookups
+
 ## August 18, 2025 - PDF and Database Enhancements
 
 ### PDF Table Improvements

@@ -192,7 +192,6 @@ class EnhancedQuoteForm extends Component
 
     public function selectRoot($index, $rootCode, $hasInkResist = false, $isBio = false)
     {
-        \Log::info('selectRoot called', ['index' => $index, 'rootCode' => $rootCode, 'hasInkResist' => $hasInkResist, 'isBio' => $isBio]);
         $this->productClassSelected($index, $rootCode, $hasInkResist, $isBio);
         $this->show_root_dropdowns[$index] = false;
     }
@@ -372,15 +371,19 @@ class EnhancedQuoteForm extends Component
         $this->mergeField($index, 'unit', null, $productClass?->uom);
         $this->mergeField($index, 'lead_time', null, $productClass?->lead_time_weeks);
         
+        // Set quantity to MOQ if it's at the default value (for new quote creation)
+        if ($productClass && !$this->isFieldDirty($index, 'quantity')) {
+            $currentQty = $this->quote_lines[$index]['quantity'] ?? null;
+            // Set to MOQ if quantity is empty or still at default value of 1
+            if (empty($currentQty) || $currentQty == 1) {
+                $this->quote_lines[$index]['quantity'] = $productClass->moq_ly;
+            }
+        }
+        
         // For pricing, use ProductClass pricing logic with fallbacks
         if ($productClass && !$this->isFieldDirty($index, 'standard_price')) {
             $pricingResult = $this->getRootPricing($productClass, $product?->part_number);
             
-            \Log::info('Pricing debug', [
-                'productClass' => $productClass->root_code,
-                'pricingResult' => $pricingResult,
-                'productClass_price' => $productClass->price ?? 'null'
-            ]);
             
             // If no price found from pricing logic, try ProductClass price or Product price as fallbacks
             if ($pricingResult['price'] == 0) {
@@ -398,10 +401,6 @@ class EnhancedQuoteForm extends Component
             }
         }
         
-        // Set quantity to 1 only if empty and not dirty
-        if (empty($this->quote_lines[$index]['quantity']) && !$this->isFieldDirty($index, 'quantity')) {
-            $this->quote_lines[$index]['quantity'] = 1;
-        }
         
         // Update UI fields
         if ($productClass) {

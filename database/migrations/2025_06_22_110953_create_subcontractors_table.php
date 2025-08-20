@@ -14,6 +14,11 @@ return new class extends Migration
         Schema::create('subcontractors', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
+            $table->string('contact_name')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            $table->text('address')->nullable();
+            $table->string('payment_terms')->nullable();
             $table->text('comment')->nullable();
             $table->softDeletes();
             $table->timestamps();

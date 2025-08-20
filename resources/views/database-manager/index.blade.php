@@ -14,17 +14,8 @@
                         <p class="text-gray-600">Manage quote-related database tables with inline editing capabilities.</p>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Core Quote Tables -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <h4 class="text-lg font-semibold text-blue-800 mb-3">Core Tables</h4>
-                            <div class="space-y-2">
-                                <a href="{{ route('database-manager.customers') }}" 
-                                   class="block px-3 py-2 bg-white border border-blue-300 rounded text-blue-700 hover:bg-blue-100 transition">
-                                    Customers
-                                </a>
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
 
                         <!-- Product Tables -->
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4">

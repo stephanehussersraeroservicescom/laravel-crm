@@ -12,8 +12,8 @@ trait HasPricingCalculations
     {
         // First check for contract pricing
         $contractPrice = ContractPrice::where('product_class_id', $root->id)
-            ->where('customer_type', $this->customer_type)
-            ->where('customer_id', $this->customer_id)
+            ->where('customer_type', $this->customer_type ?? null)
+            ->where('customer_id', $this->customer_id ?? null)
             ->first();
 
         if ($contractPrice) {
@@ -38,8 +38,8 @@ trait HasPricingCalculations
     {
         // Check for contract pricing on specific product
         $contractPrice = ContractPrice::where('product_id', $product->id)
-            ->where('customer_type', $this->customer_type)
-            ->where('customer_id', $this->customer_id)
+            ->where('customer_type', $this->customer_type ?? null)
+            ->where('customer_id', $this->customer_id ?? null)
             ->first();
 
         if ($contractPrice) {
@@ -72,8 +72,10 @@ trait HasPricingCalculations
     {
         $total = 0;
         
-        foreach ($this->quantities as $index => $quantity) {
-            $total += $this->calculateLineTotal($index);
+        if (isset($this->quantities)) {
+            foreach ($this->quantities as $index => $quantity) {
+                $total += $this->calculateLineTotal($index);
+            }
         }
         
         return round($total, 2);
@@ -95,13 +97,21 @@ trait HasPricingCalculations
             $productClass = ProductClass::find($this->selected_product_classes[$index]);
             if ($productClass) {
                 $pricing = $this->getRootPricing($productClass);
+            } else {
+                return;
             }
         } else {
             return;
         }
 
-        $this->prices[$index] = $pricing['price'];
-        $this->moqs[$index] = $pricing['moq'];
-        $this->lead_times[$index] = $pricing['lead_time'];
+        if (isset($this->prices[$index])) {
+            $this->prices[$index] = $pricing['price'];
+        }
+        if (isset($this->moqs[$index])) {
+            $this->moqs[$index] = $pricing['moq'];
+        }
+        if (isset($this->lead_times[$index])) {
+            $this->lead_times[$index] = $pricing['lead_time'];
+        }
     }
 }

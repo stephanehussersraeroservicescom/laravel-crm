@@ -92,8 +92,6 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->prefix('database-manager')->name('database-manager.')->group(function () {
     Route::get('/', [DatabaseManagerController::class, 'index'])
         ->name('index');
-    Route::get('/customers', [DatabaseManagerController::class, 'customers'])
-        ->name('customers');
         
     Route::get('/product-classes', [DatabaseManagerController::class, 'productClasses'])
         ->name('product-classes');

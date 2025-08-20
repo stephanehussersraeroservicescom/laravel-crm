@@ -18,6 +18,8 @@ use Livewire\Component;
 class EnhancedQuoteForm extends Component
 {
     public $airlines;
+    public $subcontractors;
+    public $externalCustomers;
     public $productRoots;
     
     // Quote fields
@@ -86,9 +88,11 @@ class EnhancedQuoteForm extends Component
         return $this->parserService;
     }
 
-    public function mount($airlines = null)
+    public function mount($airlines = null, $subcontractors = null, $externalCustomers = null)
     {
         $this->airlines = $airlines ?? Airline::orderBy('name')->get();
+        $this->subcontractors = $subcontractors ?? Subcontractor::orderBy('name')->get();
+        $this->externalCustomers = $externalCustomers ?? ExternalCustomer::orderBy('name')->get();
         $this->productRoots = ProductClass::orderBy('root_code')->get();
         $this->date_entry = now()->format('Y-m-d');
         $this->date_valid = now()->addMonth()->format('Y-m-d'); // Default to 1 month validity

@@ -37,6 +37,10 @@ return new class extends Migration
             $table->boolean('is_custom_item')->default(false);
             
             $table->integer('moq')->default(1); // Minimum Order Quantity
+            $table->boolean('moq_waived')->default(false);
+            $table->string('moq_waiver_reason')->nullable();
+            $table->integer('contract_price')->nullable();
+            $table->string('pricing_reference')->nullable();
             $table->string('lead_time')->nullable();
             $table->text('notes')->nullable();
             $table->integer('sort_order')->default(0);

@@ -25,9 +25,6 @@ return new class extends Migration
         // Step 3: Drop the obsolete part_numbers table
         // This table was superseded by the products table which has active implementation
         Schema::dropIfExists('part_numbers');
-        
-        // Also drop the product_templates table if it exists (appears unused)
-        Schema::dropIfExists('product_templates');
     }
 
     /**

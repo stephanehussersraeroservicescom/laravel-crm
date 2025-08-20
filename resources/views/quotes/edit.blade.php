@@ -17,7 +17,12 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @livewire('quote-edit-form', ['quote' => $quote, 'airlines' => $airlines])
+            @livewire('quote-edit-form', [
+                'quote' => $quote, 
+                'airlines' => $airlines, 
+                'subcontractors' => $subcontractors, 
+                'externalCustomers' => $externalCustomers
+            ])
         </div>
     </div>
 </x-app-layout>

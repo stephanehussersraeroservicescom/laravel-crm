@@ -73,7 +73,6 @@
                             <div class="py-1">
                                 <a href="{{ route('database-manager.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.index') ? 'bg-gray-100' : '' }}">Overview</a>
                                 <div class="border-t border-gray-100 my-1"></div>
-                                <a href="{{ route('database-manager.customers') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.customers') ? 'bg-gray-100' : '' }}">Customers</a>
                                 <a href="{{ route('database-manager.products') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.products') ? 'bg-gray-100' : '' }}">Products</a>
                                 <a href="{{ route('database-manager.product-classes') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.product-classes') ? 'bg-gray-100' : '' }}">Product Classes</a>
                                 <a href="{{ route('database-manager.contract-prices') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ request()->routeIs('database-manager.contract-prices') ? 'bg-gray-100' : '' }}">Contract Prices</a>
@@ -275,9 +274,6 @@
                     {{ __('Overview') }}
                 </x-responsive-nav-link>
                 
-                <x-responsive-nav-link href="{{ route('database-manager.customers') }}" :active="request()->routeIs('database-manager.customers')">
-                    {{ __('Customers') }}
-                </x-responsive-nav-link>
                 
                 <x-responsive-nav-link href="{{ route('database-manager.products') }}" :active="request()->routeIs('database-manager.products')">
                     {{ __('Products') }}

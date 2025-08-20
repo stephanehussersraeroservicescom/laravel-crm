@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Quote;
-use App\Models\Customer;
 use App\Models\Airline;
+use App\Models\Subcontractor;
+use App\Models\ExternalCustomer;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -18,29 +19,31 @@ class QuoteController extends Controller
     public function create()
     {
         $airlines = Airline::orderBy('name')->get();
-        $contacts = Customer::orderBy('company_name')->orderBy('contact_name')->get();
+        $subcontractors = Subcontractor::orderBy('name')->get();
+        $externalCustomers = ExternalCustomer::orderBy('name')->get();
         
-        return view('quotes.create', compact('airlines', 'contacts'));
+        return view('quotes.create', compact('airlines', 'subcontractors', 'externalCustomers'));
     }
 
     public function show(Quote $quote)
     {
-        $quote->load(['quoteLines', 'customer', 'user']);
+        $quote->load(['quoteLines', 'user']);
         return view('quotes.show', compact('quote'));
     }
 
     public function edit(Quote $quote)
     {
         $airlines = Airline::orderBy('name')->get();
-        $contacts = Customer::orderBy('company_name')->orderBy('contact_name')->get();
-        $quote->load(['quoteLines', 'customer']);
+        $subcontractors = Subcontractor::orderBy('name')->get();
+        $externalCustomers = ExternalCustomer::orderBy('name')->get();
+        $quote->load(['quoteLines']);
         
-        return view('quotes.edit', compact('quote', 'airlines', 'contacts'));
+        return view('quotes.edit', compact('quote', 'airlines', 'subcontractors', 'externalCustomers'));
     }
 
     public function preview(Quote $quote)
     {
-        $quote->load(['quoteLines.productRoot', 'customer', 'user']);
+        $quote->load(['quoteLines', 'user']);
         
         $pdf = Pdf::loadView('quotes.pdf', compact('quote'));
         $pdf->setPaper('A4', 'portrait');
@@ -50,7 +53,7 @@ class QuoteController extends Controller
     
     public function download(Quote $quote)
     {
-        $quote->load(['quoteLines.productRoot', 'customer', 'user']);
+        $quote->load(['quoteLines', 'user']);
         
         $pdf = Pdf::loadView('quotes.pdf', compact('quote'));
         $pdf->setPaper('A4', 'portrait');

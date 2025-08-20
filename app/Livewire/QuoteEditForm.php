@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Models\Airline;
 use App\Models\Quote;
-use App\Models\Customer;
 use App\Models\ExternalCustomer;
 use App\Models\Subcontractor;
 use App\Models\QuoteLine;
@@ -19,6 +18,8 @@ class QuoteEditForm extends Component
 {
     public $quote;
     public $airlines;
+    public $subcontractors;
+    public $externalCustomers;
     public $productRoots;
     
     // Quote fields
@@ -70,10 +71,12 @@ class QuoteEditForm extends Component
         return $this->parserService;
     }
 
-    public function mount(Quote $quote, $airlines = null)
+    public function mount(Quote $quote, $airlines = null, $subcontractors = null, $externalCustomers = null)
     {
         $this->quote = $quote;
         $this->airlines = $airlines ?? Airline::orderBy('name')->get();
+        $this->subcontractors = $subcontractors ?? Subcontractor::orderBy('name')->get();
+        $this->externalCustomers = $externalCustomers ?? ExternalCustomer::orderBy('name')->get();
         $this->productRoots = ProductClass::orderBy('root_code')->get();
         
         // Load quote data
@@ -169,24 +172,62 @@ class QuoteEditForm extends Component
     public function updatedContactSearch()
     {
         if (strlen($this->contact_search) > 1) {
-            $this->filtered_contacts = Customer::search($this->contact_search)->take(10)->get();
+            $airlines = Airline::where('name', 'like', '%' . $this->contact_search . '%')->take(3)->get();
+            $subcontractors = Subcontractor::where('name', 'like', '%' . $this->contact_search . '%')->take(3)->get();
+            $externalCustomers = ExternalCustomer::where('name', 'like', '%' . $this->contact_search . '%')->take(4)->get();
+            
+            $this->filtered_contacts = $airlines->merge($subcontractors)->merge($externalCustomers);
             $this->show_contact_dropdown = true;
         } else {
             $this->show_contact_dropdown = false;
         }
     }
 
-    public function selectContact($contactId)
+    public function selectContact($contactType, $contactId)
     {
-        $contact = Customer::find($contactId);
-        if ($contact) {
-            $this->company_name = $contact->company_name;
-            $this->contact_name = $contact->contact_name;
-            $this->email = $contact->email ?? '';
-            $this->phone = $contact->phone ?? '';
-            $this->is_subcontractor = $contact->is_subcontractor;
-            $this->contact_search = $contact->company_name . ' - ' . $contact->contact_name;
+        $contact = null;
+        
+        switch($contactType) {
+            case 'airline':
+                $contact = Airline::find($contactId);
+                if ($contact) {
+                    $this->customer_type = 'airline';
+                    $this->customer_id = $contactId;
+                    $this->company_name = $contact->name;
+                    $this->contact_name = '';
+                    $this->email = '';
+                    $this->phone = '';
+                    $this->contact_search = $contact->name;
+                }
+                break;
+                
+            case 'subcontractor':
+                $contact = Subcontractor::find($contactId);
+                if ($contact) {
+                    $this->customer_type = 'subcontractor';
+                    $this->customer_id = $contactId;
+                    $this->company_name = $contact->name;
+                    $this->contact_name = $contact->contact_name ?? '';
+                    $this->email = $contact->email ?? '';
+                    $this->phone = $contact->phone ?? '';
+                    $this->contact_search = $contact->name . ($contact->contact_name ? ' - ' . $contact->contact_name : '');
+                }
+                break;
+                
+            case 'external':
+                $contact = ExternalCustomer::find($contactId);
+                if ($contact) {
+                    $this->customer_type = 'external';
+                    $this->customer_id = $contactId;
+                    $this->company_name = $contact->name;
+                    $this->contact_name = $contact->contact_name ?? '';
+                    $this->email = $contact->email ?? '';
+                    $this->phone = $contact->phone ?? '';
+                    $this->contact_search = $contact->name . ($contact->contact_name ? ' - ' . $contact->contact_name : '');
+                }
+                break;
         }
+        
         $this->show_contact_dropdown = false;
     }
 

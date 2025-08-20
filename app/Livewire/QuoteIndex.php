@@ -42,12 +42,10 @@ class QuoteIndex extends Component
 
     public function render()
     {
-        $quotes = Quote::with(['customer', 'airline', 'user'])
+        $quotes = Quote::with(['customer', 'user'])
             ->when($this->search, function ($query) {
-                $query->whereHas('customer', function ($q) {
-                    $q->where('company_name', 'like', '%' . $this->search . '%')
-                      ->orWhere('contact_name', 'like', '%' . $this->search . '%');
-                })->orWhere('quote_number', 'like', '%' . $this->search . '%');
+                $query->where('customer_name', 'like', '%' . $this->search . '%')
+                      ->orWhere('quote_number', 'like', '%' . $this->search . '%');
             })
             ->when($this->status, function ($query) {
                 $query->where('status', $this->status);

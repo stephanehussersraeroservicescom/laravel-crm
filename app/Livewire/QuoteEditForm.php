@@ -6,7 +6,7 @@ use App\Models\Airline;
 use App\Models\Quote;
 use App\Models\Customer;
 use App\Models\QuoteLine;
-use App\Models\ProductRoot;
+use App\Models\ProductClass;
 // ProductSeriesMapping removed - series are now handled differently
 use App\Models\StockedProduct;
 use App\Models\ContractPrice;
@@ -73,7 +73,7 @@ class QuoteEditForm extends Component
     {
         $this->quote = $quote;
         $this->airlines = $airlines ?? Airline::orderBy('name')->get();
-        $this->productRoots = ProductRoot::orderBy('root_code')->get();
+        $this->productRoots = ProductClass::orderBy('root_code')->get();
         
         // Load quote data
         $this->loadQuoteData();
@@ -174,7 +174,7 @@ class QuoteEditForm extends Component
 
     public function selectRoot($index, $rootCode)
     {
-        $root = ProductRoot::find($rootCode);
+        $root = ProductClass::find($rootCode);
         if ($root) {
             // Auto-fill all default information
             $this->quote_lines[$index]['root_code'] = $root->root_code;
@@ -201,7 +201,7 @@ class QuoteEditForm extends Component
         $this->show_root_dropdowns[$index] = false;
     }
     
-    private function getRootPricing(ProductRoot $root, $partNumber = null)
+    private function getRootPricing(ProductClass $root, $partNumber = null)
     {
         // First, check for contract pricing
         $customerIdentifier = $this->quote->company_name ?: $this->quote->contact_name;

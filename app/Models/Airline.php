@@ -48,4 +48,12 @@ class Airline extends Model
     {
         return $this->hasMany(AircraftSeatConfiguration::class);
     }
+
+    /**
+     * Get all quotes for this airline
+     */
+    public function quotes()
+    {
+        return $this->morphMany(Quote::class, 'customer');
+    }
 }

@@ -55,4 +55,11 @@ class Subcontractor extends Model
                    ->withTimestamps();
     }
 
+    /**
+     * Get all quotes for this subcontractor
+     */
+    public function quotes()
+    {
+        return $this->morphMany(Quote::class, 'customer');
+    }
 }

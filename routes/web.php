@@ -92,14 +92,14 @@ Route::middleware(['auth'])->prefix('database-manager')->name('database-manager.
         ->name('index');
     Route::get('/customers', [App\Http\Controllers\DatabaseManagerController::class, 'customers'])
         ->name('customers');
-    Route::get('/product-roots', [App\Http\Controllers\DatabaseManagerController::class, 'productRoots'])
-        ->name('product-roots');
-    Route::get('/stocked-products', [App\Http\Controllers\DatabaseManagerController::class, 'stockedProducts'])
-        ->name('stocked-products');
+    Route::get('/product-classes', [App\Http\Controllers\DatabaseManagerController::class, 'productClasses'])
+        ->name('product-classes');
+    Route::get('/products', [App\Http\Controllers\DatabaseManagerController::class, 'products'])
+        ->name('products');
     Route::get('/contract-prices', [App\Http\Controllers\DatabaseManagerController::class, 'contractPrices'])
         ->name('contract-prices');
-    Route::get('/stocked-products', [App\Http\Controllers\DatabaseManagerController::class, 'stockedProducts'])
-        ->name('stocked-products');
+    // Route::get('/stocked-products', [App\Http\Controllers\DatabaseManagerController::class, 'stockedProducts'])
+    //     ->name('stocked-products');
     Route::get('/airlines', [App\Http\Controllers\DatabaseManagerController::class, 'airlines'])
         ->name('airlines');
 });

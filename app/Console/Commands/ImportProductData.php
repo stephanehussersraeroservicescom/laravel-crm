@@ -39,7 +39,7 @@ class ImportProductData extends Command
         switch ($type) {
             case 'roots':
                 $this->info('Importing product roots...');
-                $results = $importService->importProductRoots($file);
+                $results = $importService->importProductClasss($file);
                 break;
                 
             case 'series':

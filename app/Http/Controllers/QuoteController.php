@@ -25,7 +25,7 @@ class QuoteController extends Controller
 
     public function show(Quote $quote)
     {
-        $quote->load(['quoteLines', 'customer', 'airline', 'user']);
+        $quote->load(['quoteLines', 'customer', 'user']);
         return view('quotes.show', compact('quote'));
     }
 
@@ -40,7 +40,7 @@ class QuoteController extends Controller
 
     public function preview(Quote $quote)
     {
-        $quote->load(['quoteLines.productRoot', 'customer', 'airline', 'user']);
+        $quote->load(['quoteLines.productRoot', 'customer', 'user']);
         
         $pdf = Pdf::loadView('quotes.pdf', compact('quote'));
         $pdf->setPaper('A4', 'portrait');
@@ -50,7 +50,7 @@ class QuoteController extends Controller
     
     public function download(Quote $quote)
     {
-        $quote->load(['quoteLines.productRoot', 'customer', 'airline', 'user']);
+        $quote->load(['quoteLines.productRoot', 'customer', 'user']);
         
         $pdf = Pdf::loadView('quotes.pdf', compact('quote'));
         $pdf->setPaper('A4', 'portrait');

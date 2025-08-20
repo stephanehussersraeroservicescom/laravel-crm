@@ -12,8 +12,9 @@ class Quote extends Model
 
     protected $fillable = [
         'user_id',
+        'customer_type',
         'customer_id',
-        'airline_id',
+        'customer_name',
         'quote_number',
         'salesperson_code',
         'revision_number',
@@ -30,13 +31,11 @@ class Quote extends Model
         'comments',
         'status',
         'primary_pricing_source',
-        'is_subcontractor',
     ];
 
     protected $casts = [
         'date_entry' => 'date',
         'date_valid' => 'date',
-        'is_subcontractor' => 'boolean',
         'revision_number' => 'integer',
     ];
 
@@ -52,17 +51,31 @@ class Quote extends Model
     public static function generateQuoteNumber()
     {
         $year = date('Y');
-        $lastQuote = self::whereYear('created_at', $year)
-            ->orderBy('id', 'desc')
-            ->first();
         
-        if ($lastQuote && preg_match('/\d{4}-(\d{4})/', $lastQuote->quote_number, $matches)) {
-            $sequence = (int)$matches[1] + 1;
-        } else {
-            $sequence = 1;
-        }
+        // Find the highest sequence number for this year (including soft-deleted records)
+        $maxSequence = self::withTrashed()
+            ->where('quote_number', 'like', $year . '-%')
+            ->selectRaw('MAX(CAST(SUBSTRING(quote_number, 6) AS UNSIGNED)) as max_seq')
+            ->value('max_seq');
         
-        return sprintf('%s-%04d', $year, $sequence);
+        $sequence = ($maxSequence ?? 0) + 1;
+        
+        // Add retry logic for race conditions
+        $attempts = 0;
+        do {
+            $quoteNumber = sprintf('%s-%04d', $year, $sequence);
+            $exists = self::withTrashed()->where('quote_number', $quoteNumber)->exists();
+            
+            if (!$exists) {
+                return $quoteNumber;
+            }
+            
+            $sequence++;
+            $attempts++;
+        } while ($attempts < 100); // Safety limit
+        
+        // Fallback with timestamp if all else fails
+        return sprintf('%s-%04d-%s', $year, $sequence, time());
     }
 
     public function user()
@@ -70,14 +83,47 @@ class Quote extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the customer model (Airline, Subcontractor, or ExternalCustomer)
+     */
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->morphTo();
     }
 
-    public function airline()
+    /**
+     * Helper to get customer display name
+     */
+    public function getCustomerDisplayNameAttribute()
     {
-        return $this->belongsTo(Airline::class);
+        if ($this->customer) {
+            return $this->customer->name ?? $this->customer->company_name ?? 'Unknown';
+        }
+        return $this->customer_name ?? 'Unknown Customer';
+    }
+
+    /**
+     * Check if quote is for an airline
+     */
+    public function isAirlineQuote()
+    {
+        return $this->customer_type === 'App\\Models\\Airline';
+    }
+
+    /**
+     * Check if quote is for a subcontractor
+     */
+    public function isSubcontractorQuote()
+    {
+        return $this->customer_type === 'App\\Models\\Subcontractor';
+    }
+
+    /**
+     * Check if quote is for an external customer
+     */
+    public function isExternalCustomerQuote()
+    {
+        return $this->customer_type === 'App\\Models\\ExternalCustomer';
     }
 
     public function quoteLines()

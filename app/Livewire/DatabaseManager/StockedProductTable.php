@@ -2,7 +2,7 @@
 
 namespace App\Livewire\DatabaseManager;
 
-use App\Models\ProductRoot;
+use App\Models\ProductClass;
 use App\Models\StockedProduct;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -96,7 +96,7 @@ class StockedProductTable extends Component
             ->orderBy('full_part_number')
             ->paginate(15);
 
-        $productRoots = ProductRoot::orderBy('root_code')->get();
+        $productRoots = ProductClass::orderBy('root_code')->get();
 
         return view('livewire.database-manager.stocked-product-table', compact('products', 'productRoots'));
     }

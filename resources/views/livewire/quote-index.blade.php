@@ -63,7 +63,7 @@
                 </x-atomic.atoms.tables.table-header>
                 
                 <x-atomic.atoms.tables.table-header>
-                    Airline
+                    Customer Details
                 </x-atomic.atoms.tables.table-header>
                 
                 <x-atomic.atoms.tables.table-header 
@@ -101,12 +101,16 @@
                 </x-atomic.atoms.tables.table-cell>
                 
                 <x-atomic.atoms.tables.table-cell>
-                    <div class="text-sm text-gray-900">{{ $quote->customer->company_name }}</div>
-                    <div class="text-sm text-gray-500">{{ $quote->customer->contact_name }}</div>
+                    <div class="text-sm text-gray-900">{{ $quote->customer_name }}</div>
+                    <div class="text-sm text-gray-500">
+                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">
+                            {{ str_replace('App\\Models\\', '', $quote->customer_type ?? 'Unknown') }}
+                        </span>
+                    </div>
                 </x-atomic.atoms.tables.table-cell>
                 
                 <x-atomic.atoms.tables.table-cell variant="secondary">
-                    {{ $quote->airline?->name ?? '-' }}
+                    {{ $quote->customer?->name ?? $quote->customer_name }}
                 </x-atomic.atoms.tables.table-cell>
                 
                 <x-atomic.atoms.tables.table-cell variant="secondary">

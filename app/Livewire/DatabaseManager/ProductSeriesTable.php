@@ -2,7 +2,7 @@
 
 namespace App\Livewire\DatabaseManager;
 
-use App\Models\ProductRoot;
+use App\Models\ProductClass;
 use App\Models\ProductSeriesMapping;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -98,7 +98,7 @@ class ProductSeriesTable extends Component
             ->orderBy('series_code')
             ->paginate(15);
 
-        $productRoots = ProductRoot::orderBy('root_code')->get();
+        $productRoots = ProductClass::orderBy('root_code')->get();
 
         return view('livewire.database-manager.product-series-table', compact('series', 'productRoots'));
     }

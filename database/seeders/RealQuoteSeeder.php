@@ -6,6 +6,8 @@ use App\Models\Quote;
 use App\Models\QuoteLine;
 use App\Models\Customer;
 use App\Models\Airline;
+use App\Models\Subcontractor;
+use App\Models\ExternalCustomer;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -19,8 +21,9 @@ class RealQuoteSeeder extends Seeder
         $this->ensureBasicData();
         
         $users = User::all();
-        $customers = Customer::all();
         $airlines = Airline::all();
+        $subcontractors = Subcontractor::all();
+        $externalCustomers = ExternalCustomer::all();
         $products = DB::table('product_classes')->get();
         
         if ($products->isEmpty()) {
@@ -50,31 +53,58 @@ class RealQuoteSeeder extends Seeder
             '.FR',   // Fire retardant
         ];
         
-        // Create 15 sample quotes
+        // Create 15 sample quotes with mixed customer types
         for ($i = 1; $i <= 15; $i++) {
-            $isSubcontractor = rand(0, 1) == 1;
-            $customer = $customers->random();
-            $airline = $airlines->isNotEmpty() ? $airlines->random() : null;
-            
             $assignedUser = $users->random();
+            
+            // Randomly select customer type (40% airline, 35% subcontractor, 25% external)
+            $customerType = rand(1, 100);
+            
+            if ($customerType <= 40 && $airlines->isNotEmpty()) {
+                // Airline customer
+                $customer = $airlines->random();
+                $customerType = 'App\\Models\\Airline';
+                $customerName = $customer->name;
+                $paymentTerms = 'Net 30';
+            } elseif ($customerType <= 75 && $subcontractors->isNotEmpty()) {
+                // Subcontractor customer
+                $customer = $subcontractors->random();
+                $customerType = 'App\\Models\\Subcontractor';
+                $customerName = $customer->name;
+                $paymentTerms = 'Net 30';
+            } else {
+                // External customer
+                $customer = $externalCustomers->isNotEmpty() ? $externalCustomers->random() : null;
+                if (!$customer) {
+                    // Create a quick external customer if none exist
+                    $customer = ExternalCustomer::create([
+                        'name' => 'One-off Customer ' . $i,
+                        'contact_name' => 'Contact Person',
+                        'payment_terms' => 'Pro Forma',
+                    ]);
+                }
+                $customerType = 'App\\Models\\ExternalCustomer';
+                $customerName = $customer->name;
+                $paymentTerms = $customer->payment_terms;
+            }
             
             $quote = Quote::create([
                 'user_id' => $assignedUser->id,
+                'customer_type' => $customerType,
                 'customer_id' => $customer->id,
-                'airline_id' => $airline?->id,
+                'customer_name' => $customerName,
                 'quote_number' => 'Q-2025-' . str_pad($i, 4, '0', STR_PAD_LEFT),
                 'salesperson_code' => $assignedUser->salesperson_code,
                 'date_entry' => Carbon::now()->subDays(rand(1, 30)),
                 'date_valid' => Carbon::now()->addDays(rand(30, 90)),
                 'shipping_terms' => 'Ex Works Dallas Texas',
-                'payment_terms' => $isSubcontractor ? 'Net 30' : 'Pro Forma',
+                'payment_terms' => $paymentTerms,
                 'lead_time_weeks' => rand(6, 16) . '-' . rand(8, 18) . ' weeks',
                 'introduction_text' => 'Thank you for your interest in our premium aircraft interior materials.',
                 'terms_text' => 'Standard terms and conditions apply. All materials meet FAR 25.853 requirements.',
                 'footer_text' => 'We appreciate your business and look forward to working with you.',
                 'comments' => 'Please contact us for any custom requirements.',
                 'status' => ['draft', 'sent', 'accepted'][rand(0, 2)],
-                'is_subcontractor' => $isSubcontractor,
             ]);
             
             // Add quote lines based on product type
@@ -191,23 +221,33 @@ class RealQuoteSeeder extends Seeder
     
     private function ensureBasicData()
     {
-        // Create sample customers if none exist
-        if (Customer::count() == 0) {
-            $customers = [
-                ['company_name' => 'Premier Aircraft Interiors', 'contact_name' => 'John Smith', 
-                 'email' => 'john@premierair.com', 'phone' => '+1-555-0101', 'is_subcontractor' => false, 'payment_terms' => 'Net 30'],
-                ['company_name' => 'Global Aviation Solutions', 'contact_name' => 'Sarah Johnson', 
-                 'email' => 'sarah@globalaviation.com', 'phone' => '+1-555-0102', 'is_subcontractor' => true, 'payment_terms' => 'Net 30'],
-                ['company_name' => 'Luxury Cabin Systems', 'contact_name' => 'Mike Wilson', 
-                 'email' => 'mike@luxurycabin.com', 'phone' => '+1-555-0103', 'is_subcontractor' => false, 'payment_terms' => 'Pro Forma'],
-                ['company_name' => 'Advanced Interior Materials', 'contact_name' => 'Lisa Davis', 
-                 'email' => 'lisa@advancedinterior.com', 'phone' => '+1-555-0104', 'is_subcontractor' => true, 'payment_terms' => 'Net 30'],
-                ['company_name' => 'Executive Jets International', 'contact_name' => 'David Brown', 
-                 'email' => 'david@execjets.com', 'phone' => '+1-555-0105', 'is_subcontractor' => false, 'payment_terms' => 'Pro Forma'],
+        // Create sample external customers if none exist
+        if (ExternalCustomer::count() == 0) {
+            $externalCustomers = [
+                ['name' => 'Premier Aircraft Interiors', 'contact_name' => 'John Smith', 
+                 'email' => 'john@premierair.com', 'phone' => '+1-555-0101', 'payment_terms' => 'Net 30'],
+                ['name' => 'Luxury Cabin Systems', 'contact_name' => 'Mike Wilson', 
+                 'email' => 'mike@luxurycabin.com', 'phone' => '+1-555-0103', 'payment_terms' => 'Pro Forma'],
+                ['name' => 'Executive Jets International', 'contact_name' => 'David Brown', 
+                 'email' => 'david@execjets.com', 'phone' => '+1-555-0105', 'payment_terms' => 'Pro Forma'],
             ];
             
-            foreach ($customers as $customer) {
-                Customer::create($customer);
+            foreach ($externalCustomers as $customer) {
+                ExternalCustomer::create($customer);
+            }
+        }
+        
+        // Create sample subcontractors if none exist
+        if (Subcontractor::count() == 0) {
+            $subcontractors = [
+                ['name' => 'Global Aviation Solutions', 'comment' => 'Large international supplier'],
+                ['name' => 'Advanced Interior Materials', 'comment' => 'Specialized materials provider'],
+                ['name' => 'Precision Aircraft Parts', 'comment' => 'High-precision components'],
+                ['name' => 'Quality Cabin Systems', 'comment' => 'Interior system integrator'],
+            ];
+            
+            foreach ($subcontractors as $subcontractor) {
+                Subcontractor::create($subcontractor);
             }
         }
         

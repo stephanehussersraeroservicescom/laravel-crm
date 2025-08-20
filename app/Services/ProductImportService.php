@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\ProductRoot;
+use App\Models\ProductClass;
 use App\Models\ProductSeriesMapping;
 use App\Models\PriceList;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +13,7 @@ class ProductImportService
     /**
      * Import product roots from CSV
      */
-    public function importProductRoots(string $filePath): array
+    public function importProductClasss(string $filePath): array
     {
         $results = [
             'success' => 0,
@@ -33,7 +33,7 @@ class ProductImportService
                 $data = array_combine($headers, $row);
                 
                 try {
-                    ProductRoot::updateOrCreate(
+                    ProductClass::updateOrCreate(
                         ['root_code' => $data['root_code']],
                         [
                             'root_name' => $data['root_name'],
@@ -221,7 +221,7 @@ class ProductImportService
 
         // Get root description
         if ($parsed['root_code']) {
-            $root = ProductRoot::where('root_code', $parsed['root_code'])->first();
+            $root = ProductClass::where('root_code', $parsed['root_code'])->first();
             if ($root) {
                 $description = $root->root_name;
             }
@@ -268,7 +268,7 @@ class ProductImportService
         }
 
         // Get root information
-        $root = ProductRoot::where('root_code', $parsed['root_code'])->first();
+        $root = ProductClass::where('root_code', $parsed['root_code'])->first();
         if (!$root) {
             return $result;
         }

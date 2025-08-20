@@ -84,7 +84,7 @@ class QuoteLine extends Model
     {
         // Since we can have multiple products with same root_code, just get the first one
         // This maintains backward compatibility
-        return $this->belongsTo(ProductRoot::class, 'root_code', 'root_code');
+        return $this->belongsTo(ProductClass::class, 'root_code', 'root_code');
     }
 
     public function isMoqMet()

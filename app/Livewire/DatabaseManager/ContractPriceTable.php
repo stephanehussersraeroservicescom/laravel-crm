@@ -4,7 +4,7 @@ namespace App\Livewire\DatabaseManager;
 
 use App\Models\Airline;
 use App\Models\ContractPrice;
-use App\Models\ProductRoot;
+use App\Models\ProductClass;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -162,7 +162,7 @@ class ContractPriceTable extends Component
             ->paginate(15);
 
         $airlines = Airline::orderBy('name')->get();
-        $productRoots = ProductRoot::orderBy('root_code')->get();
+        $productRoots = ProductClass::orderBy('root_code')->get();
 
         return view('livewire.database-manager.contract-price-table', compact('contracts', 'airlines', 'productRoots'));
     }

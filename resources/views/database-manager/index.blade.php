@@ -30,23 +30,17 @@
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                             <h4 class="text-lg font-semibold text-green-800 mb-3">Product Tables</h4>
                             <div class="space-y-2">
-                                <a href="{{ route('database-manager.product-roots') }}" 
+                                <a href="{{ route('database-manager.product-classes') }}" 
                                    class="block px-3 py-2 bg-white border border-green-300 rounded text-green-700 hover:bg-green-100 transition">
-                                    Products & Pricing
+                                    Product Classes
+                                </a>
+                                <a href="{{ route('database-manager.products') }}" 
+                                   class="block px-3 py-2 bg-white border border-green-300 rounded text-green-700 hover:bg-green-100 transition">
+                                    Products
                                 </a>
                             </div>
                         </div>
 
-                        <!-- Inventory Tables -->
-                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                            <h4 class="text-lg font-semibold text-orange-800 mb-3">Inventory</h4>
-                            <div class="space-y-2">
-                                <a href="{{ route('database-manager.stocked-products') }}" 
-                                   class="block px-3 py-2 bg-white border border-orange-300 rounded text-orange-700 hover:bg-orange-100 transition">
-                                    Stocked Products
-                                </a>
-                            </div>
-                        </div>
 
                         <!-- Pricing Tables -->
                         <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">

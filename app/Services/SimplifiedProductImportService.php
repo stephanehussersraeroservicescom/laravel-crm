@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\ProductRoot;
+use App\Models\ProductClass;
 use App\Models\ProductSeriesMapping;
 use App\Models\PriceList;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +43,7 @@ class SimplifiedProductImportService
 
                     // 1. Create/Update Product Root (only once per root)
                     if (!in_array($rootCode, $processedRoots)) {
-                        ProductRoot::updateOrCreate(
+                        ProductClass::updateOrCreate(
                             ['root_code' => $rootCode],
                             [
                                 'root_name' => $data['root_name'],
@@ -138,7 +138,7 @@ class SimplifiedProductImportService
 
         // Get root description (the main product description)
         if ($parsed['root_code']) {
-            $root = ProductRoot::where('root_code', $parsed['root_code'])->first();
+            $root = ProductClass::where('root_code', $parsed['root_code'])->first();
             if ($root) {
                 $description = $root->description; // Use the full root description
             }

@@ -22,7 +22,7 @@ class StockedProduct extends Model
 
     public function productRoot()
     {
-        return $this->belongsTo(ProductRoot::class, 'root_code', 'root_code');
+        return $this->belongsTo(ProductClass::class, 'root_code', 'root_code');
     }
 
     public function getBasePartNumberAttribute()

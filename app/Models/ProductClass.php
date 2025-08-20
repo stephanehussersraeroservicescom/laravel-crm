@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProductRoot extends Model
+class ProductClass extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -39,6 +39,14 @@ class ProductRoot extends Model
     public function stockedProducts()
     {
         return $this->hasMany(StockedProduct::class, 'root_code', 'root_code');
+    }
+
+    /**
+     * Get all individual products for this product class
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'root_code', 'root_code');
     }
 
     public function activePriceList($listType = 'standard')

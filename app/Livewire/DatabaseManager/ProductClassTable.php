@@ -2,12 +2,12 @@
 
 namespace App\Livewire\DatabaseManager;
 
-use App\Models\ProductRoot;
+use App\Models\ProductClass;
 use App\Models\PriceList;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class ProductRootTable extends Component
+class ProductClassTable extends Component
 {
     use WithPagination;
 
@@ -27,13 +27,15 @@ class ProductRootTable extends Component
     public $bulkPriceIncrease = '';
 
     protected $rules = [
-        'editForm.root_code' => 'required|string|max:10',
-        'editForm.root_name' => 'required|string|max:255',
-        'editForm.part_number_prefix' => 'nullable|string|max:10',
-        'editForm.description' => 'required|string',
+        'editForm.root_code' => 'required|string|max:20',
+        'editForm.root_name' => 'required|string|max:100',
+        'editForm.part_number_prefix' => 'nullable|string|max:255',
+        'editForm.description' => 'nullable|string',
         'editForm.has_ink_resist' => 'boolean',
         'editForm.is_bio' => 'boolean',
+        'editForm.price' => 'required|numeric|min:0',
         'editForm.moq_ly' => 'required|integer|min:1',
+        'editForm.uom' => 'required|in:LY,UNIT',
         'editForm.lead_time_weeks' => 'nullable|string|max:20',
     ];
 
@@ -44,7 +46,7 @@ class ProductRootTable extends Component
 
     public function edit($rootCode)
     {
-        $root = ProductRoot::findOrFail($rootCode);
+        $root = ProductClass::where('root_code', $rootCode)->firstOrFail();
         $this->editingId = $rootCode;
         $this->editForm = $root->toArray();
     }
@@ -53,13 +55,19 @@ class ProductRootTable extends Component
     {
         $this->validate();
         
-        $root = ProductRoot::findOrFail($this->editingId);
-        $root->update($this->editForm);
+        if ($this->editingId === 'new') {
+            // Creating new product
+            ProductClass::create($this->editForm);
+            session()->flash('message', 'Product class created successfully.');
+        } else {
+            // Updating existing product
+            $root = ProductClass::where('root_code', $this->editingId)->firstOrFail();
+            $root->update($this->editForm);
+            session()->flash('message', 'Product class updated successfully.');
+        }
         
         $this->editingId = null;
         $this->editForm = [];
-        
-        session()->flash('message', 'Product root updated successfully.');
     }
 
     public function cancel()
@@ -78,7 +86,9 @@ class ProductRootTable extends Component
             'description' => '',
             'has_ink_resist' => false,
             'is_bio' => false,
+            'price' => 0,
             'moq_ly' => 1,
+            'uom' => 'LY',
             'lead_time_weeks' => '',
         ];
     }
@@ -87,24 +97,24 @@ class ProductRootTable extends Component
     {
         $this->validate();
         
-        ProductRoot::create($this->editForm);
+        ProductClass::create($this->editForm);
         
         $this->editingId = null;
         $this->editForm = [];
         
-        session()->flash('message', 'Product root created successfully.');
+        session()->flash('message', 'Product class created successfully.');
     }
 
     public function delete($rootCode)
     {
-        ProductRoot::findOrFail($rootCode)->delete();
-        session()->flash('message', 'Product root deleted successfully.');
+        ProductClass::where('root_code', $rootCode)->firstOrFail()->delete();
+        session()->flash('message', 'Product class deleted successfully.');
     }
     
     // Price Management Methods
     public function editPrice($rootCode)
     {
-        $root = ProductRoot::findOrFail($rootCode);
+        $root = ProductClass::where('root_code', $rootCode)->firstOrFail();
         $currentPrice = $root->priceLists()
             ->where('is_active', true)
             ->current()
@@ -246,7 +256,7 @@ class ProductRootTable extends Component
     public function toggleSelectAll()
     {
         // Get current page root codes
-        $currentPageIds = ProductRoot::when($this->search, function ($query) {
+        $currentPageIds = ProductClass::when($this->search, function ($query) {
                 $query->where('root_code', 'like', '%' . $this->search . '%')
                       ->orWhere('root_name', 'like', '%' . $this->search . '%')
                       ->orWhere('category', 'like', '%' . $this->search . '%');
@@ -267,7 +277,7 @@ class ProductRootTable extends Component
 
     public function render()
     {
-        $roots = ProductRoot::with(['priceLists' => function ($query) {
+        $roots = ProductClass::with(['priceLists' => function ($query) {
                 $query->where('is_active', true)->current();
             }])
             ->when($this->search, function ($query) {
@@ -284,6 +294,6 @@ class ProductRootTable extends Component
                 ->get();
         }
 
-        return view('livewire.database-manager.product-root-pricing-table', compact('roots', 'priceHistory'));
+        return view('livewire.database-manager.product-class-table', compact('roots', 'priceHistory'));
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\ProductRoot;
+use App\Models\ProductClass;
 use App\Models\ProductSeriesMapping;
 use App\Models\PriceList;
 use App\Models\ContractPrice;
@@ -28,9 +28,14 @@ class DatabaseManagerController extends Controller
         return view('database-manager.customers');
     }
 
-    public function productRoots()
+    public function productClasses()
     {
-        return view('database-manager.product-roots');
+        return view('database-manager.product-classes');
+    }
+
+    public function products()
+    {
+        return view('database-manager.products');
     }
 
     public function productSeries()

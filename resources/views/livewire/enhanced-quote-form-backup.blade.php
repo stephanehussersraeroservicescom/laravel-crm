@@ -17,10 +17,17 @@
                         @if($show_contact_dropdown && count($filtered_contacts) > 0)
                             <div class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none">
                                 @foreach($filtered_contacts as $contact)
-                                    <div wire:click="selectContact({{ $contact->id }})" 
+                                    <div wire:click="selectContact({{ $contact->id }}, '{{ $contact->model_type }}')" 
                                          class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-100">
-                                        <div class="font-medium">{{ $contact->company_name }}</div>
-                                        <div class="text-gray-500 text-sm">{{ $contact->contact_name }}</div>
+                                        <div class="font-medium">{{ $contact->display_name }}</div>
+                                        <div class="text-gray-500 text-sm">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                {{ $contact->display_type }}
+                                            </span>
+                                            @if($contact->contact_name)
+                                                {{ $contact->contact_name }}
+                                            @endif
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
@@ -200,7 +207,7 @@
                             @endif
 
                             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                                <!-- Step 3: Part Number -->
+                                <!-- Step 2: Part Number -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">
                                         Step 2: Part Number*
@@ -302,13 +309,13 @@
 
             <!-- Submit Buttons -->
             <div class="flex justify-end space-x-3">
-                <a href="{{ route('quotes.show', $quote) }}" 
+                <a href="{{ route('quotes.index') }}" 
                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Cancel
                 </a>
                 <button type="submit" 
                         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Update Quote
+                    Create Quote
                 </button>
             </div>
         </div>

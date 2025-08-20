@@ -12,10 +12,11 @@ class QuoteIndex extends Component
 
     public $search = '';
     public $status = '';
+    public $showDeleted = false;
     public $sortBy = 'created_at';
     public $sortDirection = 'desc';
 
-    protected $queryString = ['search', 'status'];
+    protected $queryString = ['search', 'status', 'showDeleted'];
 
     public function updatingSearch()
     {
@@ -40,9 +41,24 @@ class QuoteIndex extends Component
         session()->flash('message', 'Quote deleted successfully.');
     }
 
+    public function restoreQuote($quoteId)
+    {
+        $quote = Quote::withTrashed()->findOrFail($quoteId);
+        $quote->restore();
+        
+        session()->flash('message', 'Quote restored successfully.');
+    }
+
+    public function updatedShowDeleted()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
-        $quotes = Quote::with(['customer', 'user'])
+        $quotesQuery = $this->showDeleted ? Quote::withTrashed() : Quote::query();
+        
+        $quotes = $quotesQuery->with(['customer', 'user'])
             ->when($this->search, function ($query) {
                 $query->where('customer_name', 'like', '%' . $this->search . '%')
                       ->orWhere('quote_number', 'like', '%' . $this->search . '%');

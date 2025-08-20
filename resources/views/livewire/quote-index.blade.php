@@ -38,7 +38,13 @@
         </x-slot>
 
         <x-slot name="filters">
-            <!-- Additional filters can be added here if needed -->
+            <!-- Show Deleted -->
+            <x-atomic.molecules.forms.form-field-group label="Status">
+                <label class="flex items-center">
+                    <input type="checkbox" wire:model.live="showDeleted" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <span class="ml-2 text-sm text-gray-600">Show deleted</span>
+                </label>
+            </x-atomic.molecules.forms.form-field-group>
         </x-slot>
 
         <x-slot name="actions">
@@ -93,11 +99,18 @@
         </x-slot>
 
         @forelse($quotes as $quote)
-            <x-atomic.molecules.tables.table-row>
+            <x-atomic.molecules.tables.table-row class="{{ $quote->trashed() ? 'bg-red-50' : '' }}">
                 <x-atomic.atoms.tables.table-cell variant="primary">
-                    <a href="{{ route('quotes.show', $quote) }}" class="text-blue-600 hover:text-blue-800">
-                        {{ $quote->quote_number }}
-                    </a>
+                    <div class="flex flex-col">
+                        <a href="{{ route('quotes.show', $quote) }}" class="text-blue-600 hover:text-blue-800">
+                            {{ $quote->quote_number }}
+                        </a>
+                        @if($quote->trashed())
+                            <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 w-fit">
+                                Deleted {{ $quote->deleted_at->diffForHumans() }}
+                            </span>
+                        @endif
+                    </div>
                 </x-atomic.atoms.tables.table-cell>
                 
                 <x-atomic.atoms.tables.table-cell>
@@ -142,15 +155,22 @@
                 
                 <x-atomic.atoms.tables.table-cell variant="action">
                     <div class="flex space-x-2">
-                        <a href="{{ route('quotes.show', $quote) }}" 
-                           class="text-blue-600 hover:text-blue-900">View</a>
-                        <a href="{{ route('quotes.edit', $quote) }}" 
-                           class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                        <a href="{{ route('quotes.preview', $quote) }}" 
-                           class="text-green-600 hover:text-green-900" target="_blank">PDF</a>
-                        <button wire:click="deleteQuote({{ $quote->id }})" 
-                                wire:confirm="Are you sure you want to delete this quote?"
-                                class="text-red-600 hover:text-red-900">Delete</button>
+                        @if($quote->trashed())
+                            <button wire:click="restoreQuote({{ $quote->id }})" 
+                                    class="text-green-600 hover:text-green-900 transition-colors">
+                                Restore
+                            </button>
+                        @else
+                            <a href="{{ route('quotes.show', $quote) }}" 
+                               class="text-blue-600 hover:text-blue-900">View</a>
+                            <a href="{{ route('quotes.edit', $quote) }}" 
+                               class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                            <a href="{{ route('quotes.preview', $quote) }}" 
+                               class="text-green-600 hover:text-green-900" target="_blank">PDF</a>
+                            <button wire:click="deleteQuote({{ $quote->id }})" 
+                                    wire:confirm="Are you sure you want to delete this quote?"
+                                    class="text-red-600 hover:text-red-900 transition-colors">Delete</button>
+                        @endif
                     </div>
                 </x-atomic.atoms.tables.table-cell>
             </x-atomic.molecules.tables.table-row>

@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DatabaseManagerController;
+use App\Http\Controllers\QuoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,13 +54,13 @@ Route::middleware(['auth'])->group(function () {
     
     // Quote Routes
     Route::prefix('quotes')->name('quotes.')->group(function () {
-        Route::get('/', \App\Http\Controllers\QuoteController::class . '@index')->name('index');
-        Route::get('/create', \App\Http\Controllers\QuoteController::class . '@create')->name('create');
-        Route::get('/{quote}', \App\Http\Controllers\QuoteController::class . '@show')->name('show');
-        Route::get('/{quote}/edit', \App\Http\Controllers\QuoteController::class . '@edit')->name('edit');
-        Route::get('/{quote}/preview', \App\Http\Controllers\QuoteController::class . '@preview')->name('preview');
-        Route::get('/{quote}/download', \App\Http\Controllers\QuoteController::class . '@download')->name('download');
-        Route::delete('/{quote}', \App\Http\Controllers\QuoteController::class . '@destroy')->name('destroy');
+        Route::get('/', [QuoteController::class, 'index'])->name('index');
+        Route::get('/create', [QuoteController::class, 'create'])->name('create');
+        Route::get('/{quote}', [QuoteController::class, 'show'])->name('show');
+        Route::get('/{quote}/edit', [QuoteController::class, 'edit'])->name('edit');
+        Route::get('/{quote}/preview', [QuoteController::class, 'preview'])->name('preview');
+        Route::get('/{quote}/download', [QuoteController::class, 'download'])->name('download');
+        Route::delete('/{quote}', [QuoteController::class, 'destroy'])->name('destroy');
     });
     
     // Template Download Routes
@@ -88,19 +90,18 @@ Route::middleware(['auth'])->group(function () {
 
 // Database Manager Routes (restricted access)
 Route::middleware(['auth'])->prefix('database-manager')->name('database-manager.')->group(function () {
-    Route::get('/', [App\Http\Controllers\DatabaseManagerController::class, 'index'])
+    Route::get('/', [DatabaseManagerController::class, 'index'])
         ->name('index');
-    Route::get('/customers', [App\Http\Controllers\DatabaseManagerController::class, 'customers'])
+    Route::get('/customers', [DatabaseManagerController::class, 'customers'])
         ->name('customers');
-    Route::get('/product-classes', [App\Http\Controllers\DatabaseManagerController::class, 'productClasses'])
+        
+    Route::get('/product-classes', [DatabaseManagerController::class, 'productClasses'])
         ->name('product-classes');
-    Route::get('/products', [App\Http\Controllers\DatabaseManagerController::class, 'products'])
+    Route::get('/products', [DatabaseManagerController::class, 'products'])
         ->name('products');
-    Route::get('/contract-prices', [App\Http\Controllers\DatabaseManagerController::class, 'contractPrices'])
+    Route::get('/contract-prices', [DatabaseManagerController::class, 'contractPrices'])
         ->name('contract-prices');
-    // Route::get('/stocked-products', [App\Http\Controllers\DatabaseManagerController::class, 'stockedProducts'])
-    //     ->name('stocked-products');
-    Route::get('/airlines', [App\Http\Controllers\DatabaseManagerController::class, 'airlines'])
+    Route::get('/airlines', [DatabaseManagerController::class, 'airlines'])
         ->name('airlines');
 });
 

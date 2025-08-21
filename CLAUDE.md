@@ -65,6 +65,20 @@ php artisan migrate:fresh --seed --force
 php artisan db:seed --class=ProductCatalogSeeder --force
 ```
 
+### TODO for Tomorrow (August 22, 2025)
+1. **IATA Code Management:**
+   - Implement validation for airline IATA codes (2-3 character standard)
+   - Define where IATA codes should be displayed/used in the UI
+   - Add validation rules to prevent duplicate or invalid codes
+   - Consider auto-lookup/suggestion for valid IATA codes
+
+2. **Quote Versioning Implementation:**
+   - Design UI/UX for quote revision workflow
+   - Define when versioning should be triggered (status changes, major edits)
+   - Implement revision comparison views
+   - Add revision history tracking in quote management
+   - Consider approval workflows for revised quotes
+
 ## August 20, 2025 - Component Architecture Refactoring
 
 ### IMPORTANT: Large Component Breakdown Strategy

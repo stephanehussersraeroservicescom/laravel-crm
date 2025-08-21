@@ -107,16 +107,16 @@ class ComprehensiveDatabaseSeeder extends Seeder
     private function seedAirlines(): void
     {
         $airlines = [
-            ['name' => 'Default', 'region' => 'North America', 'account_executive_id' => 1], // For baseline configurations
-            ['name' => 'American Airlines', 'region' => 'North America', 'account_executive_id' => 1],
-            ['name' => 'Delta Air Lines', 'region' => 'North America', 'account_executive_id' => 1],
-            ['name' => 'United Airlines', 'region' => 'North America', 'account_executive_id' => 2],
-            ['name' => 'Lufthansa', 'region' => 'Europe', 'account_executive_id' => 2],
-            ['name' => 'British Airways', 'region' => 'Europe', 'account_executive_id' => 1],
-            ['name' => 'Air France', 'region' => 'Europe', 'account_executive_id' => 2],
-            ['name' => 'Emirates', 'region' => 'Middle East', 'account_executive_id' => 1],
-            ['name' => 'Qatar Airways', 'region' => 'Middle East', 'account_executive_id' => 2],
-            ['name' => 'Singapore Airlines', 'region' => 'Asia', 'account_executive_id' => 1],
+            ['name' => 'Default', 'code' => 'DEF', 'region' => 'North America', 'account_executive_id' => 1], // For baseline configurations
+            ['name' => 'American Airlines', 'code' => 'AA', 'region' => 'North America', 'account_executive_id' => 1],
+            ['name' => 'Delta Air Lines', 'code' => 'DL', 'region' => 'North America', 'account_executive_id' => 1],
+            ['name' => 'United Airlines', 'code' => 'UA', 'region' => 'North America', 'account_executive_id' => 2],
+            ['name' => 'Lufthansa', 'code' => 'LH', 'region' => 'Europe', 'account_executive_id' => 2],
+            ['name' => 'British Airways', 'code' => 'BA', 'region' => 'Europe', 'account_executive_id' => 1],
+            ['name' => 'Air France', 'code' => 'AF', 'region' => 'Europe', 'account_executive_id' => 2],
+            ['name' => 'Emirates', 'code' => 'EK', 'region' => 'Middle East', 'account_executive_id' => 1],
+            ['name' => 'Qatar Airways', 'code' => 'QR', 'region' => 'Middle East', 'account_executive_id' => 2],
+            ['name' => 'Singapore Airlines', 'code' => 'SQ', 'region' => 'Asia', 'account_executive_id' => 1],
         ];
         
         foreach ($airlines as $airline) {

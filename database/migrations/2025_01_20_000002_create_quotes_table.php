@@ -14,8 +14,12 @@ return new class extends Migration
         Schema::create('quotes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            $table->foreignId('airline_id')->nullable()->constrained()->onDelete('set null');
+            
+            // Polymorphic customer relationship
+            $table->string('customer_type')->nullable();
+            $table->unsignedBigInteger('customer_id')->nullable();
+            $table->string('customer_name');
+            
             $table->string('quote_number')->nullable()->unique();
             $table->string('salesperson_code', 10)->nullable();
             $table->date('date_entry');
@@ -28,7 +32,6 @@ return new class extends Migration
             $table->text('footer_text')->nullable();
             $table->text('comments')->nullable();
             $table->enum('status', ['draft', 'sent', 'accepted', 'rejected'])->default('draft');
-            $table->boolean('is_subcontractor')->default(false);
             $table->timestamps();
             $table->softDeletes();
             
@@ -36,6 +39,7 @@ return new class extends Migration
             $table->index('quote_number');
             $table->index('status');
             $table->index('date_entry');
+            $table->index(['customer_type', 'customer_id']);
         });
     }
 

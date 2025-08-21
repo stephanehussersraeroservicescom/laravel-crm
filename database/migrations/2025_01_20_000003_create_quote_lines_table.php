@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('quote_lines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('quote_id')->constrained()->onDelete('cascade');
-            $table->foreignId('part_number_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('product_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('product_class_id')->nullable()->constrained()->onDelete('set null');
             $table->string('part_number');
             $table->string('root_code', 20)->nullable();
@@ -50,7 +50,7 @@ return new class extends Migration
             $table->index(['quote_id', 'sort_order']);
             $table->index('root_code');
             $table->index('part_number');
-            $table->index('part_number_id');
+            $table->index('product_id');
             $table->index('product_class_id');
         });
     }

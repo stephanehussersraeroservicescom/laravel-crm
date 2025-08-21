@@ -4,8 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\Quote;
 use App\Models\QuoteLine;
-use App\Models\Customer;
 use App\Models\Airline;
+use App\Models\Subcontractor;
+use App\Models\ExternalCustomer;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -15,8 +16,9 @@ class QuoteSeeder extends Seeder
     public function run(): void
     {
         $users = User::all();
-        $customers = Customer::all();
         $airlines = Airline::all();
+        $subcontractors = Subcontractor::all();
+        $externalCustomers = ExternalCustomer::all();
         $productClasses = DB::table('product_classes')->get();
 
         if ($users->isEmpty() || $productClasses->isEmpty()) {
@@ -24,21 +26,19 @@ class QuoteSeeder extends Seeder
             return;
         }
         
-        // Create sample customers if none exist
-        if ($customers->isEmpty()) {
+        // Create sample external customers if none exist
+        if ($externalCustomers->isEmpty()) {
             $sampleCustomers = [
-                ['company_name' => 'Aerospace Solutions Inc', 'contact_name' => 'John Smith', 'email' => 'john@aerospace.com', 'phone' => '+1-555-0101', 'is_subcontractor' => false],
-                ['company_name' => 'Delta Interiors', 'contact_name' => 'Sarah Johnson', 'email' => 'sarah@deltainteriors.com', 'phone' => '+1-555-0102', 'is_subcontractor' => true],
-                ['company_name' => 'Premium Cabin Systems', 'contact_name' => 'Mike Wilson', 'email' => 'mike@premiumcabin.com', 'phone' => '+1-555-0103', 'is_subcontractor' => false],
-                ['company_name' => 'Advanced Materials Corp', 'contact_name' => 'Lisa Davis', 'email' => 'lisa@advancedmaterials.com', 'phone' => '+1-555-0104', 'is_subcontractor' => true],
-                ['company_name' => 'Airline Interiors Ltd', 'contact_name' => 'David Brown', 'email' => 'david@airlineinteriors.com', 'phone' => '+1-555-0105', 'is_subcontractor' => false],
+                ['name' => 'Aerospace Solutions Inc', 'contact_name' => 'John Smith', 'email' => 'john@aerospace.com', 'phone' => '+1-555-0101'],
+                ['name' => 'Premium Cabin Systems', 'contact_name' => 'Mike Wilson', 'email' => 'mike@premiumcabin.com', 'phone' => '+1-555-0103'],
+                ['name' => 'Airline Interiors Ltd', 'contact_name' => 'David Brown', 'email' => 'david@airlineinteriors.com', 'phone' => '+1-555-0105'],
             ];
             
             foreach ($sampleCustomers as $customerData) {
-                Customer::create($customerData);
+                ExternalCustomer::create($customerData);
             }
             
-            $customers = Customer::all();
+            $externalCustomers = ExternalCustomer::all();
         }
 
         // Color codes for different product families
@@ -70,20 +70,38 @@ class QuoteSeeder extends Seeder
 
         // Create 15 sample quotes
         for ($i = 1; $i <= 15; $i++) {
-            $customer = $customers->random();
-            $airline = $airlines->random();
+            // Randomly choose customer type
+            $customerTypeKey = collect(['airline', 'subcontractor', 'external_customer'])->random();
+            
+            switch ($customerTypeKey) {
+                case 'airline':
+                    if ($airlines->isEmpty()) continue 2;
+                    $customer = $airlines->random();
+                    $customerType = 'App\\Models\\Airline';
+                    break;
+                case 'subcontractor':
+                    if ($subcontractors->isEmpty()) continue 2;
+                    $customer = $subcontractors->random();
+                    $customerType = 'App\\Models\\Subcontractor';
+                    break;
+                case 'external_customer':
+                    if ($externalCustomers->isEmpty()) continue 2;
+                    $customer = $externalCustomers->random();
+                    $customerType = 'App\\Models\\ExternalCustomer';
+                    break;
+            }
             
             $quote = Quote::create([
                 'user_id' => $users->random()->id,
+                'customer_type' => $customerType,
                 'customer_id' => $customer->id,
-                'airline_id' => rand(0, 1) ? $airline->id : null, // 50% chance of having airline
+                'customer_name' => $customer->name,
                 'date_entry' => now()->subDays(rand(0, 90))->format('Y-m-d'),
                 'date_valid' => now()->addDays(rand(30, 60))->format('Y-m-d'),
                 'shipping_terms' => collect(['Ex Works Dallas Texas', 'FOB Dallas', 'CIF Destination', 'DDP'])->random(),
                 'payment_terms' => collect(['Pro Forma', 'Net 30', 'Net 60', '50% Down, Balance on Delivery'])->random(),
                 'lead_time_weeks' => rand(12, 16) . ' weeks',
                 'comments' => rand(0, 1) ? 'Special handling required for this order.' : '',
-                'is_subcontractor' => $customer->is_subcontractor,
                 'status' => collect(['draft', 'sent', 'accepted'])->random(),
             ]);
 
@@ -105,7 +123,7 @@ class QuoteSeeder extends Seeder
                 $partNumber = $productClass->root_code . '-' . $colorCode;
                 
                 // Calculate pricing
-                $basePrice = $productClass->standard_price;
+                $basePrice = $productClass->price;
                 $quantity = rand(10, 500);
                 
                 // Apply quantity discount for large orders
@@ -130,14 +148,14 @@ class QuoteSeeder extends Seeder
                     'treatment_suffix' => null,
                     'is_exotic' => $productClass->is_bio || $productClass->has_ink_resist,
                     'base_part_number' => $partNumber,
-                    'description' => $productClass->product_name . ' - ' . $colorName,
+                    'description' => $productClass->root_name . ' - ' . $colorName,
                     'quantity' => $quantity,
                     'unit' => 'LY',
                     'standard_price' => (int)($basePrice * 100),
                     'final_price' => $finalPriceInCents,
                     'pricing_source' => $quantity > 100 ? 'contract' : 'standard',
-                    'moq' => $productClass->moq,
-                    'lead_time' => $productClass->lead_time_weeks . ' weeks',
+                    'moq' => $productClass->moq_ly,
+                    'lead_time' => $productClass->lead_time_weeks,
                     'notes' => $quantity > 100 ? 'Volume discount applied' : '',
                     'sort_order' => $j,
                 ]);
